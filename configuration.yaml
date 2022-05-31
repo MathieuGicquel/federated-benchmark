@@ -1,1 +1,2 @@
-nb_sites: [10, 100]
+site: 10
+endpoint: "localhost:9000/sparql"

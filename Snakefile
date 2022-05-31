@@ -3,7 +3,8 @@ from re import search
 import yaml
 
 configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
-nbsites = configuration["nb_sites"]
+site = configuration["site"]
+endpoint = configuration["endpoint"]
 
 def todo_query(wildcards):
     print(os.getcwd())
@@ -12,24 +13,21 @@ def todo_query(wildcards):
     for e in f:
     	m = search(f'lib/gmark/demo/shop/shop-translated/(.*).sparql', e)
         query=m.group(1)
-        for site in nbsites:
-            res.append(f'queries/{site}/{query}.noask.sparql')
+        res.append(f'queries/{site}/{query}.noask.sparql')
     print(f'todo query:{res}')
     return res
 
 def todo_data(wildcards):
     print(os.getcwd())
     res=[]
-    for site in nbsites:
-        res.append(f'data/{site}/shop-graph.nq')
+    res.append(f'data/{site}/shop-graph.nq')
     print(f'todo:{res}')
     return res
 
 def todo_fede(wildcards):
     print(os.getcwd())
     res=[]
-    for site in nbsites:
-        res.append(f'Federator/{site}/config.ttl')
+    res.append(f'Federator/{site}/config.ttl')
     print(f'todo:{res}')
     return res
 
@@ -59,7 +57,7 @@ rule run_configator:
     output:
         "Federator/{site}/config.ttl"
     shell:
-        "python3 scripts/configator.py {input} {output} localhost:9000/sparql" # TODO
+        "python3 scripts/configator.py {input} {output} " + endpoint
 
 rule run_querylator:
     input:
