@@ -1,0 +1,1 @@
+MATCH (x0)-[:pauthor|previewer*]->(x1), (x1)-[:pfollows]->()<-[:pfollows]-()<-[:pactor]-(x2), (x0)-[:pmakesPurchase|pconductor|pfriendOf*]->(x3), (x2)-[:peditor|pauthor*]->(x4) RETURN DISTINCT x0, x2;

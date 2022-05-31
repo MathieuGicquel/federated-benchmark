@@ -1,0 +1,1 @@
+MATCH (x0)<-[:pgender]-()<-[:peditor]-()-[:pkeywords]->()<-[:pcaption]-(x1), (x1)-[:phomepage|ppurchaseFor|ppurchaseFor*]->(x2), (x2)<-[:ppurchaseFor]-()-[:ppurchaseFor]->()-[:phasReview]->(x3), (x3)-[:previewer]->()-[:plike]->()<-[:plike]-()<-[:pconductor]-(x4) RETURN "true" LIMIT 1;

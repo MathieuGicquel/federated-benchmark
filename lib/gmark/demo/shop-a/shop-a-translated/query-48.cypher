@@ -1,0 +1,1 @@
+MATCH (x0)<-[:ptype]-()<-[:phasGenre]-()-[:peditor]->()-[:pemail]->(x1), (x0)<-[:ptype]-()<-[:phasGenre]-()-[:ptext]->(x2), (x0)<-[:ptype]-()<-[:phasGenre]-()-[:ptext]->(x3) RETURN DISTINCT x0, x1, x2;

@@ -1,0 +1,1 @@
+MATCH (x0)<-[:phasTag]-()<-[:pisSubclassOf]-()-[:planguage]->(x1), (x0)-[:pname]->()<-[:pcontent]-()-[:pimageFile]->()<-[:pname]-(x2), (x2)-[:pisLocatedIn]->()<-[:pisLocatedIn]-()-[:pisLocatedIn]->(x1) RETURN DISTINCT x0;

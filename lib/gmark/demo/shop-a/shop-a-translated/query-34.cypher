@@ -1,0 +1,1 @@
+MATCH (x0)<-[:pdirector]-()-[:ptitle]->()<-[:pcaption]-()-[:pperformer]->(x1), (x1)<-[:pdescription]-()-[:pcontentSize]->()<-[:pserialNumber]-(x2), (x2)-[:pincludes|pincludes|pincludes*]->(x3) RETURN "true" LIMIT 1;

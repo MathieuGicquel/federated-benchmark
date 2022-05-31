@@ -1,0 +1,1 @@
+PREFIX : <http://example.org/gmark/> SELECT DISTINCT ?x0 WHERE {  {  ?x0 ((:pcreationDate/^:pcreationDate/^:phasModerator)) ?x1 . ?x1 (((:plength/^:pname/:pname/^:plength))){,3} ?x2 . ?x0 ((:pcreationDate/^:pcreationDate/:pgender/^:plength)) ?x3 . ?x2 ((:pcreationDate/^:pcreationDate)) ?x4 . } }

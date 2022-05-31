@@ -1,0 +1,8 @@
+digraph g {
+	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
+	x1 [shape=circle, label="?x1"];
+	x0 -> x1 [label="((includes.contentRating.printSection-))"];
+	x2 [shape=circle, label="?x2"];
+	x0 -> x2 [label="(((includes.includes-)))*"];
+	x2 -> x1 [label="(((includes.purchaseFor-.purchaseFor.includes-)+(includes.purchaseFor-.purchaseFor.includes-)+(includes.hasReview.hasReview-.includes-)))*"];
+}

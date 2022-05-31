@@ -1,0 +1,1 @@
+MATCH (x0)-[:pEncodedOn]->()<-[:pEncodedOn]-()-[:pInteracts]->()-[:pEncodedOn]->(x1), (x0)-[:pHasKeyword]->()<-[:pHasKeyword]-()-[:pEncodedOn]->(x2), (x0)-[:pReference]->()<-[:pReference]-()-[:pEncodedOn]->(x3) RETURN "true" LIMIT 1;

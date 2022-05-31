@@ -1,0 +1,8 @@
+digraph g {
+	x0 [shape=circle, label="?x0"];
+	x1 [shape=circle, label="?x1"];
+	x0 -> x1 [label="((0-.0.3)+(0.3)+(0-.3))"];
+	x2 [shape=circle, label="?x2"];
+	x0 -> x2 [label="((0-.0.0-)+(0-.0-.0))"];
+	x2 -> x1 [label="((0-.3))"];
+}

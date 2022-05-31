@@ -1,0 +1,9 @@
+digraph g {
+	x0 [shape=circle, label="?x0"];
+	x1 [shape=circle, label="?x1"];
+	x0 -> x1 [label="((62-.60-.63)+(62-.60-.63)+(62-.29.29-.63))"];
+	x2 [shape=circle, label="?x2"];
+	x0 -> x2 [label="((62-.60-.63)+(62-.48.48-.63)+(62-.57.57-.63))"];
+	x3 [shape=circle, label="?x3"];
+	x0 -> x3 [label="((62-.63)+(62-.72-.72.63))"];
+}

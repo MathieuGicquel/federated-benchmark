@@ -1,0 +1,1 @@
+MATCH (x0)<-[:planguage]-()-[:pcontent]->()<-[:pcontent]-()<-[:pcontainerOf]-(x1), (x0)<-[:planguage]-()-[:pisSubclassOf]->()-[:pbrowserUsed]->()<-[:plength]-(x2), (x0)<-[:planguage]-()-[:pisSubclassOf]->()-[:plocationIP]->()<-[:plength]-(x3), (x0)<-[:planguage]-()-[:pisSubclassOf]->()-[:pcreationDate]->()<-[:pcreationDate]-(x4) RETURN DISTINCT x0, x1;

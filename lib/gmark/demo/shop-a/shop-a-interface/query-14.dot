@@ -1,0 +1,8 @@
+digraph g {
+	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
+	x1 [fillcolor="yellow", style="filled," shape=circle, label="?x1"];
+	x2 [fillcolor="yellow", style="filled," shape=circle, label="?x2"];
+	x0 -> x1 [label="((nationality-.author-.language)+(nationality-.conductor-.homepage.language))"];
+	x0 -> x2 [label="((nationality-.like))"];
+	x2 -> x1 [label="(((hasReview.reviewer.author-)+(purchaseFor-.purchaseFor)+(editor.author-)))*"];
+}

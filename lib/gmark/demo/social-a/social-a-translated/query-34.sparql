@@ -1,0 +1,1 @@
+PREFIX : <http://example.org/gmark/> SELECT DISTINCT ?x0 ?x1 WHERE {  {  ?x0 ((^:pbrowserUsed/^:pisSubclassOf)|(^:pbrowserUsed/^:phasModerator/:plength/^:planguage)|(^:pbrowserUsed/^:pisSubclassOf)) ?x1 . ?x0 ((^:pgender/:pname/^:pname)) ?x2 . ?x1 ((^:pgender/:pbrowserUsed/^:pname)|(^:pimageFile/:pcontent/^:pname)|(^:pbrowserUsed/:pgender/^:pname)) ?x3 . } }

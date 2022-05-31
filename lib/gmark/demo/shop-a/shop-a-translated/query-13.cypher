@@ -1,0 +1,1 @@
+MATCH (x0)<-[:pcontentRating]-()-[:ptag]->()<-[:ptag]-(x1), (x0)<-[:popus]-()-[:ptext]->()<-[:pdescription]-()-[:phasGenre]->(x2), (x0)<-[:pcontentRating]-()-[:phasGenre]->(x3), (x0)<-[:pserialNumber]-()-[:pincludes]->()-[:phasGenre]->(x4) RETURN DISTINCT x0;

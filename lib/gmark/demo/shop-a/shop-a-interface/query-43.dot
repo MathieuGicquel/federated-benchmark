@@ -1,0 +1,10 @@
+digraph g {
+	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
+	x1 [shape=circle, label="?x1"];
+	x0 -> x1 [label="((type-.gender)+(type-.director-.actor.gender))"];
+	x2 [shape=circle, label="?x2"];
+	x1 -> x2 [label="((gender-.actor-.hasGenre.type)+(gender-.like.hasGenre.type)+(gender-.artist-.hasGenre.type))"];
+	x3 [shape=circle, label="?x3"];
+	x0 -> x3 [label="((type-.familyName.paymentAccepted-.contactPoint)+(type-.givenName.text-.author))"];
+	x3 -> x2 [label="((subscribes.subscribes-.nationality)+(friendOf-.nationality)+(jobTitle.paymentAccepted-.offers.editor))"];
+}

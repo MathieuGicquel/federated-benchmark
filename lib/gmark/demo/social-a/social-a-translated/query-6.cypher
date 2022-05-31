@@ -1,0 +1,1 @@
+MATCH (x0)-[:pcreationDate]->()<-[:pcreationDate]-()<-[:phasModerator]-(x1), (x1)-[:plength*]->(x2), (x0)-[:pcreationDate]->()<-[:pcreationDate]-()-[:pgender]->()<-[:plength]-(x3), (x2)-[:pcreationDate]->()<-[:pcreationDate]-(x4) RETURN DISTINCT x0;

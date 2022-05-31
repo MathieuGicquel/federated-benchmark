@@ -1,0 +1,1 @@
+MATCH (x0)<-[:pOccursIn]-()<-[:pInteracts]-()-[:pEncodedOn]->()<-[:pEncodedOn]-(x1), (x1)-[:pInteracts]->()-[:pOccursIn]->(x2), (x2)<-[:pOccursIn]-()-[:pInteracts]->()-[:pReference]->()-[:pAuthoredBy]->(x3), (x3)<-[:pAuthoredBy]-()-[:pPublishedIn]->()<-[:pPublishedIn]-()-[:pPublishedIn]->(x4) RETURN "true" LIMIT 1;

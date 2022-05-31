@@ -1,0 +1,10 @@
+BEGIN
+gmarkSubquery00(x, y) <- core:edge:edge(x0, makesPurchase, x1), core:edge:edge(x1, purchaseFor, x2), x = x0, y = x2.
+gmarkSubquery01(x, y) <- core:edge:edge(x0, title, x1), core:edge:edge(x2, paymentAccepted, x1), core:edge:edge(x2, offers, x3), x = x0, y = x3.
+gmarkSubquery01(x, y) <- core:edge:edge(x0, caption, x1), core:edge:edge(x2, description, x1), core:edge:edge(x3, includes, x2), x = x0, y = x3.
+gmarkSubquery01(x, y) <- core:edge:edge(x0, caption, x1), core:edge:edge(x2, text, x1), core:edge:edge(x2, release, x3), core:edge:edge(x4, validForm, x3), x = x0, y = x4.
+gmarkSubquery02(x, y) <- core:edge:edge(x0, includes, x1), core:edge:edge(x1, tag, x2), x = x0, y = x2.
+gmarkSubquery02(x, y) <- core:edge:edge(x0, includes, x1), core:edge:edge(x1, tag, x2), core:edge:edge(x3, tag, x2), core:edge:edge(x3, tag, x4), x = x0, y = x4.
+gmarkSubquery02(x, y) <- core:edge:edge(x0, includes, x1), core:edge:edge(x1, tag, x2), x = x0, y = x2.
+query(x0, x3) <- gmarkSubquery00(x0, x1), gmarkSubquery01(x1, x2), gmarkSubquery02(x2, x3).
+END

@@ -1,0 +1,8 @@
+digraph g {
+	x2 [fillcolor="yellow", style="filled," shape=circle, label="?x2"];
+	x1 [fillcolor="yellow", style="filled," shape=circle, label="?x1"];
+	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
+	x0 -> x1 [label="(((locationIP.locationIP-)+(browserUsed.language-.imageFile.locationIP-)))*"];
+	x0 -> x2 [label="((likes-.knows.speaks.imageFile-)+(isSubclassOf-.isSubclassOf.isSubclassOf-))"];
+	x2 -> x1 [label="((content.name-.isPartOf-)+(content.locationIP-.email.name-)+(content.name-.isPartOf-))"];
+}

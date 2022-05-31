@@ -1,0 +1,8 @@
+digraph g {
+	x2 [fillcolor="yellow", style="filled," shape=circle, label="?x2"];
+	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
+	x1 [fillcolor="yellow", style="filled," shape=circle, label="?x1"];
+	x0 -> x1 [label="((age-.editor-.like-.type)+(age-.type))"];
+	x0 -> x2 [label="((age-.email.email-.friendOf-)+(age-.follows-)+(age-.follows))"];
+	x2 -> x1 [label="((homepage.language)+(editor-.homepage.language))"];
+}

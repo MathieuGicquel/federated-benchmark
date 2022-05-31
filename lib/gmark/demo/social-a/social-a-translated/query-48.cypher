@@ -1,0 +1,1 @@
+MATCH (x0)<-[:planguage]-()-[:pisSubclassOf]->()-[:pbrowserUsed]->()<-[:pname]-(x1), (x1)-[:pname]->()<-[:planguage]-()<-[:pcontainerOf]-()-[:pcreationDate]->(x2), (x0)<-[:planguage]-()-[:pcontent]->()<-[:pname]-(x3), (x3)-[:pname]->()<-[:pspeaks]-()-[:plocationIP]->()<-[:plocationIP]-(x2) RETURN "true" LIMIT 1;

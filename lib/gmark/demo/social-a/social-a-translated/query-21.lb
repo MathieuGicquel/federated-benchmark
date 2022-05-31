@@ -1,0 +1,13 @@
+BEGIN
+gmarkSubquery00(x, y) <- core:edge:edge(x1, creationDate, x0), core:edge:edge(x1, likes, x2), core:edge:edge(x2, hasTag, x3), x = x0, y = x3.
+gmarkSubquery00(x, y) <- core:edge:edge(x1, creationDate, x0), core:edge:edge(x1, hasCreator, x2), core:edge:edge(x2, hasInterest, x3), x = x0, y = x3.
+gmarkSubquery00(x, y) <- core:edge:edge(x1, birthday, x0), core:edge:edge(x2, hasMember, x1), core:edge:edge(x2, hasTag, x3), x = x0, y = x3.
+gmarkSubquery01(x, y) <- core:edge:edge(x1, creationDate, x0), core:edge:edge(x1, creationDate, x2), core:edge:edge(x3, creationDate, x2), core:edge:edge(x3, birthday, x4), x = x0, y = x4.
+gmarkSubquery01(x, x) <- core:edge:edge(x, r, y).
+gmarkSubquery01(y, y) <- core:edge:edge(x, r, y).
+gmarkSubquery01(x, y) <- gmarkSubquery01(x, z), gmarkSubquery01(z, y).
+gmarkSubquery02(x, y) <- core:edge:edge(x1, birthday, x0), core:edge:edge(x2, hasMember, x1), core:edge:edge(x2, hasMember, x3), core:edge:edge(x3, creationDate, x4), x = x0, y = x4.
+gmarkSubquery02(x, y) <- core:edge:edge(x1, creationDate, x0), core:edge:edge(x1, hasTag, x2), core:edge:edge(x3, hasInterest, x2), core:edge:edge(x3, birthday, x4), x = x0, y = x4.
+gmarkSubquery02(x, y) <- core:edge:edge(x1, creationDate, x0), core:edge:edge(x1, knows, x2), core:edge:edge(x2, likes, x3), core:edge:edge(x3, creationDate, x4), x = x0, y = x4.
+query(x0, x1, x2) <- gmarkSubquery00(x0, x1), gmarkSubquery01(x0, x2), gmarkSubquery02(x2, x1).
+END

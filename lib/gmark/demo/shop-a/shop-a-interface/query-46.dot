@@ -1,0 +1,10 @@
+digraph g {
+	x2 [fillcolor="yellow", style="filled," shape=circle, label="?x2"];
+	x1 [fillcolor="yellow", style="filled," shape=circle, label="?x1"];
+	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
+	x3 [fillcolor="yellow", style="filled," shape=circle, label="?x3"];
+	x0 -> x1 [label="(((friendOf-.friendOf)+(friendOf.friendOf-)+(subscribes.subscribes-)))*"];
+	x1 -> x2 [label="((userId.price-)+(like.contentSize.price-))"];
+	x0 -> x3 [label="((follows.jobTitle.performer-)+(jobTitle.award-.hasReview.hasReview-))"];
+	x3 -> x2 [label="((conductor.like.like-.conductor-)+(conductor.like.like-.conductor-)+(conductor.like.like-.conductor-))"];
+}

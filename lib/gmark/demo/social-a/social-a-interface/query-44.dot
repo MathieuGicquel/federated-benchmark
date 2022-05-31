@@ -1,0 +1,9 @@
+digraph g {
+	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
+	x1 [fillcolor="yellow", style="filled," shape=circle, label="?x1"];
+	x2 [fillcolor="yellow", style="filled," shape=circle, label="?x2"];
+	x3 [fillcolor="yellow", style="filled," shape=circle, label="?x3"];
+	x0 -> x1 [label="(((name.name-)+(name.imageFile-.content.name-)+(name.locationIP-.locationIP.name-)))*"];
+	x0 -> x2 [label="(((hasInterest-.email.name-)))*"];
+	x1 -> x3 [label="(((hasInterest-.knows.email.name-)+(hasInterest-.likes.isLocatedIn)+(hasInterest-.likes.isLocatedIn)))*"];
+}

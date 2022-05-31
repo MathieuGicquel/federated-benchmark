@@ -1,0 +1,1 @@
+MATCH (x0)-[:pname]->()<-[:pcontent]-()-[:pimageFile]->()<-[:pname]-(x1), (x1)<-[:pisLocatedIn]-()-[:pgender]->()<-[:pname]-(x2), (x0)-[:pname]->()<-[:pgender]-()-[:pemail]->()<-[:pname]-(x3), (x3)-[:pname|pname|pname*]->(x2) RETURN DISTINCT x0, x1, x2;

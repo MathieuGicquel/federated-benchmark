@@ -1,0 +1,10 @@
+BEGIN
+gmarkSubquery00(x, y) <- core:edge:edge(x1, nationality, x0), core:edge:edge(x2, contactPoint, x1), x = x0, y = x2.
+gmarkSubquery00(x, y) <- core:edge:edge(x1, nationality, x0), core:edge:edge(x2, conductor, x1), core:edge:edge(x2, description, x3), core:edge:edge(x4, name, x3), x = x0, y = x4.
+gmarkSubquery00(x, y) <- core:edge:edge(x1, nationality, x0), core:edge:edge(x2, employee, x1), x = x0, y = x2.
+gmarkSubquery01(x, y) <- core:edge:edge(x0, faxNumber, x1), core:edge:edge(x2, printPage, x1), x = x0, y = x2.
+gmarkSubquery01(x, y) <- core:edge:edge(x0, offers, x1), core:edge:edge(x1, eligibleQuantity, x2), core:edge:edge(x3, printEdition, x2), x = x0, y = x3.
+gmarkSubquery01(x, y) <- core:edge:edge(x0, employee, x1), core:edge:edge(x1, userId, x2), core:edge:edge(x3, contentRating, x2), x = x0, y = x3.
+gmarkSubquery02(x, y) <- core:edge:edge(x0, author, x1), core:edge:edge(x1, like, x2), core:edge:edge(x3, like, x2), core:edge:edge(x3, age, x4), x = x0, y = x4.
+query() <- gmarkSubquery00(x0, x1), gmarkSubquery01(x1, x2), gmarkSubquery02(x2, x3).
+END

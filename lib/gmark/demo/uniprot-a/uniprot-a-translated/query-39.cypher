@@ -1,0 +1,1 @@
+MATCH (x0)<-[:pHasKeyword]-()-[:pInteracts]->()-[:pEncodedOn]->(x1), (x0)<-[:pHasKeyword]-()<-[:pInteracts]-()-[:pEncodedOn]->(x2), (x0)<-[:pHasKeyword]-()<-[:pInteracts]-()-[:pInteracts]->()-[:pEncodedOn]->(x3) RETURN DISTINCT x1, x0, x2, x3;

@@ -1,0 +1,1 @@
+MATCH (x0)-[:pisLocatedIn]->()-[:pisPartOf]->(x1), (x1)-[:pname|pname|pname*]->(x2), (x0)-[:pcreationDate]->()<-[:pbirthday]-()-[:pspeaks]->()<-[:pname]-(x3), (x2)-[:pbrowserUsed]->()<-[:pgender]-()-[:pemail]->()<-[:pname]-(x4) RETURN DISTINCT x1, x0, x2, x3;
