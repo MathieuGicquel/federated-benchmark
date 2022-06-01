@@ -1,1 +1,1 @@
-MATCH (x0)-[:p79|p79|p79*]->(x1), (x0)-[:p79*]->(x2), (x0)-[:p79|p79|p79*]->(x3) RETURN DISTINCT x3, x1, x0, x2;
+MATCH (x0)<-[:p76]-(x1), (x0)<-[:p76]-(x2), (x0)<-[:p76]-(x3), (x0)<-[:p76]-(x4) RETURN "true" LIMIT 1;

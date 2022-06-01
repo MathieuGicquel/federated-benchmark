@@ -1,1 +1,1 @@
-PREFIX : <http://example.org/gmark/> ASK {  {  ?x0 ((:p52/^:p52/:p9)) ?x1 . ?x0 ((^:p53/:p10)|(^:p53/:p3)) ?x2 . ?x0 ((^:p53/:p19/^:p49/:p47)|(^:p53/:p3)|(^:p53/:p81/:p3)) ?x3 . } }
+PREFIX : <http://example.org/gmark/> ASK {  {  ?x0 ((:p81)) ?x1 . ?x1 ((:p50)) ?x2 . ?x2 ((^:p29)) ?x3 . ?x3 ((:p57)) ?x4 . } }
