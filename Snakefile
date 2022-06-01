@@ -5,6 +5,7 @@ import yaml
 configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 site = configuration["site"]
 endpoint = configuration["endpoint"]
+isql = configuration["isql_virtuoso_path"]
 
 def todo_query(wildcards):
     print(os.getcwd())
@@ -31,11 +32,19 @@ def todo_fede(wildcards):
     print(f'todo:{res}')
     return res
 
+def todo_log(wildcards):
+    print(os.getcwd())
+    res=[]
+    res.append(f'log/{site}/ingestuoso.log')
+    print(f'todo:{res}')
+    return res
+
 rule all:
     input:
         todo_query,
         todo_data,
-        todo_fede
+        todo_fede,
+        todo_log
 
 rule compile_gmark:
     output:
@@ -57,7 +66,7 @@ rule run_configator:
     output:
         "Federator/{site}/config.ttl"
     shell:
-        "python3 scripts/configator.py {input} {output} " + endpoint
+        "python3 scripts/configator.py {input} {output} " + endpoint + " data/{wildcards.site}/sitelist.txt"
 
 rule run_querylator:
     input:
@@ -67,3 +76,12 @@ rule run_querylator:
         "queries/{site}/{query}.noask.sparql"
     shell:
         "python3 scripts/querylator.py {input.query} {output}"
+
+rule run_ingestuoso:
+    input:
+        "data/{site}/shop-graph.nq"
+    output:
+        "log/{site}/ingestuoso.log"
+    shell:
+        "./scripts/ingestuoso.sh " + isql + " '" + os.getcwd() + "/data/{wildcards.site}' >> {output}"
+        #"./scripts/ingestuoso.sh " + isql + " C:/Users/yotla/OneDrive/Bureau/Code/TER/yotmat/federated-benchmark/data/{wildcards.site} >> {output}"
