@@ -9,6 +9,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -87,7 +88,7 @@ public class Federapp {
 
 
         statWriter.write("query,exec_time\n");
-        statWriter.write(queryPath + "," +durationTime + "\n");
+        statWriter.write(FilenameUtils.getBaseName(FilenameUtils.getBaseName(queryPath)) + "," +durationTime + "\n");
 
         repo.shutDown();
         statWriter.close();
