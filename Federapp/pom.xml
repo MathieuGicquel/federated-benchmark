@@ -24,13 +24,23 @@
 
                 </plugin>
 
-
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <mainClass>org.example.Federapp</mainClass>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <configuration>
                         <outputDirectory>
-                            ${project.build.directory}
+                            ${project.build.directory}/lib
                         </outputDirectory>
                     </configuration>
                 </plugin>
