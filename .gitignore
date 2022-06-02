@@ -1,8 +1,14 @@
 .snakemake
 data
 queries
-lib/gmark/demo
+./lib/gmark/demo/**
 Federapp/.idea
 Federapp/target
 log
 Federator
+Federapp/log.txt
+result
+lib/gmark
+snakemake.log
+lib/gmark/demo/**
+./.idea

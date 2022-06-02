@@ -1,2 +1,3 @@
 site: 10
-endpoint: "localhost:9000/sparql"
+endpoint: "http://localhost:8890/sparql"
+isql_virtuoso_path: "'/Applications/Virtuoso\\ Open\\ Source\\ Edition\\ v7.2.app/Contents/virtuoso-opensource/bin/isql'"
