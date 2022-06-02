@@ -7,17 +7,18 @@ SITE = CONFIGURATION["site"]
 ENDPOINT = CONFIGURATION["endpoint"]
 ISQL = CONFIGURATION["isql_virtuoso_path"]
 QUERY_NUMBER=50
-OUTPUT_FILES = expand("result/{site}/query-{query_number}.{ext}",
+RUN=[1,2,3]
+OUTPUT_FILES = expand("result/{site}/{run}/query-{query_number}.{ext}",
     site=SITE,
     query_number=range(0,QUERY_NUMBER),
-    ext=["out","csv","log"]
+    ext=["out","csv","log"],
+    run=RUN
 )
-
 
 rule all:
     input:
         OUTPUT_FILES,
-        "./log/" + str(SITE) + "/digestuoso.log",
+        "./log/" + str(SITE) + "/digestuoso.log", # pré-condition : run_digestuoso
         "result/" + "all_" + str(SITE) + ".csv"
 
 
@@ -65,14 +66,18 @@ rule run_querylator:
 
 
 rule compile_and_run_federapp:
+    threads: 1
     input:
         "log/{site}/ingestuoso.log", # pré-condition : run_ingestuoso
         query="queries/{site}/{query}.noask.sparql",
         config="Federator/{site}/config.ttl"
+    params:
+        run=RUN
     output:
-        result="result/{site}/{query}.out",
-        stat="result/{site}/{query}.csv",
-        log="result/{site}/{query}.log"
+        result="result/{site}/{run}/{query}.out",
+        stat="result/{site}/{run}/{query}.csv",
+        log="result/{site}/{run}/{query}.log"
+
     shell:
         "./scripts/federapp_com_and_run.sh "+ os.getcwd() +"/{input.config} " + os.getcwd() +"/{input.query} " + os.getcwd() +"/{output.result}  " + os.getcwd() +"/{output.stat} > " + os.getcwd() +"/{output.log}"
 
@@ -86,7 +91,7 @@ rule run_digestuoso:
 
 rule run_mergeall:
     input:
-        ["result/" + str(SITE) + "/query-" + str(i) + ".csv" for i in range(0,QUERY_NUMBER)]
+        [path for path in OUTPUT_FILES if '.csv' in path]
     output:
         "result/" + "all_" + str(SITE) + ".csv"
     shell:
