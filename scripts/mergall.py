@@ -15,7 +15,7 @@ def merge(input_path, output_file):
     dfs = []
     for file in files:
         df = pd.read_csv(file)
-        df["run_id"] = re.search(r'(\d+)\/query-\d+.csv',str(file.absolute())).group(1) #TODO
+        df["run_id"] = re.search(r'(\d+)\/query-\d+.csv',str(file.absolute())).group(1)
         dfs.append(df)
 
     result : pd.DataFrame = pd.concat(dfs)
