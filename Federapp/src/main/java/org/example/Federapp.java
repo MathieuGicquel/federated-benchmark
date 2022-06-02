@@ -4,10 +4,12 @@ import org.eclipse.rdf4j.federated.FedXConfig;
 import org.eclipse.rdf4j.federated.FedXFactory;
 import org.eclipse.rdf4j.federated.monitoring.MonitoringUtil;
 import org.eclipse.rdf4j.federated.monitoring.QueryPlanLog;
+import org.eclipse.rdf4j.federated.optimizer.SourceSelection;
 import org.eclipse.rdf4j.federated.repository.FedXRepository;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.Str;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import java.io.BufferedWriter;
@@ -17,12 +19,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Federapp {
+    public static final Map<String,Object> CONTAINER = new HashMap<>();
+    public static final String SOURCE_SELECTION_KEY = "SOURCE_SELECTION";
+    public static final String COUNT_HTTP_REQ_KEY = "HTTPCOUNTER";
+    public static final String CSV_HEADER = "query,exec_time,nb_source_selection,nb_http_request\n";
+
     public static void main(String[] args) throws Exception {
-        
+        // init
+        CONTAINER.put(COUNT_HTTP_REQ_KEY,new AtomicInteger());
         String configPath = args[0];
         String queryPath = args[1];
         String resultPath = args[2];
@@ -35,27 +46,6 @@ public class Federapp {
         File dataConfig = new File(configPath);
         Long startTime = null;
         Long endTime = null;
-
-        try (Stream<String> lines = Files.lines(Paths.get(configPath))) {
-
-            // Formatting like \r\n will be lost
-            // String content = lines.collect(Collectors.joining());
-
-            // UNIX \n, WIndows \r\n
-            String content = lines.collect(Collectors.joining(System.lineSeparator()));
-            System.out.println(content);
-
-            // File to List
-            //List<String> list = lines.collect(Collectors.toList());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-
-
-
 
         FedXRepository repo  = FedXFactory.newFederation()
                 .withMembers(dataConfig)
@@ -77,13 +67,26 @@ public class Federapp {
                     queryResultWriter.write(b.toString() + "\n");
                 }
             }
-            Long durationTime = endTime - startTime;
-            statWriter.write("query,exec_time\n");
-            statWriter.write(queryPath + "," +durationTime + "\n");
+
+            long durationTime = endTime - startTime;
+            statWriter.write(CSV_HEADER);
+            int nb_source_selection =
+                    ((SourceSelection)CONTAINER.get(SOURCE_SELECTION_KEY))
+                            .getRelevantSources().size();
+
+            int httpqueries = ((AtomicInteger) CONTAINER.get(COUNT_HTTP_REQ_KEY)).get();
+            statWriter.write(
+                      queryPath + ","
+                        + durationTime + ","
+                        + nb_source_selection + ","
+                        + httpqueries +
+                    "\n");
+
+
         }catch (Exception e) {
             queryResultWriter.write("failed\n");
-            statWriter.write("query,exec_time\n");
-            statWriter.write(queryPath + "," +"failed" + "\n");
+            statWriter.write(CSV_HEADER);
+            statWriter.write(queryPath + "," +"failed,failed,failed" + "\n");
         }
 
         //MonitoringUtil.printMonitoringInformation(repo.getFederationContext());

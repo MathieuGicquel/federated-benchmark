@@ -17,7 +17,9 @@ OUTPUT_FILES = expand("result/{site}/query-{query_number}.{ext}",
 rule all:
     input:
         OUTPUT_FILES,
-        "./log/" + str(SITE) + "/digestuoso.log"
+        "./log/" + str(SITE) + "/digestuoso.log",
+        "result/" + "all_" + str(SITE) + ".csv"
+
 
 rule compile_gmark:
     output:
@@ -81,3 +83,11 @@ rule run_digestuoso:
         "./log/" + str(SITE) + "/digestuoso.log"
     shell:
         "./scripts/digestuoso.sh " + ISQL + " '" + os.getcwd() + "/data/" + str(SITE) +"/sitelist.txt' >> {output}"
+
+rule run_mergeall:
+    input:
+        ["result/" + str(SITE) + "/query-" + str(i) + ".csv" for i in range(0,QUERY_NUMBER)]
+    output:
+        "result/" + "all_" + str(SITE) + ".csv"
+    shell:
+        "python3 scripts/mergall.py 'result/" + str(SITE) + "' {output}"
