@@ -10,7 +10,7 @@ def merge(input_path, output_file):
 
     #Select files
     files = glob.glob(f'{input_path}/*.csv')
-    with open(f'{output_file}') as ffile:
+    with open(f'{output_file}', 'a') as ffile:
         ffile.write('query,exec_time\n')
     for file in files:
         with open(file) as ifile:
@@ -18,8 +18,9 @@ def merge(input_path, output_file):
             j = 0
             for row in i:
                 if j > 0:
-                    with open(f'{output_file}'):
+                    with open(f'{output_file}', 'a') as ffile:
                         ffile.write(f'{row[0]},{row[1]}\n')
+                j += 1
 
 if __name__ == "__main__":
     merge()
