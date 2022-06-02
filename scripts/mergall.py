@@ -4,12 +4,13 @@ import click
 
 @click.command()
 @click.argument("input_path")
+@click.argument("nb_site")
 @click.argument("output_file")
 
-def merge(input_path, output_file):
+def merge(input_path, nb_site, output_file):
 
     #Select files
-    files = glob.glob(f'{input_path}/*.csv')
+    files = glob.glob(f'{input_path}[1-3]/{nb_site}/*.csv')
     with open(f'{output_file}', 'a') as ffile:
         ffile.write('query,exec_time\n')
     for file in files:
