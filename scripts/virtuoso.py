@@ -7,6 +7,7 @@ import urllib.request
 from time import time
 from pathlib import Path
 from urllib.error import HTTPError
+import os
 
 #headers = ['Name', 'Code']
 #data = sorted([(v,k) for k,v in d.items()]) # flip the code and name and sort
@@ -61,7 +62,7 @@ def virtuoso(query,format,measures,output,entrypoint):
     projs=[]
     with open(query) as query_file:
         querys=query_file.read()
-        query_name=query
+        query_name=os.path.abspath(query)
 
         logger.info(f'Virtuoso processing query:{query_name}')
         start_time = time()
