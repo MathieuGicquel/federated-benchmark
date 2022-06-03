@@ -13,6 +13,8 @@ from time import time
 
 from tabulate import tabulate
 
+from urllib.error import HTTPError
+
 #headers = ['Name', 'Code']
 #data = sorted([(v,k) for k,v in d.items()]) # flip the code and name and sort
 #print(tabulate(data, headers=headers))
@@ -38,11 +40,15 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
         }
     data = urllib.parse.urlencode(params).encode("utf-8")
     req = urllib.request.Request(baseURL)
-    with urllib.request.urlopen(req,data=data) as f:
-        #resp=pd.read_csv(f)
-        resp = f.read()
-        return resp
-#        return json.loads(resp)
+    response=None
+    exception=None
+    try:
+        with urllib.request.urlopen(req,data=data) as f:
+            response = f.read()
+    except HTTPError as e:
+        exception = e.read()
+    return(response,exception)
+
 
 
 @click.command()
@@ -58,33 +64,46 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
 @click.option("--entrypoint", type=str, default="http://localhost:8890/sparql/",
     help="URL of the Virtuoso SPARQL endpoint")
 
-def virtuoso(query,format,measures,output,tags,entrypoint):
+def virtuoso(query,format,measures,output,entrypoint):
 
-    engine="virtuoso"
     execution_time=0
     projs=[]
     with open(query) as query_file:
         querys=query_file.read()
         query_name=Path(query).stem
 
-        logger.info(f'{engine} processing query:{query_name}')
+        logger.info(f'Virtuoso processing query:{query_name}')
         start_time = time()
 
         data=sparqlQuery(querys, entrypoint, format)
-        execution_time = time() - start_time
+        execution_time = (time() - start_time) * 1000
 
-        report=f'{query_name},{engine},{execution_time},{tags}\n'
-        if measures is not None:
-            with open(measures, 'w') as measures_file:
-                measures_file.write(report)
-        logger.info(f'Query {query_name} complete in {execution_time}s')
+        if data[1]==None:
 
-        if output is not None:
-            with open(output, 'w') as output_file:
-                output_file.write(data.decode())
+            report=f'{query_name},{execution_time}\n'
+            if measures is not None:
+                with open(measures, 'w') as measures_file:
+                    measures_file.write(report)
+            logger.info(f'Query {query_name} complete in {execution_time}s')
+
+            if output is not None:
+                with open(output, 'w') as output_file:
+                    output_file.write(data[0].decode())
+            else:
+                print(data[0].decode())
         else:
-            print(data.decode())
-#        print("Retrieved data:\n" + json.dumps(data, sort_keys=True, indent=4))
+
+            report=f'{query_name},"failed"\n'
+            if measures is not None:
+                with open(measures, 'w') as measures_file:
+                    measures_file.write(report)
+            logger.info(f'Query {query_name} complete in {execution_time}s')
+
+            if output is not None:
+                with open(output, 'w') as output_file:
+                    output_file.write("failed")
+            else:
+                print("")
 
 
 if __name__ == "__main__":
