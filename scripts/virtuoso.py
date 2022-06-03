@@ -53,10 +53,12 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
     help="The file in which query execution statistics will be stored.")
 @click.option("--output", type=str, default=None,
     help="The file in which the query result will be stored.")
+@click.option("--tags", type=str, default="",
+    help="list of strings to tag measures (for benchmarking)")
 @click.option("--entrypoint", type=str, default="http://localhost:8890/sparql/",
     help="URL of the Virtuoso SPARQL endpoint")
 
-def virtuoso(query,format,measures,output,entrypoint):
+def virtuoso(query,format,measures,output,tags,entrypoint):
 
     engine="virtuoso"
     execution_time=0
@@ -71,7 +73,7 @@ def virtuoso(query,format,measures,output,entrypoint):
         data=sparqlQuery(querys, entrypoint, format)
         execution_time = time() - start_time
 
-        report=f'{query_name},{engine},{execution_time}\n'
+        report=f'{query_name},{engine},{execution_time},{tags}\n'
         if measures is not None:
             with open(measures, 'w') as measures_file:
                 measures_file.write(report)
