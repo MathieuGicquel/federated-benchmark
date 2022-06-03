@@ -5,6 +5,7 @@ import urllib
 import urllib.parse
 import urllib.request
 from time import time
+from pathlib import Path
 from urllib.error import HTTPError
 
 #headers = ['Name', 'Code']
@@ -60,7 +61,7 @@ def virtuoso(query,format,measures,output,entrypoint):
     projs=[]
     with open(query) as query_file:
         querys=query_file.read()
-        query_name=Path(query).stem
+        query_name=query
 
         logger.info(f'Virtuoso processing query:{query_name}')
         start_time = time()
@@ -70,7 +71,7 @@ def virtuoso(query,format,measures,output,entrypoint):
 
         if data[1]==None:
 
-            report=f'{query_name},{execution_time}\n'
+            report=f'query,exec_time\n{query_name},{execution_time}\n'
             if measures is not None:
                 with open(measures, 'w') as measures_file:
                     measures_file.write(report)
@@ -83,7 +84,7 @@ def virtuoso(query,format,measures,output,entrypoint):
                 print(data[0].decode())
         else:
 
-            report=f'{query_name},"failed"\n'
+            report=f'query,exec_time\n{query_name},"failed"\n'
             if measures is not None:
                 with open(measures, 'w') as measures_file:
                     measures_file.write(report)
