@@ -144,6 +144,8 @@ public class SourceSelection {
                 stmt.replaceWith(new EmptyStatementPattern(stmt));
             }
         }
+
+        Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION2_KEY,stmtToSources);
     }
 
     /**

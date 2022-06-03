@@ -13,4 +13,4 @@ PARAM4=$4
 
 cd Federapp
 mvn dependency:copy-dependencies package
-java -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp $PARAM1 $PARAM2 $PARAM3 $PARAM4
+java -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp "$@"

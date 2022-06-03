@@ -8,10 +8,10 @@ ENDPOINT = CONFIGURATION["endpoint"]
 ISQL = CONFIGURATION["isql_virtuoso_path"]
 QUERY_NUMBER=50
 RUN=[1,2,3]
-OUTPUT_FILES = expand("result/{site}/{run}/query-{query_number}.{ext}",
+OUTPUT_FILES = expand("result/{site}/{run}/query-{query_number}/query-{query_number}.{ext}",
     site=SITE,
     query_number=range(0,QUERY_NUMBER),
-    ext=["out","csv","log"],
+    ext=["out","csv","log","sourceselection.csv","httpreq.txt"],
     run=RUN
 )
 
@@ -51,7 +51,7 @@ rule run_ingestuoso:
     output:
         "log/{site}/ingestuoso.log"
     shell:
-        "./scripts/ingestuoso.sh " + ISQL + " '" + os.getcwd() + "/data/{wildcards.site}' >> {output}"
+        "./scripts/ingestuoso.sh '" + ISQL + "' '" + os.getcwd() + "/data/{wildcards.site}' >> {output}"
         #"./scripts/ingestuoso.sh " + isql + " C:/Users/yotla/OneDrive/Bureau/Code/TER/yotmat/federated-benchmark/data/{wildcards.site} >> {output}"
 
 rule run_querylator:
@@ -74,12 +74,21 @@ rule compile_and_run_federapp:
     params:
         run=RUN
     output:
-        result="result/{site}/{run}/{query}.out",
-        stat="result/{site}/{run}/{query}.csv",
-        log="result/{site}/{run}/{query}.log"
+        result="result/{site}/{run}/{query}/{query}.out",
+        stat="result/{site}/{run}/{query}/{query}.csv",
+        log="result/{site}/{run}/{query}/{query}.log",
+        sourceselection="result/{site}/{run}/{query}/{query}.sourceselection.csv",
+        httpreq="result/{site}/{run}/{query}/{query}.httpreq.txt"
 
     shell:
-        "./scripts/federapp_com_and_run.sh "+ os.getcwd() +"/{input.config} " + os.getcwd() +"/{input.query} " + os.getcwd() +"/{output.result}  " + os.getcwd() +"/{output.stat} > " + os.getcwd() +"/{output.log}"
+        "./scripts/federapp_com_and_run.sh "
+            + os.getcwd() +"/{input.config} "
+            + os.getcwd() +"/{input.query} "
+            + os.getcwd() +"/{output.result}  "
+            + os.getcwd() +"/{output.stat} "
+            + os.getcwd() +"/{output.sourceselection} "
+            + os.getcwd() +"/{output.httpreq} "
+            + " > " + os.getcwd() +"/{output.log}"
 
 rule run_digestuoso:
     input:
@@ -87,7 +96,7 @@ rule run_digestuoso:
     output:
         "./log/" + str(SITE) + "/digestuoso.log"
     shell:
-        "./scripts/digestuoso.sh " + ISQL + " '" + os.getcwd() + "/data/" + str(SITE) +"/sitelist.txt' >> {output}"
+        "./scripts/digestuoso.sh '" + ISQL + "' '" + os.getcwd() + "/data/" + str(SITE) +"/sitelist.txt' >> {output}"
 
 rule run_mergeall:
     input:
