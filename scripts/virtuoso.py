@@ -67,7 +67,7 @@ def virtuoso(query,format,measures,output,entrypoint):
         start_time = time()
 
         data=sparqlQuery(querys, entrypoint, format)
-        execution_time = (time() - start_time) * 1000
+        execution_time = round((time() - start_time) * 1000)
 
         if data[1]==None:
 
