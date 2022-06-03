@@ -1,18 +1,10 @@
-import re
 import click
 import logging
 import coloredlogs
 import urllib
 import urllib.parse
 import urllib.request
-import json
-import pandas as pd
-from glom import glom
-from pathlib import Path
 from time import time
-
-from tabulate import tabulate
-
 from urllib.error import HTTPError
 
 #headers = ['Name', 'Code']
@@ -59,8 +51,6 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
     help="The file in which query execution statistics will be stored.")
 @click.option("--output", type=str, default=None,
     help="The file in which the query result will be stored.")
-@click.option("--tags", type=str, default="",
-    help="list of strings to tag measures (for benchmarking)")
 @click.option("--entrypoint", type=str, default="http://localhost:8890/sparql/",
     help="URL of the Virtuoso SPARQL endpoint")
 
