@@ -1,27 +1,28 @@
 import glob
 import csv
 import click
+from pathlib import Path
+import pandas as pd
+import re
 
 @click.command()
 @click.argument("input_path")
 @click.argument("nb_site")
 @click.argument("output_file")
 
-def merge(input_path, nb_site, output_file):
-
+def merge(input_path, output_file):
     #Select files
-    files = glob.glob(f'{input_path}[1-3]/{nb_site}/*.csv')
-    with open(f'{output_file}', 'a') as ffile:
-        ffile.write('query,exec_time\n')
+    files = Path(input_path).rglob('*.csv')
+    dfs = []
     for file in files:
-        with open(file) as ifile:
-            i = csv.reader(ifile)
-            j = 0
-            for row in i:
-                if j > 0:
-                    with open(f'{output_file}', 'a') as ffile:
-                        ffile.write(f'{row[0]},{row[1]}\n')
-                j += 1
+        print(str(file.absolute()))
+        if re.compile(r".+[0-9].csv").match(str(file.absolute())):
+            df = pd.read_csv(file)
+            df["run_id"] = re.search(r'(\d+)\/query-\d+.csv',str(file.absolute())).group(1)
+            dfs.append(df)
+
+    result : pd.DataFrame = pd.concat(dfs)
+    result.to_csv(output_file,index=False)
 
 if __name__ == "__main__":
     merge()

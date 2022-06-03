@@ -11,4 +11,4 @@ do
   string+="DELETE FROM rdf_quad WHERE g = iri_to_id('$line'); \n"
 done < $2
   echo -e "$string" \
-  | eval $PARAM1 "localhost:1111 dba dba"
+  | eval "/mnt/c/Program\\ Files/OpenLink\\ Software/Virtuoso\\ OpenSource\\ 7.2/bin/isql.exe 1111 dba dba" #  | eval $PARAM1 "localhost:1111 dba dba"

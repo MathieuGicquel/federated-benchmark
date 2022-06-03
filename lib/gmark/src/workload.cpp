@@ -24,7 +24,7 @@ symbol::symbol(long id_) {
 void write_xml(const symbol & symb, ostream & stream, config::config & conf) {
     stream << "          <symbol";
     if (symb.reverse) {
-        stream << " inverse=\"true\"";
+        stream << " inverse=\"false\"";
     }
     stream << ">";
     if(conf.print_alias && conf.predicates[symb.id].alias.size() > 0)

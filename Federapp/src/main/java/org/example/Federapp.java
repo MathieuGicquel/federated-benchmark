@@ -2,12 +2,16 @@ package org.example;
 
 import org.eclipse.rdf4j.federated.FedXConfig;
 import org.eclipse.rdf4j.federated.FedXFactory;
+import org.eclipse.rdf4j.federated.algebra.StatementSource;
 import org.eclipse.rdf4j.federated.monitoring.MonitoringUtil;
 import org.eclipse.rdf4j.federated.monitoring.QueryPlanLog;
+import org.eclipse.rdf4j.federated.optimizer.SourceSelection;
 import org.eclipse.rdf4j.federated.repository.FedXRepository;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.Str;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import java.io.BufferedWriter;
@@ -16,46 +20,42 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Federapp {
+    public static final Map<String,Object> CONTAINER = new ConcurrentHashMap<>();
+    public static final String SOURCE_SELECTION_KEY = "SOURCE_SELECTION";
+    public static final String SOURCE_SELECTION2_KEY = "SOURCE_SELECTION_DO_SOURCE_SELECTION";
+    public static final String COUNT_HTTP_REQ_KEY = "HTTPCOUNTER";
+    public static final String LIST_HTTP_REQ_KEY = "HTTPLIST";
+
+
+    public static final String CSV_HEADER = "query,exec_time,nb_source_selection,nb_http_request\n";
+
     public static void main(String[] args) throws Exception {
-        
+        System.out.println(Arrays.toString(args));
+        // init
+        CONTAINER.put(COUNT_HTTP_REQ_KEY,new AtomicInteger());
+        CONTAINER.put(LIST_HTTP_REQ_KEY,new ConcurrentLinkedQueue<>());
         String configPath = args[0];
         String queryPath = args[1];
         String resultPath = args[2];
         String statPath = args[3];
-        System.out.println(Arrays.toString(args));
+        String sourceSelectionPath = args[4];
+        String httpListFilePath = args[5];
 
-        BufferedWriter queryResultWriter = new BufferedWriter(new FileWriter(resultPath));
         BufferedWriter statWriter = new BufferedWriter(new FileWriter(statPath));
-        String query = new String(Files.readAllBytes(Paths.get(queryPath)));
+
+        String rawQuery = new String(Files.readAllBytes(Paths.get(queryPath)));
         File dataConfig = new File(configPath);
+
         Long startTime = null;
         Long endTime = null;
-
-        try (Stream<String> lines = Files.lines(Paths.get(configPath))) {
-
-            // Formatting like \r\n will be lost
-            // String content = lines.collect(Collectors.joining());
-
-            // UNIX \n, WIndows \r\n
-            String content = lines.collect(Collectors.joining(System.lineSeparator()));
-            System.out.println(content);
-
-            // File to List
-            //List<String> list = lines.collect(Collectors.toList());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-
-
-
 
         FedXRepository repo  = FedXFactory.newFederation()
                 .withMembers(dataConfig)
@@ -64,37 +64,74 @@ public class Federapp {
                         .withLogQueryPlan(true)
                         .withLogQueries(true)
                         .withDebugQueryPlan(true)
+                        .withEnforceMaxQueryTime(86400)
                 )
                 .create();
 
         try (RepositoryConnection conn = repo.getConnection()) {
             startTime = System.currentTimeMillis();
-            TupleQuery tq = conn.prepareTupleQuery(query);
+            TupleQuery tq = conn.prepareTupleQuery(rawQuery);
             try (TupleQueryResult tqRes = tq.evaluate()) {
                 endTime = System.currentTimeMillis();
-                while (tqRes.hasNext()) {
-                    BindingSet b = tqRes.next();
-                    queryResultWriter.write(b.toString() + "\n");
-                }
+                createResultFile(resultPath, tqRes);
             }
-            Long durationTime = endTime - startTime;
-            statWriter.write("query,exec_time\n");
-            statWriter.write(queryPath + "," +durationTime + "\n");
+
+            long durationTime = endTime - startTime;
+            statWriter.write(CSV_HEADER);
+            int nbSourceSelection =
+                    ((SourceSelection)CONTAINER.get(SOURCE_SELECTION_KEY))
+                            .getRelevantSources().size();
+
+            int httpqueries = ((AtomicInteger) CONTAINER.get(COUNT_HTTP_REQ_KEY)).get();
+            statWriter.write(
+                      queryPath + ","
+                        + durationTime + ","
+                        + nbSourceSelection + ","
+                        + httpqueries +
+                    "\n");
+
+
+        createSourceSelectionFile(sourceSelectionPath);
+        createHttpListFile(httpListFilePath);
         }catch (Exception e) {
-            queryResultWriter.write("failed\n");
-            statWriter.write("query,exec_time\n");
-            statWriter.write(queryPath + "," +"failed" + "\n");
+            statWriter.write(CSV_HEADER);
+            statWriter.write(queryPath + "," +"failed,failed,failed" + "\n");
         }
 
-        //MonitoringUtil.printMonitoringInformation(repo.getFederationContext());
-        //System.out.println("# Optimized Query Plan:");
-        //System.out.println(QueryPlanLog.getQueryPlan());
-        //System.out.println(repo.getQueryManager().getRunningQueries().size());
 
         repo.shutDown();
         statWriter.close();
+
+
+    }
+
+    private static void createSourceSelectionFile(String sourceSelectionPath) throws Exception {
+        BufferedWriter sourceSelectionWriter = new BufferedWriter(new FileWriter(sourceSelectionPath));
+        sourceSelectionWriter.write("triple,source_selection\n");
+        Map<StatementPattern, List<StatementSource>> stmt = ((Map<StatementPattern, List<StatementSource>>)Federapp.CONTAINER.get(Federapp.SOURCE_SELECTION2_KEY));
+        for (StatementPattern pattern: stmt.keySet()) {
+            sourceSelectionWriter.write((pattern + "," + stmt.get(pattern).toString()).replace("\n"," ") + "\n");
+        }
+        sourceSelectionWriter.close();
+    }
+
+    private static void createResultFile(String resultFilePath, TupleQueryResult tq) throws Exception{
+        BufferedWriter queryResultWriter = new BufferedWriter(new FileWriter(resultFilePath));
+        while (tq.hasNext()) {
+            BindingSet b = tq.next();
+            queryResultWriter.write(b.toString() + "\n");
+        }
         queryResultWriter.close();
+    }
 
+    private static void createHttpListFile(String path) throws Exception {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
 
+        Queue<String> q =(Queue) CONTAINER.get(LIST_HTTP_REQ_KEY);
+        for (String s: q) {
+            writer.write(s + "\n");
+        }
+
+        writer.close();
     }
 }
