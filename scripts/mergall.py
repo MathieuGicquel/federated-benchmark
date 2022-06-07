@@ -7,22 +7,26 @@ import re
 
 @click.command()
 @click.argument("input_path")
-@click.argument("nb_site")
-@click.argument("output_file")
-
-def merge(input_path, output_file):
+@click.argument("output_path")
+def merge(input_path, output_path):
     #Select files
     files = Path(input_path).rglob('*.csv')
-    dfs = []
+    dfs = dict()
     for file in files:
         print(str(file.absolute()))
-        if re.compile(r".+[0-9].csv").match(str(file.absolute())):
+        if re.search(r"(.*)/query-\d+\.csv",str(file.absolute())):
+            type = re.search(r".*/(.*)/query-\d+\.csv",str(file.absolute())).group(1)
             df = pd.read_csv(file)
-            df["run_id"] = re.search(r'(\d+)\/query-\d+.csv',str(file.absolute())).group(1)
-            dfs.append(df)
+            df["run_id"] = file.parent.parent.parent.name
 
-    result : pd.DataFrame = pd.concat(dfs)
-    result.to_csv(output_file,index=False)
+            if dfs.get(type) is None:
+                dfs[type] = []
+
+            dfs.get(type).append(df)
+
+    for type in dfs.keys():
+        result : pd.DataFrame = pd.concat(dfs.get(type))
+        result.to_csv(output_path + "all_"+ Path(input_path).name +"_" + type + ".csv", index=False)
 
 if __name__ == "__main__":
     merge()

@@ -13,7 +13,8 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.Str;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -28,6 +29,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Federapp {
+    private static final Logger log = LoggerFactory.getLogger(Federapp.class);
+
     public static final Map<String,Object> CONTAINER = new ConcurrentHashMap<>();
     public static final String SOURCE_SELECTION_KEY = "SOURCE_SELECTION";
     public static final String SOURCE_SELECTION2_KEY = "SOURCE_SELECTION_DO_SOURCE_SELECTION";
@@ -84,18 +87,24 @@ public class Federapp {
 
             int httpqueries = ((AtomicInteger) CONTAINER.get(COUNT_HTTP_REQ_KEY)).get();
             statWriter.write(
-                      queryPath + ","
-                        + durationTime + ","
-                        + nbSourceSelection + ","
-                        + httpqueries +
-                    "\n");
+                    queryPath + ","
+                            + durationTime + ","
+                            + nbSourceSelection + ","
+                            + httpqueries +
+                            "\n");
 
 
-        createSourceSelectionFile(sourceSelectionPath);
-        createHttpListFile(httpListFilePath);
+            createSourceSelectionFile(sourceSelectionPath);
+            createHttpListFile(httpListFilePath);
         }catch (Exception e) {
+            log.error("An exception occurred!",e);
+
             statWriter.write(CSV_HEADER);
             statWriter.write(queryPath + "," +"failed,failed,failed" + "\n");
+
+            createSourceSelectionFile(sourceSelectionPath);
+            createHttpListFile(httpListFilePath);
+            //throw e;
         }
 
 
@@ -109,8 +118,10 @@ public class Federapp {
         BufferedWriter sourceSelectionWriter = new BufferedWriter(new FileWriter(sourceSelectionPath));
         sourceSelectionWriter.write("triple,source_selection\n");
         Map<StatementPattern, List<StatementSource>> stmt = ((Map<StatementPattern, List<StatementSource>>)Federapp.CONTAINER.get(Federapp.SOURCE_SELECTION2_KEY));
-        for (StatementPattern pattern: stmt.keySet()) {
-            sourceSelectionWriter.write((pattern + "," + stmt.get(pattern).toString()).replace("\n"," ") + "\n");
+        if(stmt != null) {
+            for (StatementPattern pattern: stmt.keySet()) {
+                sourceSelectionWriter.write((pattern + "," + stmt.get(pattern).toString()).replace("\n"," ") + "\n");
+            }
         }
         sourceSelectionWriter.close();
     }
