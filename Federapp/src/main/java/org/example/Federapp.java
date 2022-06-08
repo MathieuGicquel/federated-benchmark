@@ -37,6 +37,8 @@ public class Federapp {
     public static final String COUNT_HTTP_REQ_KEY = "HTTPCOUNTER";
     public static final String LIST_HTTP_REQ_KEY = "HTTPLIST";
 
+    public static final String MAP_SS = "MAP_SS";
+
 
     public static final String CSV_HEADER = "query,exec_time,nb_source_selection,nb_http_request\n";
 
@@ -51,6 +53,7 @@ public class Federapp {
         String statPath = args[3];
         String sourceSelectionPath = args[4];
         String httpListFilePath = args[5];
+        String ssPath = args[6];
 
         BufferedWriter statWriter = new BufferedWriter(new FileWriter(statPath));
 
@@ -145,5 +148,28 @@ public class Federapp {
         }
 
         writer.close();
+    }
+
+    private static void parseSS(String path) throws Exception {
+        String rawSS = new String(Files.readAllBytes(Paths.get(path)));
+        String[] tabSS = rawSS.split("\n");
+        Map<Integer,Set<String>> tpMap = new ConcurrentHashMap<>();
+
+        int i = 0;
+        for (String l : tabSS) {
+            if(i>0){
+                int j=0;
+                for (String tp : l.split(",")) {
+                    if(!tpMap.containsKey(j)){
+                        tpMap.put(j, new HashSet<>());
+                    }
+                    String ss = tp.split("g/")[1];
+                    tpMap.get(j).add("sparql_example.org_"+ss);
+                }
+            }
+            i++;
+        }
+
+        ((Map)CONTAINER.get(MAP_SS)).put(MAP_SS, tpMap);
     }
 }
