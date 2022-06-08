@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 public class Federapp {
     private static final Logger log = LoggerFactory.getLogger(Federapp.class);
-
+    public static final boolean force_source_selection = true;
     public static final Map<String,Object> CONTAINER = new ConcurrentHashMap<>();
     public static final String SOURCE_SELECTION_KEY = "SOURCE_SELECTION";
     public static final String SOURCE_SELECTION2_KEY = "SOURCE_SELECTION_DO_SOURCE_SELECTION";
@@ -120,7 +120,7 @@ public class Federapp {
         Map<StatementPattern, List<StatementSource>> stmt = ((Map<StatementPattern, List<StatementSource>>)Federapp.CONTAINER.get(Federapp.SOURCE_SELECTION2_KEY));
         if(stmt != null) {
             for (StatementPattern pattern: stmt.keySet()) {
-                sourceSelectionWriter.write((pattern + "," + stmt.get(pattern).toString()).replace("\n"," ") + "\n");
+                sourceSelectionWriter.write(("\"" + pattern + "\"," + "\"" +stmt.get(pattern).toString()).replace("\n"," ") + "\"\n");
             }
         }
         sourceSelectionWriter.close();
@@ -131,6 +131,7 @@ public class Federapp {
         while (tq.hasNext()) {
             BindingSet b = tq.next();
             queryResultWriter.write(b.toString() + "\n");
+            System.out.println("RESULT " + b.toString() + "\n");
         }
         queryResultWriter.close();
     }

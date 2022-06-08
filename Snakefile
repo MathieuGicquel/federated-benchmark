@@ -6,8 +6,8 @@ CONFIGURATION = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 SITE = CONFIGURATION["site"]
 ENDPOINT = CONFIGURATION["endpoint"]
 ISQL = CONFIGURATION["isql_virtuoso_path"]
-QUERY_NUMBER=50
-RUN=range(0,5)
+QUERY_NUMBER=3
+RUN=range(0,1)
 OUTPUT_FILES_FEDERATED = expand("result/{site}/{run}/query-{query_number}/rdf4j/query-{query_number}.{ext}",
     site=SITE,
     query_number=range(0,QUERY_NUMBER),
@@ -27,6 +27,7 @@ rule all:
         OUTPUT_FILES_VIRTUOSO,
         "result/" + "all_" + str(SITE) + "_"  +"virtuoso" + ".csv",
         "result/" + "all_" + str(SITE) + "_"  +"rdf4j" + ".csv",
+        expand("queries/{site}/query-{query_number}.sourceselection.sparql", site=SITE, query_number=range(0,QUERY_NUMBER)),
         "./log/" + str(SITE) + "/digestuoso.log", # pré-condition : run_digestuoso
 
 
@@ -53,6 +54,20 @@ rule run_configator:
     shell:
         "python3 scripts/configator.py {input} {output} " + ENDPOINT + " data/{wildcards.site}/sitelist.txt"
 
+
+
+
+rule run_querylator:
+    input:
+        queries="lib/gmark/demo/shop/shop-translated/query-{query_number}.sparql",
+    output:
+        output_query="queries/{site}/query-{query_number}.noask.sparql",
+        output_source_selection_query="queries/{site}/query-{query_number}.sourceselection.sparql"
+    params:
+        query="lib/gmark/demo/shop/shop-translated/query-{query_number}.sparql"
+    shell:
+        "python3 scripts/querylator.py {params.query} {output.output_query} {output.output_source_selection_query}"
+
 rule run_ingestuoso:
     input:
         "data/{site}/shop-graph.nq"
@@ -60,23 +75,26 @@ rule run_ingestuoso:
         "log/{site}/ingestuoso.log"
     shell:
         "./scripts/ingestuoso.sh '" + ISQL + "' '" + os.getcwd() + "/data/{wildcards.site}' >> {output}"
-        #"./scripts/ingestuoso.sh " + ISQL + " C:/Users/yotla/OneDrive/Bureau/Code/TER/yotmat/federated-benchmark/data/{wildcards.site} >> {output}" #Work on Windows with WSL
+    #"./scripts/ingestuoso.sh " + ISQL + " C:/Users/yotla/OneDrive/Bureau/Code/TER/yotmat/federated-benchmark/data/{wildcards.site} >> {output}" #Work on Windows with WSL
 
-rule run_querylator:
+rule run_virtuoso_sourceselection_query:
     input:
-        queries="lib/gmark/demo/shop/shop-translated/query-{query_number}.sparql",
+        "log/{site}/ingestuoso.log", # pré-condition : run_ingestuoso
+        query="queries/{site}/{query}.sourceselection.sparql",
     output:
-        output="queries/{site}/query-{query_number}.noask.sparql"
+        result="result/{site}/{run}/{query}/rdf4j/{query}.sourceselection.opt"
     params:
-        query="lib/gmark/demo/shop/shop-translated/query-{query_number}.sparql"
+        endpoint=ENDPOINT,
+        run=RUN
     shell:
-        "python3 scripts/querylator.py {params.query} {output.output}"
-
+        "python3 ./scripts/virtuoso.py {input.query} \
+            --entrypoint {params.endpoint} \
+            --output {output.result}"
 
 rule compile_and_run_federapp:
     threads: 1
     input:
-        "log/{site}/ingestuoso.log", # pré-condition : run_ingestuoso
+        expand("result/{site}/{run}/query-{query_number}/rdf4j/query-{query_number}.sourceselection.opt",run=RUN, site=SITE, query_number=range(0,QUERY_NUMBER)), # pré-condition: run_virtuoso_sourceselection_query
         query="queries/{site}/{query}.noask.sparql",
         config="Federator/{site}/config.ttl"
     params:
@@ -98,16 +116,7 @@ rule compile_and_run_federapp:
             + os.getcwd() +"/{output.httpreq} "
             + " > " + os.getcwd() +"/{output.log}"
 
-rule run_digestuoso:
-    input:
-        OUTPUT_FILES_FEDERATED
-    output:
-        "./log/" + str(SITE) + "/digestuoso.log"
-    shell:
-        "./scripts/digestuoso.sh '" + ISQL + "' '" + os.getcwd() + "/data/" + str(SITE) +"/sitelist.txt' >> {output}"
-        #"./scripts/digestuoso.sh " + ISQL + " 'C:/Users/yotla/OneDrive/Bureau/Code/TER/yotmat/federated-benchmark/data/" + str(SITE) + "/sitelist.txt' >> {output}" #Work on Windows with WSL
-
-rule run_virtuoso:
+rule run_virtuoso_query:
     input:
         OUTPUT_FILES_FEDERATED, #pré-condition
         query="queries/{site}/{query}.noask.sparql"
@@ -121,6 +130,15 @@ rule run_virtuoso:
         "python3 ./scripts/virtuoso.py {input.query} \
             --entrypoint {params.endpoint} \
             --output {output.result} --measures {output.stats}"
+
+rule run_digestuoso:
+    input:
+        OUTPUT_FILES_FEDERATED
+    output:
+        "./log/" + str(SITE) + "/digestuoso.log"
+    shell:
+        "./scripts/digestuoso.sh '" + ISQL + "' '" + os.getcwd() + "/data/" + str(SITE) +"/sitelist.txt' >> {output}"
+        #"./scripts/digestuoso.sh " + ISQL + " 'C:/Users/yotla/OneDrive/Bureau/Code/TER/yotmat/federated-benchmark/data/" + str(SITE) + "/sitelist.txt' >> {output}" #Work on Windows with WSL
 
 rule run_mergeall:
     input:

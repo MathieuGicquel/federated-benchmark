@@ -9,11 +9,7 @@
  *******************************************************************************/
 package org.eclipse.rdf4j.federated.optimizer;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -70,6 +66,14 @@ public class SourceSelection {
      */
     protected Map<StatementPattern, List<StatementSource>> stmtToSources = new ConcurrentHashMap<>();
 
+
+    public void doSourceSelection(List<StatementPattern> stmts) {
+        if(!Federapp.force_source_selection) {
+            doSourceSelectionDefault(stmts);
+        } else {
+            doSourceSelectionForce(stmts);
+        }
+    }
     /**
      * Perform source selection for the provided statements using cache or remote ASK queries.
      *
@@ -80,8 +84,7 @@ public class SourceSelection {
      *
      * @param stmts
      */
-    public void doSourceSelection(List<StatementPattern> stmts) {
-
+    public void doSourceSelectionDefault(List<StatementPattern> stmts) {
         List<CheckTaskPair> remoteCheckTasks = new ArrayList<>();
 
         // for each statement determine the relevant sources
@@ -146,8 +149,69 @@ public class SourceSelection {
         }
 
         Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION2_KEY,stmtToSources);
+        this.stmtToSources = new ConcurrentHashMap<>();
     }
 
+
+    public void doSourceSelectionForce(List<StatementPattern> stmts) {
+        List<CheckTaskPair> remoteCheckTasks = new ArrayList<>();
+
+        // for each statement determine the relevant sources
+        for (StatementPattern stmt : stmts) {
+
+            // jump over the statement (e.g. if the same pattern is used in two union branches)
+            if (stmtToSources.containsKey(stmt)) {
+                continue;
+            }
+
+            stmtToSources.put(stmt, new ArrayList<>());
+
+            SubQuery q = new SubQuery(stmt, queryInfo.getDataset());
+
+            stmtToSources.get(stmt).add(new StatementSource("sparql_example.org_s2",StatementSourceType.REMOTE));
+        }
+
+
+
+        // ------------------------------------------------------------------------------ //
+
+
+        // if remote checks are necessary, execute them using the concurrency
+        // infrastructure and block until everything is resolved
+        if (remoteCheckTasks.size() > 0) {
+            SourceSelectionExecutorWithLatch.run(this, remoteCheckTasks, cache);
+        }
+
+        // iterate over input statements, BGP might be uses twice
+        // resulting in the same entry in stmtToSources
+        for (StatementPattern stmt : stmts) {
+
+            List<StatementSource> sources = stmtToSources.get(stmt);
+
+            // if more than one source -> StatementSourcePattern
+            // exactly one source -> OwnedStatementSourcePattern
+            // otherwise: No resource seems to provide results
+
+            if (sources.size() > 1) {
+                StatementSourcePattern stmtNode = new StatementSourcePattern(stmt, queryInfo);
+                for (StatementSource s : sources) {
+                    stmtNode.addStatementSource(s);
+                }
+                stmt.replaceWith(stmtNode);
+            } else if (sources.size() == 1) {
+                stmt.replaceWith(new ExclusiveStatement(stmt, sources.get(0), queryInfo));
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Statement " + QueryStringUtil.toString(stmt)
+                            + " does not produce any results at the provided sources, replacing node with EmptyStatementPattern.");
+                }
+                stmt.replaceWith(new EmptyStatementPattern(stmt));
+            }
+        }
+
+        Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION2_KEY,stmtToSources);
+        this.stmtToSources = new ConcurrentHashMap<>();
+    }
     /**
      * Retrieve a set of relevant sources for this query.
      *
