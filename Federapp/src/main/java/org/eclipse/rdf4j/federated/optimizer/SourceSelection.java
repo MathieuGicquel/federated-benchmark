@@ -68,9 +68,11 @@ public class SourceSelection {
 
 
     public void doSourceSelection(List<StatementPattern> stmts) {
-        if(!Federapp.force_source_selection) {
+        if(!Federapp.CONTAINER.containsKey(Federapp.MAP_SS)) {
+            log.info("[SOURCE_SELECTION] Default");
             doSourceSelectionDefault(stmts);
         } else {
+            log.info("[SOURCE_SELECTION] Force mode");
             doSourceSelectionForce(stmts);
         }
     }
@@ -157,8 +159,8 @@ public class SourceSelection {
         List<CheckTaskPair> remoteCheckTasks = new ArrayList<>();
 
         // for each statement determine the relevant sources
+        int stmtId = 0;
         for (StatementPattern stmt : stmts) {
-
             // jump over the statement (e.g. if the same pattern is used in two union branches)
             if (stmtToSources.containsKey(stmt)) {
                 continue;
@@ -168,7 +170,14 @@ public class SourceSelection {
 
             SubQuery q = new SubQuery(stmt, queryInfo.getDataset());
 
-            stmtToSources.get(stmt).add(new StatementSource("sparql_example.org_s2",StatementSourceType.REMOTE));
+            Set<String> endpoints = ((Set<String>)((Map<String,Object>)Federapp.CONTAINER.get(Federapp.MAP_SS)).get(stmtId));
+
+            for (String endpoint :
+                    endpoints) {
+                stmtToSources.get(stmt).add(new StatementSource(endpoint,StatementSourceType.REMOTE));
+            }
+
+            stmtId += 1;
         }
 
 

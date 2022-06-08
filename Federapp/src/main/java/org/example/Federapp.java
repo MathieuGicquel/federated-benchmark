@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 
 public class Federapp {
     private static final Logger log = LoggerFactory.getLogger(Federapp.class);
-    public static final boolean force_source_selection = true;
     public static final Map<String,Object> CONTAINER = new ConcurrentHashMap<>();
     public static final String SOURCE_SELECTION_KEY = "SOURCE_SELECTION";
     public static final String SOURCE_SELECTION2_KEY = "SOURCE_SELECTION_DO_SOURCE_SELECTION";
@@ -53,7 +52,12 @@ public class Federapp {
         String statPath = args[3];
         String sourceSelectionPath = args[4];
         String httpListFilePath = args[5];
-        String ssPath = args[6];
+
+        if(args.length >= 6) {
+            String ssPath= args[6];
+            parseSS(ssPath);
+        }
+
 
         BufferedWriter statWriter = new BufferedWriter(new FileWriter(statPath));
 
@@ -163,13 +167,13 @@ public class Federapp {
                     if(!tpMap.containsKey(j)){
                         tpMap.put(j, new HashSet<>());
                     }
-                    String ss = tp.split("g/")[1];
+                    String ss = tp.split("g/")[1].replace("\"","");
                     tpMap.get(j).add("sparql_example.org_"+ss);
                 }
             }
             i++;
         }
 
-        ((Map)CONTAINER.get(MAP_SS)).put(MAP_SS, tpMap);
+        CONTAINER.put(MAP_SS, tpMap);
     }
 }
