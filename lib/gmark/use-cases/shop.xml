@@ -6,8 +6,8 @@
 	</graph>
 
 	<predicates>
-		<size>82</size>
-		<!-- we have only aliases, but no global constraints e.g., no <proportion>... -->	
+		<size>83</size>
+		<!-- we have only aliases, but no global constraints e.g., no <proportion>... -->
 		<alias symbol="0">description</alias>
 		<alias symbol="1">contentRating</alias>
 		<alias symbol="2">keywords</alias>
@@ -90,12 +90,13 @@
 		<alias symbol="79">purchaseFor</alias>
 		<alias symbol="80">reviewer</alias>
 		<alias symbol="81">hasReview</alias>
+		<alias symbol="82">sameAs</alias>
 	</predicates>
 
 
 
 	<types>
-		<size>24</size>
+		<size>38</size>
 
 		<alias type="0">Genre</alias>
 		<fixed type="0">21</fixed>
@@ -105,6 +106,10 @@
 
 		<alias type="2">Topic</alias>
 		<fixed type="2">250</fixed>
+
+		<alias type="24">HotTopic</alias>
+		<!-- Number -->
+		<fixed type="24">10</fixed>
 
 		<alias type="3">City</alias>
 		<fixed type="3">240</fixed>
@@ -127,17 +132,69 @@
 		<alias type="9">ClassicalMusicConcert</alias>
 		<proportion type="9">0.01</proportion>
 
+		<alias type="25">MusicConcert</alias>
+		<!-- Number -->
+		<proportion type="25">0.10</proportion>
+
+		<alias type="28">HitMusicConcert</alias>
+		<!-- Number -->
+		<proportion type="28">0.05</proportion>
+
 		<alias type="10">MusicAlbum</alias>
-		<proportion type="10">0.01</proportion>
+		<proportion type="10">0.10</proportion>
+
+		<alias type="26">ClassicMusicAlbum</alias>
+		<!-- Number -->
+		<proportion type="26">0.01</proportion>
+
+		<alias type="29">HitMusicAlbum</alias>
+		<!-- Number -->
+		<proportion type="29">0.05</proportion>
 
 		<alias type="11">Movie</alias>
-		<proportion type="11">0.01</proportion>
+		<proportion type="11">0.10</proportion>
+
+		<alias type="30">ClassicMovie</alias>
+		<!-- Number -->
+		<proportion type="30">0.01</proportion>
+
+		<alias type="31">TopMovie</alias>
+		<!-- Number -->
+		<proportion type="31">0.05</proportion>
+
+		<alias type="32">AnimatedMovie</alias>
+		<!-- Number -->
+		<proportion type="32">0.02</proportion>
+
+		<alias type="33">ShortMovie</alias>
+		<!-- Number -->
+		<proportion type="33">0.02</proportion>
+
+		<alias type="34">LongMovie</alias>
+		<!-- Number -->
+		<proportion type="34">0.02</proportion>
 
 		<alias type="12">Book</alias>
 		<proportion type="12">0.01</proportion>
 
 		<alias type="13">NewsArticle</alias>
 		<proportion type="13">0.01</proportion>
+
+		<alias type="27">Article</alias>
+		<!-- Number -->
+		<proportion type="27">0.05</proportion>
+
+		<alias type="35">Novel</alias>
+		<!-- Number -->
+		<proportion type="35">0.10</proportion>
+
+		<alias type="36">ShortStory</alias>
+		<!-- Number -->
+		<proportion type="36">0.02</proportion>
+
+		<alias type="37">Encyclopedia</alias>
+		<!-- Number -->
+		<proportion type="37">0.01</proportion>
 
 		<alias type="14">OtherProduct</alias>
 		<proportion type="14">0.01</proportion>
@@ -161,13 +218,13 @@
 		<proportion type="20">0.19</proportion>
 
 		<alias type="21">string</alias>
-                <fixed type="21">1000</fixed>
-                
+		<fixed type="21">1000</fixed>
+
 		<alias type="22">integer</alias>
-                <fixed type="22">1000</fixed>
-                
+		<fixed type="22">1000</fixed>
+
 		<alias type="23">date</alias>
-                <fixed type="23">1000</fixed>
+		<fixed type="23">1000</fixed>
 	</types>
 
 
@@ -196,8 +253,67 @@
 			<target type="22" symbol="8" multiplicity="?"/>
 			<target type="21" symbol="9" multiplicity="?"/>
 			<target type="21" symbol="10" multiplicity="?"/>
+
+			<target type="9" symbol="82" multiplicity="+"/>
+			<target type="25" symbol="82" multiplicity="+"/>
+			<target type="28" symbol="82" multiplicity="+"/>
 		</source>
 
+		<source type="25"> <!-- music concert -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="22" symbol="7" multiplicity="?"/>
+			<target type="22" symbol="8" multiplicity="?"/>
+			<target type="21" symbol="9" multiplicity="?"/>
+			<target type="21" symbol="10" multiplicity="?"/>
+
+			<target type="9" symbol="82" multiplicity="+"/>
+			<target type="25" symbol="82" multiplicity="+"/>
+			<target type="28" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="28"> <!-- hit music concert -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="22" symbol="7" multiplicity="?"/>
+			<target type="22" symbol="8" multiplicity="?"/>
+			<target type="21" symbol="9" multiplicity="?"/>
+			<target type="21" symbol="10" multiplicity="?"/>
+
+			<target type="9" symbol="82" multiplicity="+"/>
+			<target type="25" symbol="82" multiplicity="+"/>
+			<target type="28" symbol="82" multiplicity="+"/>
+		</source>
 
 		<source type="10"> <!-- music album -->
 			<target type="21" symbol="50" multiplicity="1"/>
@@ -220,8 +336,65 @@
 			<target type="21" symbol="11" multiplicity="?"/>
 			<target type="22" symbol="12" multiplicity="?"/>
 			<target type="23" symbol="13" multiplicity="?"/>
+
+			<target type="10" symbol="82" multiplicity="+"/>
+			<target type="26" symbol="82" multiplicity="+"/>
+			<target type="29" symbol="82" multiplicity="+"/>
 		</source>
 
+		<source type="26"> <!-- classic music album -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="21" symbol="11" multiplicity="?"/>
+			<target type="22" symbol="12" multiplicity="?"/>
+			<target type="23" symbol="13" multiplicity="?"/>
+
+			<target type="10" symbol="82" multiplicity="+"/>
+			<target type="26" symbol="82" multiplicity="+"/>
+			<target type="29" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="29"> <!-- hit music album -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="21" symbol="11" multiplicity="?"/>
+			<target type="22" symbol="12" multiplicity="?"/>
+			<target type="23" symbol="13" multiplicity="?"/>
+
+			<target type="10" symbol="82" multiplicity="+"/>
+			<target type="26" symbol="82" multiplicity="+"/>
+			<target type="29" symbol="82" multiplicity="+"/>
+		</source>
 
 		<source type="11"> <!-- movie -->
 			<target type="21" symbol="50" multiplicity="1"/>
@@ -244,8 +417,164 @@
 			<target type="22" symbol="14" multiplicity="?"/>
 			<target type="21" symbol="11" multiplicity="?"/>
 			<target type="21" symbol="15" multiplicity="?"/>
+
+			<target type="11" symbol="82" multiplicity="+"/>
+			<target type="30" symbol="82" multiplicity="+"/>
+			<target type="31" symbol="82" multiplicity="+"/>
+			<target type="32" symbol="82" multiplicity="+"/>
+			<target type="33" symbol="82" multiplicity="+"/>
+			<target type="34" symbol="82" multiplicity="+"/>
 		</source>
 
+		<source type="30"> <!-- classic movie -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="22" symbol="14" multiplicity="?"/>
+			<target type="21" symbol="11" multiplicity="?"/>
+			<target type="21" symbol="15" multiplicity="?"/>
+
+			<target type="11" symbol="82" multiplicity="+"/>
+			<target type="30" symbol="82" multiplicity="+"/>
+			<target type="31" symbol="82" multiplicity="+"/>
+			<target type="32" symbol="82" multiplicity="+"/>
+			<target type="33" symbol="82" multiplicity="+"/>
+			<target type="34" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="31"> <!-- top movie -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="22" symbol="14" multiplicity="?"/>
+			<target type="21" symbol="11" multiplicity="?"/>
+			<target type="21" symbol="15" multiplicity="?"/>
+
+			<target type="11" symbol="82" multiplicity="+"/>
+			<target type="30" symbol="82" multiplicity="+"/>
+			<target type="31" symbol="82" multiplicity="+"/>
+			<target type="32" symbol="82" multiplicity="+"/>
+			<target type="33" symbol="82" multiplicity="+"/>
+			<target type="34" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="32"> <!-- animated movie -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="22" symbol="14" multiplicity="?"/>
+			<target type="21" symbol="11" multiplicity="?"/>
+			<target type="21" symbol="15" multiplicity="?"/>
+
+			<target type="11" symbol="82" multiplicity="+"/>
+			<target type="30" symbol="82" multiplicity="+"/>
+			<target type="31" symbol="82" multiplicity="+"/>
+			<target type="32" symbol="82" multiplicity="+"/>
+			<target type="33" symbol="82" multiplicity="+"/>
+			<target type="34" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="33"> <!-- short movie -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="22" symbol="14" multiplicity="?"/>
+			<target type="21" symbol="11" multiplicity="?"/>
+			<target type="21" symbol="15" multiplicity="?"/>
+
+			<target type="11" symbol="82" multiplicity="+"/>
+			<target type="30" symbol="82" multiplicity="+"/>
+			<target type="31" symbol="82" multiplicity="+"/>
+			<target type="32" symbol="82" multiplicity="+"/>
+			<target type="33" symbol="82" multiplicity="+"/>
+			<target type="34" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="34"> <!-- long movie -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="22" symbol="14" multiplicity="?"/>
+			<target type="21" symbol="11" multiplicity="?"/>
+			<target type="21" symbol="15" multiplicity="?"/>
+
+			<target type="11" symbol="82" multiplicity="+"/>
+			<target type="30" symbol="82" multiplicity="+"/>
+			<target type="31" symbol="82" multiplicity="+"/>
+			<target type="32" symbol="82" multiplicity="+"/>
+			<target type="33" symbol="82" multiplicity="+"/>
+			<target type="34" symbol="82" multiplicity="+"/>
+		</source>
 
 		<source type="12"> <!-- book -->
 			<target type="21" symbol="50" multiplicity="1"/>
@@ -268,6 +597,13 @@
 			<target type="22" symbol="16" multiplicity="1"/>
 			<target type="22" symbol="17" multiplicity="?"/>
 			<target type="22" symbol="18" multiplicity="?"/>
+
+			<target type="12" symbol="82" multiplicity="+"/>
+			<target type="13" symbol="82" multiplicity="+"/>
+			<target type="27" symbol="82" multiplicity="+"/>
+			<target type="35" symbol="82" multiplicity="+"/>
+			<target type="36" symbol="82" multiplicity="+"/>
+			<target type="37" symbol="82" multiplicity="+"/>
 		</source>
 
 
@@ -296,8 +632,150 @@
 			<target type="22" symbol="23" multiplicity="?"/>
 			<target type="22" symbol="24" multiplicity="?"/>
 			<target type="22" symbol="25" multiplicity="?"/>
+
+			<target type="12" symbol="82" multiplicity="+"/>
+			<target type="13" symbol="82" multiplicity="+"/>
+			<target type="27" symbol="82" multiplicity="+"/>
+			<target type="35" symbol="82" multiplicity="+"/>
+			<target type="36" symbol="82" multiplicity="+"/>
+			<target type="37" symbol="82" multiplicity="+"/>
 		</source>
 
+		<source type="27"> <!-- article -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="21" symbol="19" multiplicity="?"/>
+			<target type="23" symbol="20" multiplicity="?"/>
+			<target type="22" symbol="21" multiplicity="?"/>
+			<target type="22" symbol="22" multiplicity="?"/>
+			<target type="22" symbol="23" multiplicity="?"/>
+			<target type="22" symbol="24" multiplicity="?"/>
+			<target type="22" symbol="25" multiplicity="?"/>
+
+			<target type="12" symbol="82" multiplicity="+"/>
+			<target type="13" symbol="82" multiplicity="+"/>
+			<target type="27" symbol="82" multiplicity="+"/>
+			<target type="35" symbol="82" multiplicity="+"/>
+			<target type="36" symbol="82" multiplicity="+"/>
+			<target type="37" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="35"> <!-- novel -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="21" symbol="19" multiplicity="?"/>
+			<target type="23" symbol="20" multiplicity="?"/>
+			<target type="22" symbol="21" multiplicity="?"/>
+			<target type="22" symbol="22" multiplicity="?"/>
+			<target type="22" symbol="23" multiplicity="?"/>
+			<target type="22" symbol="24" multiplicity="?"/>
+			<target type="22" symbol="25" multiplicity="?"/>
+
+			<target type="12" symbol="82" multiplicity="+"/>
+			<target type="13" symbol="82" multiplicity="+"/>
+			<target type="27" symbol="82" multiplicity="+"/>
+			<target type="35" symbol="82" multiplicity="+"/>
+			<target type="36" symbol="82" multiplicity="+"/>
+			<target type="37" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="36"> <!-- short story -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="21" symbol="19" multiplicity="?"/>
+			<target type="23" symbol="20" multiplicity="?"/>
+			<target type="22" symbol="21" multiplicity="?"/>
+			<target type="22" symbol="22" multiplicity="?"/>
+			<target type="22" symbol="23" multiplicity="?"/>
+			<target type="22" symbol="24" multiplicity="?"/>
+			<target type="22" symbol="25" multiplicity="?"/>
+
+			<target type="12" symbol="82" multiplicity="+"/>
+			<target type="13" symbol="82" multiplicity="+"/>
+			<target type="27" symbol="82" multiplicity="+"/>
+			<target type="35" symbol="82" multiplicity="+"/>
+			<target type="36" symbol="82" multiplicity="+"/>
+			<target type="37" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="37"> <!-- encyclopedia -->
+			<target type="21" symbol="50" multiplicity="1"/>
+			<target type="21" symbol="0" multiplicity="?"/>
+			<target type="22" symbol="1" multiplicity="*"> <!-- rating -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="2" multiplicity="*"> <!-- keywords -->
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="21" symbol="3" multiplicity="?"/>
+			<target type="22" symbol="4" multiplicity="?"/>
+			<target type="21" symbol="5" multiplicity="?"/>
+			<target type="23" symbol="6" multiplicity="?"/>
+
+			<target type="21" symbol="19" multiplicity="?"/>
+			<target type="23" symbol="20" multiplicity="?"/>
+			<target type="22" symbol="21" multiplicity="?"/>
+			<target type="22" symbol="22" multiplicity="?"/>
+			<target type="22" symbol="23" multiplicity="?"/>
+			<target type="22" symbol="24" multiplicity="?"/>
+			<target type="22" symbol="25" multiplicity="?"/>
+
+			<target type="12" symbol="82" multiplicity="+"/>
+			<target type="13" symbol="82" multiplicity="+"/>
+			<target type="27" symbol="82" multiplicity="+"/>
+			<target type="35" symbol="82" multiplicity="+"/>
+			<target type="36" symbol="82" multiplicity="+"/>
+			<target type="37" symbol="82" multiplicity="+"/>
+		</source>
 
 		<source type="14"> <!-- other product -->
 			<target type="21" symbol="50" multiplicity="1"/>
@@ -371,6 +849,8 @@
 			<target type="21" symbol="29" multiplicity="?"/>
 			<target type="22" symbol="30" multiplicity="?"/>
 			<target type="21" symbol="49" multiplicity="?"/>
+
+			<target type="20" symbol="82" multiplicity="+"/>
 		</source>
 
 
@@ -387,8 +867,25 @@
 					<max>6</max>
 				</outdistribution>
 			</target>
+
+			<target type="1" symbol="82" multiplicity="+"/>
+			<target type="0" symbol="82" multiplicity="+"/>
 		</source>
 
+		<source type="0"> <!-- Genre -->
+			<target type="0" symbol="82" multiplicity="+"/>
+			<target type="1" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="2"> <!-- Topic -->
+			<target type="2" symbol="82" multiplicity="+"/>
+			<target type="24" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="24"> <!-- Hot Topic -->
+			<target type="2" symbol="82" multiplicity="+"/>
+			<target type="24" symbol="82" multiplicity="+"/>
+		</source>
 
 		<source type="9"> <!-- Classical Music Concert -->
 			<target type="1" symbol="53" multiplicity="+">
@@ -428,6 +925,81 @@
 			</target>
 		</source>
 
+		<source type="25"> <!-- Music Concert -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="65" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="3" symbol="66" multiplicity="*">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
+
+		<source type="28"> <!-- Hit Music Concert -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="65" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="3" symbol="66" multiplicity="*">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
 
 		<source type="10"> <!-- Music Album -->
 			<target type="1" symbol="53" multiplicity="+">
@@ -461,6 +1033,69 @@
 			</target>
 		</source>
 
+		<source type="26"> <!-- Classic Music Album -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="67" multiplicity="*">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
+
+		<source type="29"> <!-- Hit Music Album -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="67" multiplicity="*">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
 
 		<source type="11"> <!-- Movie -->
 			<target type="1" symbol="53" multiplicity="+">
@@ -511,6 +1146,250 @@
 			</target>
 		</source>
 
+		<source type="30"> <!-- Classic Movie -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="68" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>25</mu>
+					<sigma>5</sigma>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="69" multiplicity="1">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="70" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="5" symbol="56" multiplicity="*">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
+
+		<source type="31"> <!-- Top Movie -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="68" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>25</mu>
+					<sigma>5</sigma>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="69" multiplicity="1">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="70" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="5" symbol="56" multiplicity="*">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
+
+		<source type="32"> <!-- Animated Movie -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="68" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>25</mu>
+					<sigma>5</sigma>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="69" multiplicity="1">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="70" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="5" symbol="56" multiplicity="*">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
+
+		<source type="33"> <!-- Short Movie -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="68" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>25</mu>
+					<sigma>5</sigma>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="69" multiplicity="1">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="70" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="5" symbol="56" multiplicity="*">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
+
+		<source type="34"> <!-- Long Movie -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="68" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>25</mu>
+					<sigma>5</sigma>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="69" multiplicity="1">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="70" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="5" symbol="56" multiplicity="*">
+				<outdistribution type="zipfian">
+					<alpha>2.5</alpha>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
 
 		<source type="12"> <!-- Book -->
 			<target type="1" symbol="53" multiplicity="+">
@@ -596,6 +1475,161 @@
 			</target>
 		</source>
 
+		<source type="27"> <!-- Article -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="71" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="72" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
+
+		<source type="35"> <!-- Novel -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="71" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="72" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
+
+		<source type="36"> <!-- Short Story -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="71" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="72" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
+
+		<source type="13"> <!-- Encyclopedia -->
+			<target type="1" symbol="53" multiplicity="+">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="2" symbol="52" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>20</min>
+					<max>20</max>
+				</outdistribution>
+			</target>
+			<target type="18" symbol="54" multiplicity="1">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="71" multiplicity="*">
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>1</max>
+				</outdistribution>
+			</target>
+			<target type="20" symbol="72" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>3</mu>
+					<sigma>1</sigma>
+				</outdistribution>
+			</target>
+			<target type="19" symbol="81" multiplicity="*">
+				<outdistribution type="gaussian">
+					<mu>60</mu>
+					<sigma>20</sigma>
+				</outdistribution>
+			</target>
+		</source>
 
 		<source type="14"> <!-- Other Product -->
 			<target type="1" symbol="53" multiplicity="+">
@@ -631,8 +1665,17 @@
 					<alpha>2.5</alpha>
 				</outdistribution>
 			</target>
+
+			<target type="3" symbol="82" multiplicity="+"/>
 		</source>
 
+		<source type="4"> <!-- Country -->
+			<target type="4" symbol="82" multiplicity="+"/>
+		</source>
+
+		<source type="5"> <!-- Language -->
+			<target type="5" symbol="82" multiplicity="+"/>
+		</source>
 
 		<source type="18"> <!-- Website -->
 			<target type="5" symbol="56" multiplicity="1">
@@ -640,6 +1683,8 @@
 					<alpha>2.5</alpha>
 				</outdistribution>
 			</target>
+
+			<target type="18" symbol="82" multiplicity="+"/>
 		</source>
 
 
@@ -700,7 +1745,7 @@
 				<outdistribution type="gaussian">
 					<mu>225</mu>
 					<sigma>25</sigma>
-                                    </outdistribution>
+				</outdistribution>
 			</target>
 			<target type="3" symbol="61" multiplicity="1">
 				<outdistribution type="zipfian">
@@ -722,7 +1767,7 @@
 			<target type="4" symbol="64" multiplicity="1">
 				<outdistribution type="zipfian">
 					<alpha>2.5</alpha>
-                                        <n>1000</n>
+					<n>1000</n>
 				</outdistribution>
 			</target>
 			<target type="17" symbol="78" multiplicity="*">
@@ -752,6 +1797,8 @@
 					<sigma>5</sigma>
 				</outdistribution>
 			</target>
+
+			<target type="15" symbol="82" multiplicity="+"/>
 		</source>
 
 
