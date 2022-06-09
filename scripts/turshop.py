@@ -1,4 +1,5 @@
 import click
+import random
 
 @click.command()
 @click.argument("txt_file")
@@ -8,6 +9,7 @@ import click
 def convert(txt_file, nb_site, output):
     with open(txt_file) as file:
         with open(f'{output}', 'a') as ffile:
+            random.seed(5)
             t_file = file.readlines()
             for line in t_file:
                 t_line = line.split()
@@ -21,7 +23,10 @@ def convert(txt_file, nb_site, output):
                     predicate = "<http://www.w3.org/2002/07/owl#sameAs>"
                 else:
                     predicate = "<http://example.org/p" + str(predicate) + ">"
-                objecte = "<http://example.org/s" + str(int(objecte) % int(nb_site)) + "/" + str(objecte) + ">"
+                if random.random() > 0.3 :
+                    objecte = "\"Q" + str(objecte) + "\""
+                else:
+                    objecte = "<http://example.org/s" + str(int(objecte) % int(nb_site)) + "/" + str(objecte) + ">"
                 
                 ffile.write(f"{subject} {predicate} {objecte} {graph} .\n")
 
