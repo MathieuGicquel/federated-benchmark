@@ -457,7 +457,7 @@ void qtranslate_sparql_regex(pugi::xml_node query, ofstream & file)
     {
         file << "(";
         qtranslate_sparql_regex(query.first_child(), file);
-        file << "){,3}";
+        file << ")";
     }
     else if (name == "concat")
     {
@@ -507,7 +507,7 @@ void qtranslate_sparql(pugi::xml_node query, ofstream & file)
     bool booleanquery = true;
     bool distinct = true;
 
-    file << "PREFIX : <http://example.org/> \n PREFIX owl: <http://www.w3.org/2002/07/owl#> ";
+    file << "PREFIX : <http://example.org/> PREFIX owl: <http://www.w3.org/2002/07/owl#> ";
     //hack for selectivity experiments
     //file << "SELECT (COUNT(*) AS ?count) { ";
 
