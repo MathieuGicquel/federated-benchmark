@@ -6,13 +6,16 @@ CONFIGURATION = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 SITE = CONFIGURATION["site"]
 ENDPOINT = CONFIGURATION["endpoint"]
 ISQL = CONFIGURATION["isql_virtuoso_path"]
-QUERY_NUMBER=3
+QUERY_NUMBER=50
 RUN=range(0,1)
-OUTPUT_FILES_FEDERATED = expand("result/{site}/{run}/query-{query_number}/rdf4j/query-{query_number}.{ext}",
+
+
+OUTPUT_FILES_FEDERATED = expand("result/{site}/{run}/query-{query_number}/rdf4j/{mode}/query-{query_number}.{ext}",
     site=SITE,
     query_number=range(0,QUERY_NUMBER),
     ext=["out","csv","log","sourceselection.csv","httpreq.txt"],
-    run=RUN
+    run=RUN,
+    mode=["default","force"]
 )
 OUTPUT_FILES_VIRTUOSO = expand("result/{site}/{run}/query-{query_number}/virtuoso/query-{query_number}.{ext}",
     site=SITE,
@@ -25,8 +28,9 @@ rule all:
     input:
         OUTPUT_FILES_FEDERATED,
         OUTPUT_FILES_VIRTUOSO,
-        "result/" + "all_" + str(SITE) + "_"  +"virtuoso" + ".csv",
-        "result/" + "all_" + str(SITE) + "_"  +"rdf4j" + ".csv",
+        "result/" + "all_" + str(SITE) +"_"  + "virtuoso" + ".csv",
+        "result/" + "all_" + str(SITE) +"_"  + "rdf4j_force" + ".csv",
+        "result/" + "all_" + str(SITE) +"_"  + "rdf4j_default" + ".csv",
         expand("queries/{site}/query-{query_number}.sourceselection.sparql", site=SITE, query_number=range(0,QUERY_NUMBER)),
         "./log/" + str(SITE) + "/digestuoso.log", # pré-condition : run_digestuoso
 
@@ -82,7 +86,7 @@ rule run_virtuoso_sourceselection_query:
         "log/{site}/ingestuoso.log", # pré-condition : run_ingestuoso
         query="queries/{site}/{query}.sourceselection.sparql",
     output:
-        result="result/{site}/{run}/{query}/rdf4j/{query}.sourceselection.opt"
+        result="result/{site}/{run}/{query}/rdf4j/force/{query}.sourceselection.opt"
     params:
         endpoint=ENDPOINT,
         run=RUN
@@ -91,34 +95,64 @@ rule run_virtuoso_sourceselection_query:
             --entrypoint {params.endpoint} \
             --output {output.result}"
 
-rule compile_and_run_federapp:
+rule compile_and_run_federapp_default:
     threads: 1
     input:
-        expand("result/{site}/{run}/query-{query_number}/rdf4j/query-{query_number}.sourceselection.opt",run=RUN, site=SITE, query_number=range(0,QUERY_NUMBER)), # pré-condition: run_virtuoso_sourceselection_query
+        "log/{site}/ingestuoso.log", # pré-condition : run_ingestuoso
         query="queries/{site}/{query}.noask.sparql",
         config="Federator/{site}/config.ttl"
     params:
         run=RUN
     output:
-        result="result/{site}/{run}/{query}/rdf4j/{query}.out",
-        stat="result/{site}/{run}/{query}/rdf4j/{query}.csv",
-        log="result/{site}/{run}/{query}/rdf4j/{query}.log",
-        sourceselection="result/{site}/{run}/{query}/rdf4j/{query}.sourceselection.csv",
-        httpreq="result/{site}/{run}/{query}/rdf4j/{query}.httpreq.txt"
+        result="result/{site}/{run}/{query}/rdf4j/"+ "default/" +"{query}.out",
+        stat="result/{site}/{run}/{query}/rdf4j/"+ "default/" +"{query}.csv",
+        log="result/{site}/{run}/{query}/rdf4j/"+ "default/" +"{query}.log",
+        sourceselection="result/{site}/{run}/{query}/rdf4j/default/{query}.sourceselection.csv",
+        httpreq="result/{site}/{run}/{query}/rdf4j/"+ "default/" +"{query}.httpreq.txt"
 
     shell:
         "./scripts/federapp_com_and_run.sh "
-            + os.getcwd() +"/{input.config} "
-            + os.getcwd() +"/{input.query} "
-            + os.getcwd() +"/{output.result}  "
-            + os.getcwd() +"/{output.stat} "
-            + os.getcwd() +"/{output.sourceselection} "
-            + os.getcwd() +"/{output.httpreq} "
-            + " > " + os.getcwd() +"/{output.log}"
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+        + " > " + os.getcwd() +"/{output.log}"
+
+
+
+rule compile_and_run_federapp_force:
+    threads: 1
+    input:
+        expand("result/{site}/{run}/query-{query_number}/rdf4j/"+ "default/" +"query-{query_number}.out",run=RUN, site=SITE, query_number=range(0,QUERY_NUMBER)), # pré-condition: compile_and_run_federapp_default
+        query="queries/{site}/{query}.noask.sparql",
+        config="Federator/{site}/config.ttl",
+        ssopt="result/{site}/{run}/{query}/rdf4j/force/{query}.sourceselection.opt"
+    params:
+        run=RUN
+    output:
+        result="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.out",
+        stat="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.csv",
+        log="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.log",
+        sourceselection="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.sourceselection.csv",
+        httpreq="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.httpreq.txt",
+
+
+    shell:
+        "./scripts/federapp_com_and_run.sh "
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+        + os.getcwd() +"/{input.ssopt} "
+        + " > " + os.getcwd() +"/{output.log}"
 
 rule run_virtuoso_query:
     input:
-        OUTPUT_FILES_FEDERATED, #pré-condition
+        expand("result/{site}/{run}/query-{query_number}/rdf4j/"+ "force/" +"query-{query_number}.out",run=RUN, site=SITE, query_number=range(0,QUERY_NUMBER)), # pré-condition
         query="queries/{site}/{query}.noask.sparql"
     output:
         result="result/{site}/{run}/{query}/virtuoso/{query}.out",
@@ -133,6 +167,7 @@ rule run_virtuoso_query:
 
 rule run_digestuoso:
     input:
+        OUTPUT_FILES_VIRTUOSO,
         OUTPUT_FILES_FEDERATED
     output:
         "./log/" + str(SITE) + "/digestuoso.log"
@@ -146,6 +181,7 @@ rule run_mergeall:
         OUTPUT_FILES_FEDERATED
     output:
         "result/" + "all_" + str(SITE) +"_"  + "virtuoso" + ".csv",
-        "result/" + "all_" + str(SITE) +"_"  + "rdf4j" + ".csv"
+        "result/" + "all_" + str(SITE) +"_"  + "rdf4j_force" + ".csv",
+        "result/" + "all_" + str(SITE) +"_"  + "rdf4j_default" + ".csv"
     shell:
         "python3 scripts/mergall.py 'result/" + str(SITE) + "' 'result/'"

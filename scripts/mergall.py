@@ -14,8 +14,28 @@ def merge(input_path, output_path):
     dfs = dict()
     for file in files:
         print(str(file.absolute()))
-        if re.search(r"(.*)/query-\d+\.csv",str(file.absolute())):
-            type = re.search(r".*/(.*)/query-\d+\.csv",str(file.absolute())).group(1)
+        if re.search(r".*/rdf4j/default/query-\d+\.csv",str(file.absolute())):
+            type = 'rdf4j_default'
+            df = pd.read_csv(file)
+            df["run_id"] = file.parent.parent.parent.parent.name
+
+            if dfs.get(type) is None:
+                dfs[type] = []
+
+            dfs.get(type).append(df)
+
+        if re.search(r".*/rdf4j/force/query-\d+\.csv",str(file.absolute())):
+            type = 'rdf4j_force'
+            df = pd.read_csv(file)
+            df["run_id"] = file.parent.parent.parent.parent.name
+
+            if dfs.get(type) is None:
+                dfs[type] = []
+
+            dfs.get(type).append(df)
+
+        if re.search(r".*/virtuoso/query-\d+\.csv",str(file.absolute())):
+            type = "virtuoso"
             df = pd.read_csv(file)
             df["run_id"] = file.parent.parent.parent.name
 
@@ -24,6 +44,7 @@ def merge(input_path, output_path):
 
             dfs.get(type).append(df)
 
+    print(dfs.keys())
     for type in dfs.keys():
         result : pd.DataFrame = pd.concat(dfs.get(type))
         result.to_csv(output_path + "all_"+ Path(input_path).name +"_" + type + ".csv", index=False)

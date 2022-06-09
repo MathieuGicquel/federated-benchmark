@@ -53,7 +53,7 @@ public class Federapp {
         String sourceSelectionPath = args[4];
         String httpListFilePath = args[5];
 
-        if(args.length >= 6) {
+        if(args.length > 6) {
             String ssPath= args[6];
             parseSS(ssPath);
         }
@@ -169,6 +169,7 @@ public class Federapp {
                     }
                     String ss = tp.split("g/")[1].replace("\"","");
                     tpMap.get(j).add("sparql_example.org_"+ss);
+                    j++;
                 }
             }
             i++;

@@ -150,7 +150,7 @@ public class SourceSelection {
             }
         }
 
-        Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION2_KEY,stmtToSources);
+        Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION_KEY,stmtToSources);
         this.stmtToSources = new ConcurrentHashMap<>();
     }
 
@@ -171,9 +171,9 @@ public class SourceSelection {
             SubQuery q = new SubQuery(stmt, queryInfo.getDataset());
 
             Set<String> endpoints = ((Set<String>)((Map<String,Object>)Federapp.CONTAINER.get(Federapp.MAP_SS)).get(stmtId));
+            if(endpoints == null) endpoints = new HashSet<>();
 
-            for (String endpoint :
-                    endpoints) {
+            for (String endpoint : endpoints) {
                 stmtToSources.get(stmt).add(new StatementSource(endpoint,StatementSourceType.REMOTE));
             }
 
