@@ -507,7 +507,7 @@ void qtranslate_sparql(pugi::xml_node query, ofstream & file)
     bool booleanquery = true;
     bool distinct = true;
 
-    file << "PREFIX : <http://example.org/gmark/> ";
+    file << "PREFIX : <http://example.org/> \n PREFIX owl: <http://www.w3.org/2002/07/owl#> ";
     //hack for selectivity experiments
     //file << "SELECT (COUNT(*) AS ?count) { ";
 

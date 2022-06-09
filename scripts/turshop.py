@@ -17,7 +17,10 @@ def convert(txt_file, nb_site, output):
 
                 graph = "<http://example.org/s" + str(int(subject) % int(nb_site)) + ">"
                 subject = "<http://example.org/s" + str(int(subject) % int(nb_site)) + "/" + str(subject) + ">"
-                predicate = "<http://example.org/p" + str(predicate) + ">"
+                if predicate == "82":
+                    predicate = "<http://www.w3.org/2002/07/owl#sameAs>"
+                else:
+                    predicate = "<http://example.org/p" + str(predicate) + ">"
                 objecte = "<http://example.org/s" + str(int(objecte) % int(nb_site)) + "/" + str(objecte) + ">"
                 
                 ffile.write(f"{subject} {predicate} {objecte} {graph} .\n")
