@@ -17,7 +17,7 @@ def convert(query_input, query_output,source_selection_query_output):
                 query = query.replace("))","")
             ffile.write(query)
 
-        triples = re.findall(r"\?x[0-9]+ \(\S+\) \?x[0-9]+ .", query)
+        triples = re.findall(r"\?x[0-9]+ \S+ \?x[0-9]+ .", query)
         print(triples)
 
         prefixes = query.split("SELECT")[0]
