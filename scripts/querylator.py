@@ -12,9 +12,10 @@ def convert(query_input, query_output,source_selection_query_output):
             if "ASK" in query:
                 query = query.replace("ASK", "SELECT *")
                 query = query.replace("\n", " LIMIT 1")
-                query = query.replace(":p82", "owl:sameAs")
-                query = query.replace("((","")
-                query = query.replace("))","")
+                
+            query = query.replace(":p82", "owl:sameAs")
+            query = query.replace("((","")
+            query = query.replace("))","")
             ffile.write(query)
 
         triples = re.findall(r"\?x[0-9]+ \S+ \?x[0-9]+ .", query)
