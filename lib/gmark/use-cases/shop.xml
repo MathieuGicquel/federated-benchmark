@@ -8,57 +8,57 @@
 	<predicates>
 		<size>83</size>
 		<!-- we have only aliases, but no global constraints e.g., no <proportion>... -->
-		<alias symbol="0">description</alias>
-		<alias symbol="1">contentRating</alias>
-		<alias symbol="2">keywords</alias>
-		<alias symbol="3">text</alias>
-		<alias symbol="4">contentSize</alias>
-		<alias symbol="5">caption</alias>
-		<alias symbol="6">expires</alias>
-		<alias symbol="7">opus</alias>
-		<alias symbol="8">movement</alias>
-		<alias symbol="9">composer</alias>
-		<alias symbol="10">performer</alias>
-		<alias symbol="11">producer</alias>
-		<alias symbol="12">recordNumber</alias>
-		<alias symbol="13">release</alias>
-		<alias symbol="14">duration</alias>
-		<alias symbol="15">award</alias>
-		<alias symbol="16">isbn</alias>
-		<alias symbol="17">bookEdition</alias>
-		<alias symbol="18">numberOfPages</alias>
-		<alias symbol="19">published</alias>
-		<alias symbol="20">datePublished</alias>
-		<alias symbol="21">wordCount</alias>
-		<alias symbol="22">printColumn</alias>
-		<alias symbol="23">printEdition</alias>
-		<alias symbol="24">printPage</alias>
-		<alias symbol="25">printSection</alias>
-		<alias symbol="26">name</alias>
-		<alias symbol="27">openingHours</alias>
-		<alias symbol="28">paymentAccepted</alias>
-		<alias symbol="29">email</alias>
-		<alias symbol="30">telephone</alias>
-		<alias symbol="31">faxNumber</alias>
-		<alias symbol="32">aggregateRating</alias>
-		<alias symbol="33">legalName</alias>
-		<alias symbol="34">serialNumber</alias>
-		<alias symbol="35">price</alias>
-		<alias symbol="36">validForm</alias>
-		<alias symbol="37">validThrough</alias>
-		<alias symbol="38">priceValidUntil</alias>
-		<alias symbol="39">eligibleQuantity</alias>
-		<alias symbol="40">purchaseDate</alias>
-		<alias symbol="41">url</alias>
-		<alias symbol="42">hits</alias>
-		<alias symbol="43">rating</alias>
-		<alias symbol="44">totalVotes</alias>
-		<alias symbol="45">userId</alias>
-		<alias symbol="46">givenName</alias>
-		<alias symbol="47">familyName</alias>
-		<alias symbol="48">birthDate</alias>
-		<alias symbol="49">jobTitle</alias>
-		<alias symbol="50">title</alias>
+		<alias symbol="0">description</alias> <!-- String -->
+		<alias symbol="1">contentRating</alias> <!-- Int -->
+		<alias symbol="2">keywords</alias> <!-- String -->
+		<alias symbol="3">text</alias> <!-- String -->
+		<alias symbol="4">contentSize</alias> <!-- Int -->
+		<alias symbol="5">caption</alias> <!-- String -->
+		<alias symbol="6">expires</alias> <!-- Date -->
+		<alias symbol="7">opus</alias> <!-- Int -->
+		<alias symbol="8">movement</alias> <!-- Int -->
+		<alias symbol="9">composer</alias> <!-- String -->
+		<alias symbol="10">performer</alias> <!-- String -->
+		<alias symbol="11">producer</alias> <!-- String -->
+		<alias symbol="12">recordNumber</alias> <!-- Int -->
+		<alias symbol="13">release</alias> <!-- Date -->
+		<alias symbol="14">duration</alias> <!-- Int -->
+		<alias symbol="15">award</alias> <!-- String -->
+		<alias symbol="16">isbn</alias> <!-- Int -->
+		<alias symbol="17">bookEdition</alias> <!-- Int -->
+		<alias symbol="18">numberOfPages</alias> <!-- Int -->
+		<alias symbol="19">published</alias> <!-- String -->
+		<alias symbol="20">datePublished</alias> <!-- Date -->
+		<alias symbol="21">wordCount</alias> <!-- Int -->
+		<alias symbol="22">printColumn</alias> <!-- Int -->
+		<alias symbol="23">printEdition</alias> <!-- Int -->
+		<alias symbol="24">printPage</alias> <!-- Int -->
+		<alias symbol="25">printSection</alias> <!-- Int -->
+		<alias symbol="26">name</alias> <!-- String -->
+		<alias symbol="27">openingHours</alias> <!-- Int -->
+		<alias symbol="28">paymentAccepted</alias> <!-- String -->
+		<alias symbol="29">email</alias> <!-- String -->
+		<alias symbol="30">telephone</alias> <!-- Int -->
+		<alias symbol="31">faxNumber</alias> <!-- Int -->
+		<alias symbol="32">aggregateRating</alias> <!-- Int -->
+		<alias symbol="33">legalName</alias> <!-- String -->
+		<alias symbol="34">serialNumber</alias> <!-- Int -->
+		<alias symbol="35">price</alias> <!-- Int -->
+		<alias symbol="36">validForm</alias> <!-- Date -->
+		<alias symbol="37">validThrough</alias> <!-- Date -->
+		<alias symbol="38">priceValidUntil</alias> <!-- Date -->
+		<alias symbol="39">eligibleQuantity</alias> <!-- Int -->
+		<alias symbol="40">purchaseDate</alias> <!-- Date -->
+		<alias symbol="41">url</alias> <!-- String -->
+		<alias symbol="42">hits</alias> <!-- Int -->
+		<alias symbol="43">rating</alias> <!-- Int -->
+		<alias symbol="44">totalVotes</alias> <!-- Int -->
+		<alias symbol="45">userId</alias> <!-- Int -->
+		<alias symbol="46">givenName</alias> <!-- String -->
+		<alias symbol="47">familyName</alias> <!-- String -->
+		<alias symbol="48">birthDate</alias> <!-- Date -->
+		<alias symbol="49">jobTitle</alias> <!-- String -->
+		<alias symbol="50">title</alias> <!-- String -->
 		<alias symbol="51">type</alias>
 		<alias symbol="52">tag</alias>
 		<alias symbol="53">hasGenre</alias>
@@ -1909,7 +1909,7 @@
 		<arity min="0" max="4"/>
 
 		<!-- we want only linear queries, but not constant nor quadratic -->
-		<selectivity constant="1" linear="1" quadratic="1"/>
+		<selectivity constant="0" linear="1" quadratic="0"/>
 
 		<!-- we want to have in the workload chains and stars, but not cycles, etc. -->
 		<type chain="1" star="1" cycle="1" starchain="1"/>
