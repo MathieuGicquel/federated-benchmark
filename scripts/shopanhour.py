@@ -47,6 +47,12 @@ def shopanhour(shop_template,output):
         raise Exception()
     logger.debug(new_values)
 
+    for i, val in enumerate(new_values):
+        tag.string.replace_with(str(int(val)))
+        logger.debug(str(tag.string))
+        with open(f'{output}/shop-{i}.xml','w') as outfile:
+            outfile.write(bs_data.prettify())
+
     # sameAs distribution
 
     sameas_distrib = configuration["sameas_distribution"]
@@ -68,14 +74,28 @@ def shopanhour(shop_template,output):
     logger.debug(new_values_sameas)
 
     for i, val in enumerate(new_values_sameas):
-        for tag_sameas in bs_data.find_all('target', {'symbol':'82'}):
-            logger.debug(str(tag_sameas))
 
-    for i, val in enumerate(new_values):
-        tag.string.replace_with(str(int(val)))
-        logger.debug(str(tag.string))
-        with open(f'{output}/shop-{i}.xml','w') as outfile:
-            outfile.write(bs_data.prettify())
+        with open(f'{output}/shop-{i}.xml','r') as xmlfile:
+            xmldata = xmlfile.read()
+        bs_data = BeautifulSoup(xmldata,'html.parser')
+
+        total_sameAs = 0
+        for tag_sameas in bs_data.find_all('target', {'symbol':'82'}):
+            total_sameAs += 1
+        nb_sameAs = int(val / total_sameAs)
+        for tag_sameas in bs_data.find_all('target', {'symbol':'82'}):
+            out_distrib = bs_data.new_tag("outdistribution", type="uniform")
+            min_t = bs_data.new_tag("min")
+            min_t.string = str(nb_sameAs)
+            max_t = bs_data.new_tag("max")
+            max_t.string = str(nb_sameAs)
+            out_distrib.append(min_t)
+            out_distrib.append(max_t)
+            tag_sameas.append(out_distrib)
+            #tag_sameas.append(str(f"<outdistribution type=\"uniform\"><min>{nb_sameAs}</min><max>{nb_sameAs}</max></outdistribution>"))
+            #logger.debug(str(tag_sameas))
+            with open(f'{output}/shop-{i}.xml','w') as outfile:
+                outfile.write(bs_data.prettify())
 
 if __name__ == "__main__":
     shopanhour()
