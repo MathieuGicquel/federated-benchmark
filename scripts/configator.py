@@ -4,9 +4,8 @@ import click
 @click.argument("data_file")
 @click.argument("config_file")
 @click.argument("endpoint")
-@click.argument("sitelist")
 
-def convert(data_file, config_file, endpoint, sitelist):
+def convert(data_file, config_file, endpoint):
     with open(data_file) as file:
         with open(f'{config_file}', 'a') as ffile:
             t_file = file.readlines()
@@ -33,8 +32,6 @@ f"""
 
 """
                 )
-                with open(f'{sitelist}', 'a') as lsite:
-                    lsite.write(f'{s}\n')
 
 if __name__ == "__main__":
     convert()

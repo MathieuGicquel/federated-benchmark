@@ -39,7 +39,7 @@ public class Federapp {
     public static final String MAP_SS = "MAP_SS";
 
 
-    public static final String CSV_HEADER = "query,exec_time,nb_source_selection,nb_http_request\n";
+    public static final String CSV_HEADER = "query,exec_time,total_distinct_ss,nb_http_request,total_ss\n";
 
     public static void main(String[] args) throws Exception {
         System.out.println(Arrays.toString(args));
@@ -62,6 +62,7 @@ public class Federapp {
         BufferedWriter statWriter = new BufferedWriter(new FileWriter(statPath));
 
         String rawQuery = new String(Files.readAllBytes(Paths.get(queryPath)));
+        log.info("Query {}", rawQuery);
         File dataConfig = new File(configPath);
 
         Long startTime = null;
@@ -81,23 +82,25 @@ public class Federapp {
         try (RepositoryConnection conn = repo.getConnection()) {
             startTime = System.currentTimeMillis();
             TupleQuery tq = conn.prepareTupleQuery(rawQuery);
+            List<BindingSet> results = new ArrayList<>(10000);
             try (TupleQueryResult tqRes = tq.evaluate()) {
-                endTime = System.currentTimeMillis();
-                createResultFile(resultPath, tqRes);
+                for (BindingSet b : tqRes) {
+                    results.add(b);
+                }
             }
+            endTime = System.currentTimeMillis();
 
+            createResultFile(resultPath, results);
             long durationTime = endTime - startTime;
             statWriter.write(CSV_HEADER);
-            int nbSourceSelection =
-                    ((SourceSelection)CONTAINER.get(SOURCE_SELECTION_KEY))
-                            .getRelevantSources().size();
 
             int httpqueries = ((AtomicInteger) CONTAINER.get(COUNT_HTTP_REQ_KEY)).get();
             statWriter.write(
                     queryPath + ","
                             + durationTime + ","
-                            + nbSourceSelection + ","
-                            + httpqueries +
+                            + sumDistinctSourceSelection() + ","
+                            + httpqueries + ","
+                            + sumSourceSelection() +
                             "\n");
 
 
@@ -121,6 +124,35 @@ public class Federapp {
 
     }
 
+
+    private static int sumDistinctSourceSelection() throws Exception {
+        Map<StatementPattern, List<StatementSource>> stmt = ((Map<StatementPattern, List<StatementSource>>)Federapp.CONTAINER.get(Federapp.SOURCE_SELECTION2_KEY));
+        int counter = 0;
+        Set<StatementSource> set = new HashSet<>();
+        for (StatementPattern pattern :
+                stmt.keySet()) {
+            for (StatementSource source:stmt.get(pattern)) {
+                if(set.add(source)) {
+                    counter++;
+                }
+
+            }
+        }
+        return counter;
+    }
+
+    private static int sumSourceSelection() throws Exception {
+        Map<StatementPattern, List<StatementSource>> stmt = ((Map<StatementPattern, List<StatementSource>>)Federapp.CONTAINER.get(Federapp.SOURCE_SELECTION2_KEY));
+        int counter = 0;
+        for (StatementPattern pattern :
+                stmt.keySet()) {
+            for (StatementSource source:stmt.get(pattern)) {
+                counter++;
+            }
+        }
+        return counter;
+    }
+
     private static void createSourceSelectionFile(String sourceSelectionPath) throws Exception {
         BufferedWriter sourceSelectionWriter = new BufferedWriter(new FileWriter(sourceSelectionPath));
         sourceSelectionWriter.write("triple,source_selection\n");
@@ -133,13 +165,17 @@ public class Federapp {
         sourceSelectionWriter.close();
     }
 
-    private static void createResultFile(String resultFilePath, TupleQueryResult tq) throws Exception{
+    private static void createResultFile(String resultFilePath, List<BindingSet> results) throws Exception{
         BufferedWriter queryResultWriter = new BufferedWriter(new FileWriter(resultFilePath));
-        while (tq.hasNext()) {
-            BindingSet b = tq.next();
+        System.out.println("SAVING RESULT");
+
+        for (BindingSet b :
+                results) {
+            System.out.println(b.toString());
             queryResultWriter.write(b.toString() + "\n");
-            System.out.println("RESULT " + b.toString() + "\n");
         }
+
+        System.out.println("SAVED RESULT");
         queryResultWriter.close();
     }
 

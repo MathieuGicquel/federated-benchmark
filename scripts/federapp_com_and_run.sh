@@ -14,5 +14,5 @@ mkdir -p "$(dirname "$5")" && touch "$5"
 mkdir -p "$(dirname "$6")" && touch "$6"
 
 cd Federapp
-mvn dependency:copy-dependencies package
-java -Xmx8096m -Xms8096m -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp "$@"
+mvn install dependency:copy-dependencies package
+java -Xmx32384m -Xms32384m -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp "$@"

@@ -56,6 +56,7 @@ public class SourceSelection {
     protected final QueryInfo queryInfo;
 
     public SourceSelection(List<Endpoint> endpoints, SourceSelectionCache cache, QueryInfo queryInfo) {
+        Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION_KEY,this);
         this.endpoints = endpoints;
         this.cache = cache;
         this.queryInfo = queryInfo;
@@ -150,8 +151,8 @@ public class SourceSelection {
             }
         }
 
-        Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION_KEY,stmtToSources);
-        this.stmtToSources = new ConcurrentHashMap<>();
+        Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION2_KEY,this.stmtToSources);
+        //this.stmtToSources = new ConcurrentHashMap<>();
     }
 
 
@@ -219,7 +220,7 @@ public class SourceSelection {
         }
 
         Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION2_KEY,stmtToSources);
-        this.stmtToSources = new ConcurrentHashMap<>();
+        //this.stmtToSources = new ConcurrentHashMap<>();
     }
     /**
      * Retrieve a set of relevant sources for this query.
@@ -235,7 +236,7 @@ public class SourceSelection {
             }
         }
         log.debug("getRelevantSources = " + endpoints.toString());
-        Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION_KEY,this);
+        Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION2_KEY,this.stmtToSources);
         return endpoints;
     }
 

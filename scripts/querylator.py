@@ -10,15 +10,17 @@ def convert(query_input, query_output,source_selection_query_output):
         with open(f'{query_output}', 'a') as ffile:
             query : str = str(file.read())
             if "ASK" in query:
-                query = query.replace("ASK", "SELECT *")
+                query = query.replace("ASK", "SELECT * WHERE")
                 query = query.replace("\n", " LIMIT 1")
+            #else:
+            #    query = query.replace("\n", " LIMIT 10")
                 
             query = query.replace(":p82", "owl:sameAs")
             query = query.replace("((","")
             query = query.replace("))","")
             ffile.write(query)
 
-        triples = re.findall(r"\?x[0-9]+ \S+ \?x[0-9]+ .", query)
+        triples = re.findall(r"\?x[0-9]+ \S+ \?x[0-9]+ \.", query)
         print(triples)
 
         prefixes = query.split("SELECT")[0]

@@ -1,4 +1,121 @@
-site: 10
-endpoint: "http://172.18.224.1:8890/sparql" #Following this tutorial to match http://localhost:8890/sparql from Windows with current endpoint from WSL : https://devdojo.com/mvnarendrareddy/access-windows-localhost-from-wsl2
+endpoint: "http://localhost:8890/sparql" #Following this tutorial to match http://localhost:8890/sparql from Windows with current endpoint from WSL : https://devdojo.com/mvnarendrareddy/access-windows-localhost-from-wsl2
 #isql_virtuoso_path: "'C:/Program\\ Files/OpenLink\\ Software/Virtuoso\\ OpenSource\\ 7.2/bin/isql.exe'"
-isql_virtuoso_path: '/Applications/Virtuoso\\ Open\\ Source\\ Edition\\ v7.2.app/Contents/virtuoso-opensource/bin/isql'
+isql_virtuoso_path: '/home/ubuntu/virtuoso-opensource/bin/isql'
+
+site: 6
+data_distribution:
+  choosen_type: "uniform"
+  types:
+      "zipfian":
+            alpha: 1.65
+            multiplicator: 10
+      "gaussian":
+            mu: 6000
+            sigma: 2000
+      "uniform":
+            min: 100
+            max: 10000
+
+sameas_distribution:
+  choosen_type: "uniform"
+  types:
+      "zipfian":
+            alpha: 1.65
+            multiplicator: 10
+      "gaussian":
+            mu: 6000
+            sigma: 2000
+      "uniform":
+            min: 100
+            max: 10000
+
+predicate:
+  "http://www.w3.org/2002/07/owl#sameAs":
+  - s0:
+    - target:
+      - s0:
+          source_type: "User"
+          target_type: "User"
+          min: 6
+          max: 8
+      - s1:
+          source_type: "User"
+          target_type: "User"
+          min: 6
+          max: 8
+      - s1:
+          source_type: "Review"
+          target_type: "Review"
+          min: 6
+          max: 8
+      - default: # le site s0 peut avoir des samesAs vers le  site sX avec une probabilité de 0.2. Dans ce cas-ci, il aura entre 6 et 8 sameAs
+              proba: 1 # probabilité d'avoir des sameAs entre s0 et les autres sites de 0.2 (pour chaque sites)
+              source_type: "MusicAlbum"
+              target_type: "MusicAlbum"
+              min: 6
+              max: 8
+  - s1:
+    - target:
+      - s0:
+          source_type: "User"
+          target_type: "User"
+          min: 6
+          max: 8
+  - default: # le site s0 peut avoir des samesAs vers le  site sX avec une probabilité de 0.2. Dans ce cas-ci, il aura entre 6 et 8 sameAs
+      - t1:
+        proba: 0.2 # probabilité d'avoir des sameAs entre s0 et les autres sites de 0.2 (pour chaque sites)
+        source_type: "User"
+        target_type: "User"
+        min: 1
+        max: 2
+      - t2:
+        proba: 0.2 # probabilité d'avoir des sameAs entre s0 et les autres sites de 0.2 (pour chaque sites)
+        source_type: "Review"
+        target_type: "Review"
+        min: 1
+        max: 2
+
+  "http://example.org/homepage":
+  - default: # le site s0 peut avoir des samesAs vers le  site sX avec une probabilité de 0.2. Dans ce cas-ci, il aura entre 6 et 8 sameAs
+    - t1:
+      proba: 1 # probabilité d'avoir des sameAs entre s0 et les autres sites de 0.2 (pour chaque sites)
+      source_type: "ClassicalMusicConcert"
+      target_type: "Website"
+      min: 1
+      max: 1
+
+literal:
+  "http://example.org/title":
+  - s0:
+    - target:
+      - s0:
+          source_type: "MusicAlbum"
+          target_type: "string"
+          min: 3
+          max: 5
+      - s1:
+          source_type: "ClassicalMusicConcert"
+          target_type: "string"
+          min: 3
+          max: 5
+      - s2:
+          source_type: "Movie"
+          target_type: "string"
+          min: 3
+          max: 5
+      - default:
+          proba: 1
+          source_type: "MusicAlbum"
+          target_type: "string"
+          min: 3
+          max: 5
+  - default:
+    - t1:
+      proba: 1
+      source_type: "Review"
+      target_type: "string"
+      min: 3
+      max: 5
+
+
+    

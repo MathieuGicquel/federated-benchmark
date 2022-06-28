@@ -76,7 +76,7 @@ def virtuoso(query,format,measures,output,entrypoint):
             if measures is not None:
                 with open(measures, 'w') as measures_file:
                     measures_file.write(report)
-            logger.info(f'Query {query_name} complete in {execution_time}s')
+            logger.info(f'Query {query_name} complete in {execution_time}ms')
 
             if output is not None:
                 with open(output, 'w') as output_file:
