@@ -3,6 +3,9 @@ import seaborn as sns
 import glob
 import os
 from matplotlib import pyplot as plt
+import networkx as nx
+from pyvis.network import Network
+import yaml
 
 #
 BASE_PLOT_PATH = "./plot/"
@@ -14,12 +17,12 @@ for file in files:
     df = pd.read_csv(file)
     site = os.path.basename(file).split('_')[1].split('.')[0]
     df["site"] = site
-    type = os.path.basename(file).split('_')[2].split('.')[0]
-    if type == "rdf4j":
+    type_ = os.path.basename(file).split('_')[2].split('.')[0]
+    if type_ == "rdf4j":
         extended_type = os.path.basename(file).split('_')[3].split('.')[0]
-        type += "_" + extended_type
+        type_ += "_" + extended_type
 
-    df["type"] = type
+    df["type"] = type_
     dfs.append(df)
 
 result = pd.concat(dfs)
@@ -125,52 +128,59 @@ rdata = glob.glob(f'./result/**/data/data.nq')
 print(rdata)
 
 for rd in rdata:
-    with open(rd) as rd_file:
-        rd_f = rd_file.readlines()
-        nb_cst = dict()
-        nb_obj = dict()
-        nb_sameas = dict()
-        site_list = []
-        for tp in rd_f:
-            predicate = tp.split(' ')[1]
-            origin_site = tp.split(' ')[3]
-            origin_site = origin_site.split('/')[3]
-            origin_site = origin_site.replace('>','')
-            site_list.append(origin_site)
-            if "sameAs" in predicate:
-                nb_sameas[str(origin_site)] = nb_sameas.get(str(origin_site),0) + 1
-            else:
-                for i in list(range(0,50+1)):
-                    p_t = "p" + str(i) + ">"
-                    if p_t in predicate:
-                        nb_cst[str(origin_site)] = nb_cst.get(str(origin_site),0) + 1
-                for i in list(range(51,81+1)):
-                    p_t = "p" + str(i) + ">"
-                    if p_t in predicate:
-                        nb_obj[str(origin_site)] = nb_obj.get(str(origin_site),0) + 1
-        print("nb_cst", len(nb_cst))
-        print("nb_obj",len(nb_obj))
-        print("nb_sameas",len(nb_sameas))
+    print(rd)
 
-        list_cst = []
-        list_obj = []
-        list_sameas = []
-        list_site = []
+    df = pd.read_csv(rd, sep=" ", names=['s', 'p', 'o', 'g', 'dot'])
+    df['g'] = df['g'].replace(to_replace=r'<http://example.org/(s[0-9]+)>',value=r'\1',regex=True)
+    df = df.sort_values(by=['g'])
 
-        for key in sorted(nb_cst):
-            list_cst.append(nb_cst[key])
-            list_site.append(key)
+    # repartition 
+    nb_cst = df[df['o'].str.contains('string|integer|date',regex=True)].groupby(['g'])['o'].count()
+    nb_obj = df[(df['o'].str.contains('http://example.org',regex=True)) & (df['p'].str.contains('http://example.org',regex=True))].groupby(['g'])['o'].count()
+    nb_sameas = df[df['p'].str.contains('sameAs',regex=True)].groupby(['g'])['p'].count()
 
-        for key in sorted(nb_obj):
-            list_obj.append(nb_obj[key])
+    list_site = list(df['g'].unique())
 
-        for key in sorted(nb_sameas):
-            list_sameas.append(nb_sameas[key])
+    print(list_site)
 
-        df_f = pd.DataFrame({'Nb of constant (p0 to p50)':list_cst, 'Nb of object (p51 to p81)':list_obj, 'Nb of sameAs':list_sameas},index=list_site)
-        fig = df_f.plot(kind='bar', stacked=True, color=['red', 'skyblue', 'green']).figure
-        nb_sites = rd.split('/')[2]
-        nb_sites = int(nb_sites.split('-')[1])
-        fig.set_size_inches(min(100,nb_sites),min(100,0.5*nb_sites))
-        fig.savefig(BASE_PLOT_PATH + "data_repartition_" + rd.split('/')[2] + ".png")
-        plt.clf()
+    df_f = pd.DataFrame({'Nb of constant (p0 to p50)':nb_cst, 'Nb of object (p51 to p81)':nb_obj, 'Nb of sameAs':nb_sameas},index=list_site)
+    fig = df_f.plot(kind='bar', stacked=True, color=['red', 'skyblue', 'green']).figure
+    nb_sites = rd.split('/')[2]
+    nb_sites = int(nb_sites.split('-')[1])
+    fig.set_size_inches(min(100,nb_sites),min(100,0.5*nb_sites))
+    fig.savefig(BASE_PLOT_PATH + "data_repartition_" + rd.split('/')[2] + ".png")
+    plt.clf()
+
+    # graph
+    G = nx.MultiDiGraph()
+    
+rdata = glob.glob(f'./result/*.yaml')
+for rd in rdata:
+
+    nb_site = str(str(str(rd).split('/')[2]).split('_')[1]).split('.')[0]
+
+    #G = Network('500px', '500px', directed=True)
+    G = nx.MultiDiGraph()
+    data = yaml.load(open(rd), Loader=yaml.FullLoader)
+    print(rd)
+    #G = nx.MultiDiGraph()
+    for site in data.keys():
+        if site != "all_site":
+            print(site)
+            G.add_node(site)
+            for predicate in data[site]["predicates"].keys():
+                if predicate in ["psameAs","phomepage"]:
+                    print(data[site]["predicates"][predicate][site])
+                    for target_site in data[site]["predicates"][predicate].keys():
+                        G.add_node(target_site)
+                        in_ : int = data[site]["predicates"][predicate][target_site]["in"]
+                        out_ : int = data[site]["predicates"][predicate][target_site]["out"]
+                        print(data[site]["predicates"][predicate][target_site])
+                        if in_ > 0:
+                            G.add_edge(target_site, site,title=f"{predicate} : {in_}")
+                        if out_ > 0:
+                            G.add_edge(site,target_site,title=f"{predicate} : {out_}")
+
+    nt = Network('500px', '500px',directed=True)
+    nt.from_nx(G)
+    nt.show(f'{BASE_PLOT_PATH}graph-{nb_site}.html')
