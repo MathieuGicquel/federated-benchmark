@@ -1,0 +1,18 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+CONSTRUCT {
+    GRAPH ?g {
+         ?gender_translated  rdf:type ?typeURI .
+     }
+} WHERE { 
+ ?user <http://example.org/_/gender> ?gender .
+ FILTER CONTAINS(STR(?user),"User") .
+ 
+ BIND(URI(CONCAT("http://example.org/", "federated_shop")) AS ?g) .
+ BIND(URI(REPLACE(STR(?gender), "_/", "federated_shop/")) AS ?gender_translated) .
+
+ BIND(REPLACE(STR(?gender), STR("http://example.org/_/"),"") AS ?type1) .
+ BIND(REPLACE(STR(?type1), STR("_[0-9]+"),"") AS ?type) .
+ BIND(URI(CONCAT("http://example.org/federated_shop/", ?type)) AS ?typeURI) .
+
+}

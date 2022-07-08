@@ -12,3 +12,5 @@ lib/gmark
 snakemake.log
 lib/gmark/demo/**
 ./.idea
+prepa/
+tmp/

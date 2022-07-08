@@ -14,7 +14,7 @@ import os
 #print(tabulate(data, headers=headers))
 
 
-coloredlogs.install(level='INFO', fmt='%(asctime)s - %(levelname)s %(message)s')
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 # text/csv

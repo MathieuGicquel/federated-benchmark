@@ -1,0 +1,108 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT {
+    GRAPH ?g {
+         ?product_translated  rdf:type ?typeURI .
+         ?product_translated ?p_translated ?o_translated 
+     }
+} WHERE { 
+ ?retailer <http://example.org/_/offers>/<http://example.org/_/includes> ?product .
+ ?product ?p ?o .
+ FILTER(STR(?p) != "http://example.org/_/sameAs") .
+ FILTER CONTAINS(STR(?retailer),"Retailer") .
+ 
+ BIND(REPLACE(STR(?retailer), STR("http://example.org/_/Retailer_"), STR("s")) AS ?retailerite_id) .
+ BIND(CONCAT(?retailerite_id, "/") AS ?retailerite_id_translated)
+ 
+ BIND(URI(CONCAT("http://example.org/", ?retailerite_id_translated)) AS ?g) .
+ BIND(URI(REPLACE(STR(?product), "_/", ?retailerite_id_translated)) AS ?product_translated) .
+ BIND(URI(REPLACE(STR(?p), "_/", "")) AS ?p_translated) .
+
+
+
+ BIND(REPLACE(STR(?product), STR("http://example.org/_/"),"") AS ?type1) .
+ BIND(REPLACE(STR(?type1), STR("_[0-9]+"),"") AS ?type) .
+ BIND(URI(CONCAT("http://example.org/federated_shop/", ?type)) AS ?typeURI) .
+
+ BIND(
+   IF(
+      ?p = "http://example.org/_/performedIn",
+      URI(
+         REPLACE(
+            STR(?o), "_/","federated_shop/"
+         )
+      ),
+      IF(
+         ?p = "http://example.org/_/hasGenre",
+         URI(
+            REPLACE(
+               STR(?o), "_/","federated_shop/"
+            )
+         ),
+         IF(
+            ?p = "http://example.org/_/tag",
+            URI(
+               REPLACE(
+                  STR(?o), "_/","federated_shop/"
+               )
+            ),
+            IF(
+               ?p = "http://example.org/_/homepage",
+               URI(
+                  REPLACE(
+                     STR(?o), "_/","federated_shop/"
+                  )
+               ),
+               IF(
+                  ?p = "http://example.org/_/trailer",
+                  URI(
+                     REPLACE(
+                        STR(?o), "_/","federated_shop/"
+                     )
+                  ),
+                  IF(
+                     ?p = "http://example.org/_/language",
+                     URI(
+                        REPLACE(
+                           STR(?o), "_/","federated_shop/"
+                        )
+                     ),
+                     IF(
+                        REGEX(STR(?o),"http://example.org/_/string_"),
+                        STR(
+                           REPLACE(
+                              STR(?o),"http://example.org/_/",""
+                           )
+                        ),
+                        IF(
+                           REGEX(STR(?o),"http://example.org/_/integer_"),
+                           xsd:integer(
+                              REPLACE(
+                                    STR(?o),"http://example.org/_/integer_",""
+                              )
+                           ),
+                           IF(
+                              REGEX(STR(?o),"http://example.org/_/date_"),
+                              xsd:integer(
+                                    REPLACE(
+                                       STR(?o),"http://example.org/_/date_",""
+                                    )
+                              ),
+                              URI(
+                                 REPLACE(
+                                    STR(?o), "_/", ?retailerite_id_translated
+                                 )
+                              )
+                           )
+                        )
+                     )
+                  )
+               )
+            )
+         )
+      )
+   ) AS ?o_translated
+)
+
+}

@@ -1,0 +1,20 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+CONSTRUCT {
+     GRAPH ?g {
+         ?topic1_translated owl:sameAs ?topic2_translated .
+     }
+} WHERE
+{
+
+  ?topic1 <http://example.org/_/sameAs> ?topic2 .
+  FILTER CONTAINS(STR(?topic1),"Topic") .
+
+  BIND(URI(CONCAT("http://example.org/", "federated_shop")) AS ?g) .
+  BIND(URI(REPLACE(STR(?topic1), "_/", "federated_shop/")) AS ?topic1_translated) .
+  BIND(URI(REPLACE(STR(?topic2), "_/", "federated_shop/")) AS ?topic2_translated) .
+  BIND(URI("http://www.w3.org/2002/07/owl#sameAs") AS ?p_translated) .
+
+
+}

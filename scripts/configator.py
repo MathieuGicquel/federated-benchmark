@@ -1,5 +1,8 @@
 import click
 
+
+# Example : python3 scripts/configator.py ./tmp/c/result.nq ./tmp/config.ttl http://localhost:8890/sparql
+
 @click.command()
 @click.argument("data_file")
 @click.argument("config_file")

@@ -15,7 +15,7 @@ def convert(query_input, query_output,source_selection_query_output):
             #else:
             #    query = query.replace("\n", " LIMIT 10")
                 
-            query = query.replace(":p82", "owl:sameAs")
+            query = query.replace(":p",":")
             query = query.replace("((","")
             query = query.replace("))","")
             ffile.write(query)

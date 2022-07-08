@@ -1,0 +1,53 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT {
+    GRAPH ?g {
+         ?subgenre_translated  rdf:type <http://example.org/federated_shop/SubGenre> .
+         ?subgenre_translated ?p_translated ?o_translated 
+     }
+} WHERE { 
+ ?retailer <http://example.org/_/offers>/<http://example.org/_/includes>/<http://example.org/_/hasGenre> ?subgenre .
+ ?subgenre ?p ?o .
+ FILTER CONTAINS(STR(?retailer),"Retailer") .
+ 
+ BIND(REPLACE(STR(?retailer), STR("http://example.org/_/Retailer_"), STR("s")) AS ?retailerite_id) .
+ BIND(CONCAT(?retailerite_id, "/") AS ?retailerite_id_translated)
+ 
+ BIND(URI(CONCAT("http://example.org/", "federated_shop")) AS ?g) .
+ BIND(URI(REPLACE(STR(?subgenre), "_/", "federated_shop/")) AS ?subgenre_translated) .
+ BIND(URI(REPLACE(STR(?p), "_/", "")) AS ?p_translated) .
+
+ BIND(
+        IF(
+            REGEX(STR(?o),"http://example.org/_/string_"),
+            STR(
+                REPLACE(
+                    STR(?o),"http://example.org/_/",""
+                )
+            ),
+            IF(
+                REGEX(STR(?o),"http://example.org/_/integer_"),
+                xsd:integer(
+                    REPLACE(
+                        STR(?o),"http://example.org/_/integer_",""
+                    )
+                ),
+                IF(
+                    REGEX(STR(?o),"http://example.org/_/date_"),
+                    xsd:integer(
+                        REPLACE(
+                            STR(?o),"http://example.org/_/date_",""
+                        )
+                    ),
+                    URI(
+                        REPLACE(
+                            STR(?o), "_/", "federated_shop/"
+                        )
+                    )
+                )
+            )
+        ) AS ?o_translated
+    )
+
+}

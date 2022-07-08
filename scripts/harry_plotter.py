@@ -6,6 +6,14 @@ from matplotlib import pyplot as plt
 import networkx as nx
 from pyvis.network import Network
 import yaml
+import logging
+import coloredlogs
+import re
+import random
+import colorcet as cc
+
+coloredlogs.install(level='INFO', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
+logger = logging.getLogger(__name__)
 
 #
 BASE_PLOT_PATH = "./plot/"
@@ -28,19 +36,25 @@ for file in files:
 result = pd.concat(dfs)
 result = result.reset_index().drop(["index"], axis=1)
 
+logger.debug(str(result))
+
 tmp = result.loc[result['exec_time'] == "failed"]['query']
 tmp = tmp.tolist()
 tmp = [os.path.basename(file) for file in tmp]
+logger.debug(tmp)
 selection = ""
-print(selection)
-i=1
+logger.debug(selection)
+i = 1
 for elem in tmp:
     if i != len(tmp):
-        selection+=str(elem) + "|"
+        selection += str(elem) + "|"
     else:
-        selection+=str(elem)
-    i+=1
-result = result[~result['query'].str.contains(selection)]
+        selection += str(elem)
+    i += 1
+logger.debug(selection)
+
+if len(tmp) > 0:
+    result = result[~result['query'].str.contains(selection)]
 
 result = result.replace("failed", None)
 result["exec_time"] = pd.to_numeric(result["exec_time"])
@@ -50,137 +64,263 @@ result = result[result['exec_time'].notna()]
 valid_queries: pd.Series = result["query"].unique()
 result["site"] = pd.to_numeric(result["site"])
 result["nb_http_request"] = pd.to_numeric(result["nb_http_request"])
-print(result)
+logger.debug(result)
 
 
 # prepare folders
 def compute_query_folder(query: str) -> str:
     res = BASE_PLOT_PATH + query.split(".")[0] + "/"
-    print(res)
+    logger.debug(res)
     return res
 
 
 for query in queries:
-    os.makedirs(compute_query_folder(query),exist_ok=True)
-    print(query)
-
+    os.makedirs(compute_query_folder(query), exist_ok=True)
+    logger.debug(query)
 
 
 # Execution time for all queries
-sns.lineplot(data=result.groupby(by=["site","type","query","run_id"]).sum(), x="site", y="exec_time", marker="o", hue="type",ci=None).figure.savefig(
-    BASE_PLOT_PATH + "total_exec_time.png")
-plt.clf()
+def plot_execution_time_all_queries():
+    sns.lineplot(data=result.groupby(by=["site", "type", "query", "run_id"]).sum(), x="site", y="exec_time", marker="o",
+                 hue="type", ci=None).figure.savefig(
+        BASE_PLOT_PATH + "total_exec_time.png")
+    plt.clf()
+
 
 # Number of source selection for all queries
-sns.lineplot(data=result.groupby(by=["site","type","query","run_id"]).sum(), x="site", y="total_ss", marker="o", hue="type",ci=None).figure.savefig(
-    BASE_PLOT_PATH + "total_ss.png")
-plt.clf()
+def plot_number_source_selection_all_queries():
+    sns.lineplot(data=result.groupby(by=["site", "type", "query", "run_id"]).sum(), x="site", y="total_ss", marker="o",
+                 hue="type", ci=None).figure.savefig(
+        BASE_PLOT_PATH + "total_ss.png")
+    plt.clf()
+
 
 # Number of HTTP request for all queries
-sns.lineplot(data=result.groupby(by=["site","type","query","run_id"]).sum(), x="site", y="nb_http_request", marker="o", hue="type",ci=None).figure.savefig(
-    BASE_PLOT_PATH + "total_httpreq.png")
-plt.clf()
+def plot_number_http_request_all_queries():
+    sns.lineplot(data=result.groupby(by=["site", "type", "query", "run_id"]).sum(), x="site", y="nb_http_request",
+                 marker="o", hue="type", ci=None).figure.savefig(
+        BASE_PLOT_PATH + "total_httpreq.png")
+    plt.clf()
+
 
 # Execution time for each query default ss
-for query in queries:
-    current_df = result[(result["query"] == query) & (result["type"] == "rdf4j_default")]
-    sns.lineplot(data=current_df, x="site", y="exec_time",hue='run_id', marker="o",ci=None).figure.savefig(
-        compute_query_folder(query) + "exectimeperrun.png")
-    plt.clf()
-    print(query)
+def plot_execution_time_default_source_selection_all_queries():
+    for query in queries:
+        current_df = result[(result["query"] == query) & (result["type"] == "rdf4j_default")]
+        sns.lineplot(data=current_df, x="site", y="exec_time", hue='run_id', marker="o", ci=None).figure.savefig(
+            compute_query_folder(query) + "exectimeperrun.png")
+        plt.clf()
+        logger.debug(query)
+
 
 # Execution time for each query force ss
-for query in queries:
-    current_df = result[(result["query"] == query) & (result["type"] == "rdf4j_force")]
-    sns.lineplot(data=current_df, x="site", y="exec_time",hue='run_id', marker="o",ci=None).figure.savefig(
-        compute_query_folder(query) + "exectimeperrunforce.png")
-    plt.clf()
-    print(query)
+def plot_execution_time_force_source_selection_all_queries():
+    for query in queries:
+        current_df = result[(result["query"] == query) & (result["type"] == "rdf4j_force")]
+        sns.lineplot(data=current_df, x="site", y="exec_time", hue='run_id', marker="o", ci=None).figure.savefig(
+            compute_query_folder(query) + "exectimeperrunforce.png")
+        plt.clf()
+        logger.debug(query)
+
 
 # Execution time for each query
-for query in queries:
-    current_df = result[result["query"] == query]
-    sns.lineplot(data=current_df.groupby(by=["site", "type","run_id"]).mean(), x="site", y="exec_time", marker="o",
-                 hue="type",ci=None).figure.savefig(compute_query_folder(query) + "exectime.png")
-    plt.clf()
-    print(query)
+def plot_execution_time_each_query():
+    for query in queries:
+        current_df = result[result["query"] == query]
+        sns.lineplot(data=current_df.groupby(by=["site", "type", "run_id"]).mean(), x="site", y="exec_time", marker="o",
+                     hue="type", ci=None).figure.savefig(compute_query_folder(query) + "exectime.png")
+        plt.clf()
+        logger.debug(query)
+
 
 # Number of source selection for each query
-for query in queries:
-    current_df = result[result["query"] == query]
-    sns.lineplot(data=current_df.groupby(by=["site", "type", "run_id"]).mean(), x="site", y="total_ss", marker="o",
-                 hue="type",ci=None).figure.savefig(compute_query_folder(query) + "totalss.png")
-    plt.clf()
-    print(query)
+def plot_source_selection_each_query():
+    for query in queries:
+        current_df = result[result["query"] == query]
+        sns.lineplot(data=current_df.groupby(by=["site", "type", "run_id"]).mean(), x="site", y="total_ss", marker="o",
+                     hue="type", ci=None).figure.savefig(compute_query_folder(query) + "totalss.png")
+        plt.clf()
+        logger.debug(query)
+
 
 # Number of HTTP request for each query
-for query in queries:
-    current_df = result[(result["query"] == query) & (result["type"].str.startswith('rdf4j'))]
-    sns.lineplot(data=current_df.groupby(by=["site","type","run_id"]).mean(), x="site", y="nb_http_request", marker="o", hue="type",ci=None).figure.savefig(
-        compute_query_folder(query) + "httpreq.png")
-    plt.clf()
-    print(query)
-
+def plot_http_request_each_query():
+    for query in queries:
+        current_df = result[(result["query"] == query) & (result["type"].str.startswith('rdf4j'))]
+        sns.lineplot(data=current_df.groupby(by=["site", "type", "run_id"]).mean(), x="site", y="nb_http_request",
+                     marker="o", hue="type", ci=None).figure.savefig(
+            compute_query_folder(query) + "httpreq.png")
+        plt.clf()
+        logger.debug(query)
 
 
 # Repartition of data per site
-rdata = glob.glob(f'./result/**/data/data.nq')
-print(rdata)
+def plot_data_repartition():
+    rdata = glob.glob(f'./result/**/data/data.nq')
+    logger.debug(rdata)
 
-for rd in rdata:
-    print(rd)
+    for rd in rdata:
+        logger.debug(rd)
 
-    df = pd.read_csv(rd, sep=" ", names=['s', 'p', 'o', 'g', 'dot'])
-    df['g'] = df['g'].replace(to_replace=r'<http://example.org/(s[0-9]+)>',value=r'\1',regex=True)
-    df = df.sort_values(by=['g'])
+        df = pd.read_csv(rd, sep=" ", names=['s', 'p', 'o', 'g', 'dot'])
+        df['g'] = df['g'].replace(to_replace=r'<http://example.org/(.+)>', value=r'\1', regex=True)
+        df = df.sort_values(by=['g'])
 
-    # repartition 
-    nb_cst = df[df['o'].str.contains('string|integer|date',regex=True)].groupby(['g'])['o'].count()
-    nb_obj = df[(df['o'].str.contains('http://example.org',regex=True)) & (df['p'].str.contains('http://example.org',regex=True))].groupby(['g'])['o'].count()
-    nb_sameas = df[df['p'].str.contains('sameAs',regex=True)].groupby(['g'])['p'].count()
+        # repartition
+        nb_cst = df[~df['o'].str.contains('http://example.org', regex=True)].groupby(['g'])['o'].count()
+        nb_obj = df[(df['o'].str.contains('http://example.org', regex=True)) & (
+            df['p'].str.contains('http://example.org', regex=True))].groupby(['g'])['o'].count()
+        nb_sameas = df[df['p'].str.contains('#sameAs', regex=True)].groupby(['g'])['p'].count()
+        nb_type = df[df['p'].str.contains('#type', regex=True)].groupby(['g'])['p'].count()
 
-    list_site = list(df['g'].unique())
+        list_site = list(df['g'].unique())
 
-    print(list_site)
+        logger.debug(list_site)
 
-    df_f = pd.DataFrame({'Nb of constant (p0 to p50)':nb_cst, 'Nb of object (p51 to p81)':nb_obj, 'Nb of sameAs':nb_sameas},index=list_site)
-    fig = df_f.plot(kind='bar', stacked=True, color=['red', 'skyblue', 'green']).figure
-    nb_sites = rd.split('/')[2]
-    nb_sites = int(nb_sites.split('-')[1])
-    fig.set_size_inches(min(100,nb_sites),min(100,0.5*nb_sites))
-    fig.savefig(BASE_PLOT_PATH + "data_repartition_" + rd.split('/')[2] + ".png")
-    plt.clf()
+        df_f = pd.DataFrame(
+            {'Nb of constant (p0 to p50)': nb_cst, 'Nb of object (p51 to p81)': nb_obj, 'Nb of sameAs': nb_sameas, 'Nb of type': nb_type},
+            index=list_site)
+        fig = df_f.plot(kind='bar', stacked=True, color=['red', 'skyblue', 'green', 'gold']).legend(loc='center left',bbox_to_anchor=(1.0, 0.5)).figure
+        nb_sites = rd.split('/')[2]
+        nb_sites = int(nb_sites.split('-')[1])
+        fig.set_size_inches(min(100, 8 * nb_sites), min(100, 5 * nb_sites))
+        fig.savefig(BASE_PLOT_PATH + "data_repartition_" + rd.split('/')[2] + ".png")
+        plt.clf()
 
-    # graph
-    G = nx.MultiDiGraph()
-    
-rdata = glob.glob(f'./result/*.yaml')
-for rd in rdata:
 
-    nb_site = str(str(str(rd).split('/')[2]).split('_')[1]).split('.')[0]
+# graph
+def plot_graph_link_between_site():
+    rdata = glob.glob(f'./result/*.yaml')
+    for rd in rdata:
 
-    #G = Network('500px', '500px', directed=True)
-    G = nx.MultiDiGraph()
-    data = yaml.load(open(rd), Loader=yaml.FullLoader)
-    print(rd)
-    #G = nx.MultiDiGraph()
-    for site in data.keys():
-        if site != "all_site":
-            print(site)
-            G.add_node(site)
-            for predicate in data[site]["predicates"].keys():
-                if predicate in ["psameAs","phomepage"]:
-                    print(data[site]["predicates"][predicate][site])
-                    for target_site in data[site]["predicates"][predicate].keys():
-                        G.add_node(target_site)
-                        in_ : int = data[site]["predicates"][predicate][target_site]["in"]
-                        out_ : int = data[site]["predicates"][predicate][target_site]["out"]
-                        print(data[site]["predicates"][predicate][target_site])
-                        if in_ > 0:
-                            G.add_edge(target_site, site,title=f"{predicate} : {in_}")
-                        if out_ > 0:
-                            G.add_edge(site,target_site,title=f"{predicate} : {out_}")
+        nb_site = str(str(str(rd).split('/')[2]).split('_')[1]).split('.')[0]
 
-    nt = Network('500px', '500px',directed=True)
-    nt.from_nx(G)
-    nt.show(f'{BASE_PLOT_PATH}graph-{nb_site}.html')
+        G = nx.MultiDiGraph()
+        data = yaml.load(open(rd), Loader=yaml.FullLoader)
+        logger.debug(rd)
+
+        for site in data.keys():
+            if site != "all_site":
+                logger.debug(site)
+                G.add_node(site)
+                for predicate in data[site]["predicates"].keys():
+                    if predicate in [
+                        "#sameAs"
+                        # ,"phomepage"
+                    ] or True:
+                        logger.debug(data[site]["predicates"][predicate][site])
+                        for target_site in data[site]["predicates"][predicate].keys():
+                            G.add_node(target_site)
+                            in_: int = data[site]["predicates"][predicate][target_site]["in"]
+                            out_: int = data[site]["predicates"][predicate][target_site]["out"]
+                            logger.debug(data[site]["predicates"][predicate][target_site])
+                            if in_ > 0:
+                                logger.info(f"Adding edge from {target_site} to {site}. ({predicate} : {in_})")
+                                G.add_edge(target_site, site, title=f"{predicate} : {in_}")
+
+        nt = Network('1000px', '1000px', directed=True, layout=False)
+        nt.show_buttons()
+        nt.from_nx(G, default_node_size=100)
+        nt.barnes_hut(spring_length=5000, overlap=1)
+
+        # save graph
+        nt.save_graph(f'{BASE_PLOT_PATH}repartition-{nb_site}.graph.html')
+        nx.write_adjlist(G, f'{BASE_PLOT_PATH}repartition-{nb_site}.graph.adjlist')
+
+
+# Ontology
+def plot_graph_ontology():
+    rdata = glob.glob(f'./result/**/data/data.nq')
+    for rd in rdata:
+        nb_sites = rd.split('/')[2]
+        nb_sites = int(nb_sites.split('-')[1])
+
+        df: pd.DataFrame = pd.read_csv(rd, sep=" ", names=['s', 'p', 'o', 'g', 'dot'])
+
+        
+        df["s_type"] = df["s"].apply(lambda s: s.split("/")[-1].split("_")[-2] if len(s.split("/")[-1].split("_")) > 1 else None)
+        df["o_type"] = df["o"].apply(lambda s: s.split("/")[-1].split("_")[-2] if len(s.split("/")[-1].split("_")) > 1 else None)
+
+        G: nx.DiGraph() = nx.DiGraph()
+            
+
+        for idx, row in df.iterrows():
+            logger.debug(str(row))
+            if "http://example.org" in row["p"] and row["s_type"] is not None and row["o_type"] is not None:
+                logger.debug(f"Adding edge {row['p']} from {row['s_type']} ({row['s']}) to {row['o_type']} ({row['o']})")
+                G.add_node(row["s_type"])
+                G.add_node(row["o_type"])
+                G.add_edge(row["s_type"], row["o_type"], title=row["p"])
+
+        nt = Network('1000px', '1000px', directed=True, layout=False)
+        nt.show_buttons()
+        nt.from_nx(G)
+        # nt.toggle_physics(False)
+
+        # save graph
+        nt.save_graph(f'{BASE_PLOT_PATH}ontology-{nb_sites}.graph.html')
+        nx.write_adjlist(G, f'{BASE_PLOT_PATH}ontology-{nb_sites}.graph.adjlist')
+
+def plot_graph_entity():
+    rdata = glob.glob(f'./result/**/data/data.nq')
+    logger.debug(rdata)
+
+    for rd in rdata:
+        df = pd.read_csv(rd, sep=" ", names=['s', 'p', 'o', 'g', 'dot'])
+        
+
+        nb_sites = rd.split('/')[2]
+        nb_sites = int(nb_sites.split('-')[1])
+        output_path = f"{BASE_PLOT_PATH}data-{nb_sites}.html"
+
+        nt = Network('1000px', '1000px', directed=True, layout=False)
+
+        palette = sns.color_palette(cc.glasbey, n_colors=nb_sites+1).as_hex()
+        color_dict = dict()
+        for idx, row in df.iterrows():
+            s = row["s"]
+            o = row["o"]
+            g = row["g"]
+            p = row["p"]
+
+            regex_extract_id = r"http:\/\/.*\/(\S+)\/"
+            print(f"idx = {idx}, s = {s}, o = {o}")
+            s_site_id = re.search(regex_extract_id, s).group(1)
+            if "^^" in o or "string" in o:
+                # literal
+                o_site_id = s_site_id
+            else:
+                o_site_id = re.search(regex_extract_id, o).group(1)
+
+            if s_site_id not in color_dict.keys():
+                color_dict[s_site_id] = palette[len(color_dict)]
+            if o_site_id not in color_dict.keys():
+                color_dict[o_site_id] = palette[len(color_dict)]
+
+            nt.add_node(s, color=color_dict.get(s_site_id))
+            nt.add_node(o, color=color_dict.get(o_site_id))
+
+            if s_site_id != o_site_id:  # outgoing link
+                logger.debug(f"Found outgoing link : {s} {p} {o} {g}")
+                nt.add_edge(s, o, color='black', title=p, value=200)
+            else:
+                nt.add_edge(s, o, color=color_dict.get(s_site_id), title=p)
+
+        logger.debug(color_dict)
+        nt.show_buttons()
+        nt.barnes_hut(spring_length=5000, overlap=1)
+        nt.save_graph(output_path)
+
+plot_execution_time_all_queries()
+plot_number_source_selection_all_queries()
+plot_number_http_request_all_queries()
+plot_execution_time_default_source_selection_all_queries()
+plot_execution_time_force_source_selection_all_queries()
+plot_execution_time_each_query()
+plot_source_selection_each_query()
+plot_http_request_each_query()
+plot_data_repartition()
+plot_graph_ontology()
+plot_graph_entity()
+plot_graph_link_between_site()
+

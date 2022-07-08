@@ -11,7 +11,7 @@ import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-coloredlogs.install(level='DEBUG', fmt='%(asctime)s - %(levelname)s %(message)s')
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
@@ -42,7 +42,8 @@ def subject(line, nb_site):
 
 def predicate(line):
     predicate_ = line['p']
-    if predicate_ == "psameAs":
+    logger.debug(predicate_)
+    if "sameAs" in predicate_:
         return "<http://www.w3.org/2002/07/owl#sameAs>"
     else:
         return "<http://example.org/p" + str(predicate_) + ">"

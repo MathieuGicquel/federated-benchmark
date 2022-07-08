@@ -18,7 +18,7 @@ import pandas as pd
 import io
 import sys
 
-coloredlogs.install(level='DEBUG', fmt='%(asctime)s - %(levelname)s %(message)s')
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 # text/csv
@@ -146,11 +146,11 @@ def add_cst_to_query(query: str, df: pd.DataFrame,seed) -> str:
     logger.debug(f"df = {df}")
     logger.debug(f"df[x_c] = {df[x_c]}")
     column = str(df[x_c].sample(n=1,random_state=seed).iloc[0])
-    print(column)
+    logger.debug(str(column))
 
     column = re.sub(r"\[([A-Za-z]+_[0-9]+)\]",r'\1', column)
     column = re.sub(r'\[([A-Za-z]+_[0-9]+)"\]',r'"\1"', column)
-    column = re.sub(r"(http://example.org/s[0-9]+/[A-Za-z]+_[0-9]+)",r'<\1>', column)
+    column = re.sub(r"(http://example.org/(s[0-9]+|federated_shop)/[A-Za-z]+_[0-9]+)",r'<\1>', column)
 
     prepa = query.split('WHERE {')
     prepa[0] = prepa[0].replace(f'?{x_c}', '')
@@ -166,7 +166,7 @@ def get_triples_without_cst(query: str):
     return triples
 
 def get_triples(query:str):
-    triples = re.findall(r"(\?x[0-9]+|<http://example.org/s[0-9]+/[A-Za-z]+_[0-9]+>|\"[A-Za-z]+_[0-9]+\"|[A-Za-z]+_[0-9]+) (\S+) (\?x[0-9]+|<http://example.org/s[0-9]+/[A-Za-z]+_[0-9]+>|\"[A-Za-z]+_[0-9]+\"|[A-Za-z]+_[0-9]+) \.", query)
+    triples = re.findall(r"(\?x[0-9]+|<http://example.org/s[0-9]+/[A-Za-z]+_[0-9]+>|<http://example.org/federated_shop/[A-Za-z]+_[0-9]+>|<http://example.org/s[0-9]+/[A-Za-z]+>|<http://example.org/federated_shop/[A-Za-z]+>) (\S+) (\?x[0-9]+|<http://example.org/s[0-9]+/[A-Za-z]+_[0-9]+>|<http://example.org/federated_shop/[A-Za-z]+_[0-9]+>|<http://example.org/s[0-9]+/[A-Za-z]+>|<http://example.org/federated_shop/[A-Za-z]+>|\"string_[0-9]+\"|[0-9]+) \.", query)
     return triples
 
 def get_ss_query(query: str) -> str:

@@ -1,0 +1,18 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+CONSTRUCT {
+    GRAPH ?g {
+         ?topic_translated  rdf:type ?typeURI .
+     }
+} WHERE { 
+ ?retailer <http://example.org/_/offers>/<http://example.org/_/includes>/<http://example.org/_/tag> ?topic .
+ FILTER CONTAINS(STR(?retailer),"Retailer") .
+ 
+ BIND(URI(CONCAT("http://example.org/", "federated_shop")) AS ?g) .
+ BIND(URI(REPLACE(STR(?topic), "_/", "federated_shop/")) AS ?topic_translated) .
+
+ BIND(REPLACE(STR(?topic), STR("http://example.org/_/"),"") AS ?type1) .
+ BIND(REPLACE(STR(?type1), STR("_[0-9]+"),"") AS ?type) .
+ BIND(URI(CONCAT("http://example.org/federated_shop/", ?type)) AS ?typeURI) .
+
+}

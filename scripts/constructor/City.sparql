@@ -1,0 +1,86 @@
+PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX  xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT 
+  { 
+    GRAPH <http://example.org/federated_shop> {
+        ?city_translated rdf:type <http://example.org/federated_shop/City> .
+        ?city_translated ?p_translated ?o_translated .
+    }
+  }
+WHERE
+  { 
+    {
+        { SELECT  ?retailer ?user
+        WHERE
+            {   { ?retailer <http://example.org/_/employee>|<http://example.org/_/contactPoint> ?user }
+            UNION
+                { ?retailer ((<http://example.org/_/offers>/<http://example.org/_/includes>)/<http://example.org/_/hasReview>)/<http://example.org/_/reviewer> ?user }
+            UNION
+                { ?retailer <http://example.org/_/offers>/<http://example.org/_/includes> ?p .
+                ?p ((((<http://example.org/_/conductor>|<http://example.org/_/artist>)|<http://example.org/_/actor>)|<http://example.org/_/director>)|<http://example.org/_/author>)|<http://example.org/_/editor> ?user
+                }
+            ?user  ?p  ?o
+            OPTIONAL
+                { ?user <http://example.org/_/follows>|<http://example.org/_/friendOf> ?userOther .
+                ?userOther  ?pOther  ?oOther
+                }
+            FILTER contains(str(?retailer), "Retailer")
+            }
+        }
+
+        OPTIONAL {?user <http://example.org/_/location> ?city}
+    }
+    UNION 
+    {
+        SELECT ?retailer ?city WHERE 
+        {
+            ?retailer <http://example.org/_/offers>/<http://example.org/_/includes> ?p .
+            ?p <http://example.org/performedIn> ?city .
+            FILTER CONTAINS(STR(?retailer),"Retailer") .
+        }
+    }
+
+    ?city ?p ?o
+
+    FILTER CONTAINS(STR(?retailer),"Retailer") .
+ 
+    BIND(REPLACE(STR(?retailer), STR("http://example.org/_/Retailer_"), STR("s")) AS ?retailerite_id) .
+    
+    BIND(URI(CONCAT("http://example.org/", "federated_shop")) AS ?g) .
+    BIND(URI(REPLACE(STR(?city), "_/", "federated_shop/")) AS ?city_translated) .
+    BIND(URI(REPLACE(STR(?p), "_/", "")) AS ?p_translated) .
+
+    BIND(
+        IF(
+            REGEX(STR(?o),"http://example.org/_/string_"),
+            STR(
+                REPLACE(
+                    STR(?o),"http://example.org/_/",""
+                )
+            ),
+            IF(
+                REGEX(STR(?o),"http://example.org/_/integer_"),
+                xsd:integer(
+                    REPLACE(
+                        STR(?o),"http://example.org/_/integer_",""
+                    )
+                ),
+                IF(
+                    REGEX(STR(?o),"http://example.org/_/date_"),
+                    xsd:integer(
+                        REPLACE(
+                            STR(?o),"http://example.org/_/date_",""
+                        )
+                    ),
+                    URI(
+                        REPLACE(
+                            STR(?o), "_/", "federated_shop/"
+                        )
+                    )
+                )
+            )
+        ) AS ?o_translated
+    )
+
+  }

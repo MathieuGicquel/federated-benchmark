@@ -10,7 +10,7 @@ string="DELETE FROM DB.DBA.load_list; \n"
 
 for LINE in $LINES
 do
-  if [[ "$LINE" =~ ^http://example.org/.* ]]; then
+  if [[ "$LINE" =~ ^http://example.org.* ]]; then
       echo $LINE
       string+="DELETE FROM rdf_quad WHERE g = iri_to_id('$LINE'); \n"
   fi

@@ -15,7 +15,7 @@ from glob import glob
 #print(tabulate(data, headers=headers))
 
 
-coloredlogs.install(level='INFO', fmt='%(asctime)s - %(levelname)s %(message)s')
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 # text/csv
@@ -87,6 +87,7 @@ def virtuoso(queries,format,output,entrypoint,nb_query):
                             break
                     if j == 3:
                         logger.info(f'Query {query_name} has result')
+                        logger.debug(data)
                         with open(f'{output}/query-{i_query}.ss.sparql', 'a') as output_file:
                             query_ss_name = query_name.split('.')[0]
                             with open(f'{queries}/{query_ss_name}.ss.sparql', 'r') as ss_file:
