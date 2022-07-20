@@ -1,0 +1,2 @@
+PREFIX : <http://example.org/>  SELECT ?x0 ?x1 ?x3 ?x4 WHERE {  ?x0 :jobTitle ?x1 .  ?c2 :parentCountry ?x3 .  ?x0 :nationality ?x3 .  OPTIONAL {  ?x0 owl:sameAs ?x4  } } 
+# L5 

@@ -1,0 +1,2 @@
+PREFIX : <http://example.org/>  SELECT ?x0 ?x1 ?x2 ?x4 ?x5 ?x6 ?x7 ?x9 WHERE {  ?x0 :homepage ?x1 .  ?x0 :title ?x2 .  ?x0 rdf:type ?type .  ?x0 :caption ?x4 .  ?x0 :description ?x5 .  ?x1 :url ?x6 .  ?x1 :hits ?x7 .  ?x0 :hasGenre ?c8 .  OPTIONAL {  ?x0 owl:sameAs ?x9  } } 
+# F2

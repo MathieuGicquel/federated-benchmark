@@ -1,0 +1,2 @@
+PREFIX : <http://example.org/>  SELECT ?x0 WHERE {  ?x0 :like ?x1 .  ?x0 :friendOf ?x2 .  ?x0 :location ?x3 .  ?x0 :age ?x4 .  ?x0 :gender ?x5 .  ?x0 :givenName ?x6 . } 
+# C3

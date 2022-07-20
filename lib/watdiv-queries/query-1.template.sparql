@@ -1,0 +1,2 @@
+PREFIX : <http://example.org/>  SELECT ?x0 ?x3 ?x4 ?x8 WHERE {  ?x0 :legalName ?x1 .  ?x0 :offers ?x2 .  ?x2 :eligibleRegion ?x9 .   ?x2 :includes ?x3 .  ?x4 :jobTitle ?x5 .  ?x4 :homepage ?x6 .  ?x4 :makesPurchase ?x7 .  ?x7 :purchaseFor ?x3 .  ?x3 :hasReview ?x8 .  ?x8 :totalVotes ?x9 . } 
+# C2

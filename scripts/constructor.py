@@ -73,18 +73,18 @@ def virtuoso(folder,output_file,format,entrypoint):
                 with open(output_file,'a') as output:
                     lines = data[0].decode()
                     logger.debug(lines)
-                    for line in str(lines).split('\n'):
-                        if '@' in line:
-                            print(line)
-                            pre = line.split(' ')[1]
-                            pre = pre.split('\t')[0]
-                            print(pre)
-                            all_prefix.append(str(pre))
-                    for pre in all_prefix:
-                        # attention : https://www.w3.org/1999/02/22-rdf4-syntax-ns#type !!
-                        pre_t = pre.split(':')[0]
-                        #lines = lines.replace(pre_t,pre_t+str(i))
-                        lines = re.sub(pre_t + ":", pre_t+str(i) + ":", lines)
+                    #for line in str(lines).split('\n'):
+                    #    if '@' in line:
+                    #        print(line)
+                    #        pre = line.split(' ')[1]
+                    #        pre = pre.split('\t')[0]
+                    #        print(pre)
+                    #        all_prefix.append(str(pre))
+                    #for pre in all_prefix:
+                    #    # attention : https://www.w3.org/1999/02/22-rdf4-syntax-ns#type !!
+                    #    pre_t = pre.split(':')[0]
+                    #    #lines = lines.replace(pre_t,pre_t+str(i))
+                    #    lines = re.sub(pre_t + ":", pre_t+str(i) + ":", lines)
 
                     # convert trig to nq
                     g = Dataset()

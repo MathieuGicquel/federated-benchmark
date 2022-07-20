@@ -1,0 +1,2 @@
+PREFIX : <http://example.org/>  SELECT ?x0 ?x1 ?x3 WHERE {  ?x0 :like ?x1 .  ?x0 :subscribes ?c2 .  OPTIONAL {  ?x1 owl:sameAs ?x3  } } 
+# L3

@@ -1,0 +1,2 @@
+PREFIX : <http://example.org/> SELECT ?x0 ?x4 ?x6 ?x7 WHERE { ?x0 :caption ?x1 . ?x0 :text ?x2 . ?x0 :contentRating ?x3 . ?x0 :hasReview ?x4 . ?x4 :title ?x5 . ?x4 :reviewer ?x6 . ?x7 :actor ?x6 . ?x7 :language ?x8 . OPTIONAL { ?x0 owl:sameAs ?x7 . } } 
+# C1

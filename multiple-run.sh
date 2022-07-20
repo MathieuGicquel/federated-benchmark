@@ -1,6 +1,5 @@
-# rm -rf result/ && rm -rf plot && rm -rf prepa
 
-for i in 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200
+for i in 20 40 60 80 100
 do
  sed -r -i "s/site: [0-9]+/site: $i/g" ./configuration.yaml
  snakemake -c1 -p

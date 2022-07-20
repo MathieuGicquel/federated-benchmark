@@ -26,10 +26,12 @@ CONSTRUCT {
 }  # from product
 
  ?user ?p ?o .
+ FILTER(STR(?p) != "http://example.org/_/sameAs") .
  OPTIONAL {
     # ?user (<http://example.org/_/follows>|<http://example.org/_/friendOf>)+ ?userOther .
     ?user (<http://example.org/_/follows>|<http://example.org/_/friendOf>) ?userOther .
-    ?userOther ?pOther ?oOther
+    ?userOther ?pOther ?oOther .
+    FILTER(STR(?pOther) != "http://example.org/_/sameAs") .
  }
 
  FILTER CONTAINS(STR(?retailer),"Retailer") .

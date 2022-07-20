@@ -1,0 +1,36 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+CONSTRUCT {
+    GRAPH ?g {
+         ?user1_translated owl:sameAs ?user2_translated .
+     }
+} WHERE
+{
+
+  ?obj1 <http://example.org/_/sameAs> ?obj2 .
+  FILTER REGEX(STR(?obj1),"(User)_[0-9]+$") .
+
+  ?retailer2 (<http://example.org/_/employee>|<http://example.org/_/contactPoint>) ?user_2 .
+  FILTER CONTAINS(STR(?retailer2),"Retailer") .
+  FILTER(URI(?user_2) = URI(?obj2)) .
+
+  ?retailer1 (<http://example.org/_/employee>|<http://example.org/_/contactPoint>) ?user_1 .
+  FILTER CONTAINS(STR(?retailer1),"Retailer") .
+  FILTER(URI(?user_1) = URI(?obj1)) .
+
+  FILTER(STR(?retailer1) != STR(?retailer2)) .
+
+  BIND(REPLACE(STR(?retailer1), STR("http://example.org/_/Retailer_"), STR("s")) AS ?retailerite1_id) .
+  BIND(CONCAT(?retailerite1_id, "/") AS ?retailerite1_id_translated) .
+
+  BIND(REPLACE(STR(?retailer2), STR("http://example.org/_/Retailer_"), STR("s")) AS ?retailerite2_id) .
+  BIND(CONCAT(?retailerite2_id, "/") AS ?retailerite2_id_translated) .
+  
+  BIND(URI(CONCAT("http://example.org/", ?retailerite1_id_translated)) AS ?g) .
+  BIND(URI(REPLACE(STR(?obj1), "_/", ?retailerite1_id_translated)) AS ?user1_translated) .
+  BIND(URI(REPLACE(STR(?obj2), "_/", ?retailerite2_id_translated)) AS ?user2_translated) .
+  BIND(URI("http://www.w3.org/2002/07/owl#sameAs") AS ?p_translated) .
+
+
+}

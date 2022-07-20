@@ -12,7 +12,7 @@ import re
 import random
 import colorcet as cc
 
-coloredlogs.install(level='INFO', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 #
@@ -81,24 +81,39 @@ for query in queries:
 
 # Execution time for all queries
 def plot_execution_time_all_queries():
-    sns.lineplot(data=result.groupby(by=["site", "type", "query", "run_id"]).sum(), x="site", y="exec_time", marker="o",
-                 hue="type", ci=None).figure.savefig(
+    fig = sns.lineplot(data=result.groupby(by=["site", "type","run_id"]).sum(), x="site", y="exec_time", marker="o",
+                 hue="type").figure
+    plt.title("Execution time for all queries (ms)")
+    plt.xlabel('Number of shops')
+    plt.ylabel('Total execution time (ms)')
+    plt.legend(['FedX default','FedX force','Virtuoso'])
+    fig.savefig(
         BASE_PLOT_PATH + "total_exec_time.png")
     plt.clf()
 
 
 # Number of source selection for all queries
 def plot_number_source_selection_all_queries():
-    sns.lineplot(data=result.groupby(by=["site", "type", "query", "run_id"]).sum(), x="site", y="total_ss", marker="o",
-                 hue="type", ci=None).figure.savefig(
+    fig = sns.lineplot(data=result.groupby(by=["site", "type","run_id"]).sum(), x="site", y="total_ss", marker="o",
+                 hue="type").figure
+    plt.title("Number of source selection for all queries")
+    plt.xlabel('Number of shops')
+    plt.ylabel('Number of source selection')
+    plt.legend(['FedX default','FedX force','Virtuoso'])
+    fig.savefig(
         BASE_PLOT_PATH + "total_ss.png")
     plt.clf()
 
 
 # Number of HTTP request for all queries
 def plot_number_http_request_all_queries():
-    sns.lineplot(data=result.groupby(by=["site", "type", "query", "run_id"]).sum(), x="site", y="nb_http_request",
-                 marker="o", hue="type", ci=None).figure.savefig(
+    fig = sns.lineplot(data=result.groupby(by=["site", "type","run_id"]).sum(), x="site", y="nb_http_request",
+                 marker="o", hue="type").figure
+    plt.title("Number of HTTP request for all queries")
+    plt.xlabel('Number of shops')
+    plt.ylabel('Number of HTTP request')
+    plt.legend(['FedX default','FedX force','Virtuoso'])
+    fig.savefig(
         BASE_PLOT_PATH + "total_httpreq.png")
     plt.clf()
 
@@ -178,13 +193,76 @@ def plot_data_repartition():
         logger.debug(list_site)
 
         df_f = pd.DataFrame(
-            {'Nb of constant (p0 to p50)': nb_cst, 'Nb of object (p51 to p81)': nb_obj, 'Nb of sameAs': nb_sameas, 'Nb of type': nb_type},
+            {'Nb of constant': nb_cst, 'Nb of object': nb_obj, 'Nb of sameAs': nb_sameas, 'Nb of type': nb_type},
             index=list_site)
-        fig = df_f.plot(kind='bar', stacked=True, color=['red', 'skyblue', 'green', 'gold']).legend(loc='center left',bbox_to_anchor=(1.0, 0.5)).figure
         nb_sites = rd.split('/')[2]
         nb_sites = int(nb_sites.split('-')[1])
-        fig.set_size_inches(min(100, 8 * nb_sites), min(100, 5 * nb_sites))
+        fig = df_f.plot(kind='bar', stacked=True, color=['red', 'skyblue', 'green', 'gold']).legend(loc='center left',bbox_to_anchor=(1.0, 0.5),fontsize=str(min(2 * 300,nb_sites*2))).figure
+        fig.set_size_inches(min(300,4 * nb_sites),min(150,2 * nb_sites))
+        plt.xticks(fontsize=min(300,nb_sites),rotation=90)
+        plt.yticks(fontsize=min(2 * 300,nb_sites*2))
+        plt.xlabel('Shop', fontsize=min(4 * 300,nb_sites*4))
+        plt.ylabel('Number of objects', fontsize=min(4 * 300,nb_sites*4))
+        plt.title("Repartition of data on all shop", fontsize=min(5 * 300,nb_sites*5))
         fig.savefig(BASE_PLOT_PATH + "data_repartition_" + rd.split('/')[2] + ".png")
+        plt.clf()
+
+# Data compared
+
+def data_comparator():
+    #
+    rdf4j_files = glob.glob(f'./result/**/**/**/rdf4j/**/*.out')
+    virtuoso_files = glob.glob(f'./result/**/**/**/virtuoso/*.out')
+
+    logger.debug(rdf4j_files)
+    logger.debug(virtuoso_files)
+
+    all_queries = list(set([item.split('/')[4] for item in virtuoso_files]))
+    all_sites = list(set([item.split('/')[2] for item in virtuoso_files]))
+    all_runs = list(set([item.split('/')[3] for item in virtuoso_files]))
+
+    logger.debug(all_queries)
+
+    for site in all_sites:
+        df_result = pd.DataFrame(columns=['query','run','type','result'])
+        logger.debug(site)
+        for query in all_queries:
+            for run in all_runs:
+                logger.debug(query)
+                logger.debug(run)
+                rdf4j_results = list(filter(lambda v: re.match(f'.+/{site}/{run}/.+/{query}.out', v), rdf4j_files))
+                logger.debug(rdf4j_results)
+                virtuoso_results = list(filter(lambda v: re.match(f'.+/{site}/{run}/.+/{query}.out', v), virtuoso_files))
+                logger.debug(virtuoso_results)
+                for rdf4j_result in rdf4j_results:
+                    with open(rdf4j_result) as rdf4j_f:
+                        rdf4j_data = rdf4j_f.readlines()
+                        if 'default' in rdf4j_result:
+                            logger.debug(f'query : {query} rdf4j_default : {len(rdf4j_data)}')
+                            #rdf4j_list_default_result.append(len(rdf4j_data))
+                            df_result.loc[len(df_result.index)] = [query,run,'rdf4j_default',len(rdf4j_data)]
+                        elif 'force' in rdf4j_result:
+                            logger.debug(f'query : {query} rdf4j_force : {len(rdf4j_data)}')
+                            #rdf4j_list_force_result.append(len(rdf4j_data))
+                            df_result.loc[len(df_result.index)] = [query,run,'rdf4j_force',len(rdf4j_data)]
+                for virtuoso_result in virtuoso_results:
+                    with open(virtuoso_result) as virtuoso_f:
+                        virtuoso_data = virtuoso_f.readlines()
+                        logger.debug(f'query : {query} virtuoso : {len(virtuoso_data)-1}')
+                        #virtuoso_list_result.append(len(virtuoso_data)-1)
+                        df_result.loc[len(df_result.index)] = [query,run,'virtuoso',len(virtuoso_data)-1]
+
+        #df = pd.DataFrame({'rdf4j_default': rdf4j_list_default_result,'rdf4j_force': rdf4j_list_force_result,'virtuoso': virtuoso_list_result})
+        #fig = df.plot.bar(rot=90).legend(loc='center left',bbox_to_anchor=(1.0, 0.5)).figure
+        fig = sns.barplot(x="query", y="result", hue="type", data=df_result).legend(loc='center left',bbox_to_anchor=(1.0, 0.5),fontsize=str(len(all_queries)*0.65)).figure
+        fig.set_size_inches(len(all_queries),len(all_queries)*0.5)
+        plt.xticks(fontsize=len(all_queries)*0.4,rotation=90)
+        plt.yticks(fontsize=len(all_queries)*0.6)
+        plt.xlabel('Queries', fontsize=len(all_queries)*0.7)
+        plt.ylabel('Number of results', fontsize=len(all_queries)*0.7)
+        plt.title("Number of result for each queries per method", fontsize=len(all_queries))
+        fig.savefig(BASE_PLOT_PATH + "compare_result_"+ site +".png")
+        logger.debug(df)
         plt.clf()
 
 
@@ -215,9 +293,12 @@ def plot_graph_link_between_site():
                             out_: int = data[site]["predicates"][predicate][target_site]["out"]
                             logger.debug(data[site]["predicates"][predicate][target_site])
                             if in_ > 0:
-                                logger.info(f"Adding edge from {target_site} to {site}. ({predicate} : {in_})")
-                                G.add_edge(target_site, site, title=f"{predicate} : {in_}")
-
+                                if target_site != site:  # outgoing link only
+                                    logger.info(f"Adding edge from {target_site} to {site}. ({predicate} : {in_})")
+                                    if predicate in ["#sameAs"]:
+                                        G.add_edge(target_site, site, title=f"{predicate} : {in_}",color='black', value=200)
+                                    else:
+                                        G.add_edge(target_site, site, title=f"{predicate} : {in_}")
         nt = Network('1000px', '1000px', directed=True, layout=False)
         nt.show_buttons()
         nt.from_nx(G, default_node_size=100)
@@ -311,16 +392,18 @@ def plot_graph_entity():
         nt.barnes_hut(spring_length=5000, overlap=1)
         nt.save_graph(output_path)
 
-plot_execution_time_all_queries()
-plot_number_source_selection_all_queries()
-plot_number_http_request_all_queries()
-plot_execution_time_default_source_selection_all_queries()
-plot_execution_time_force_source_selection_all_queries()
-plot_execution_time_each_query()
-plot_source_selection_each_query()
-plot_http_request_each_query()
+#plot_execution_time_all_queries()
+#plot_number_source_selection_all_queries()
+#plot_number_http_request_all_queries()
+#plot_execution_time_default_source_selection_all_queries()
+#plot_execution_time_force_source_selection_all_queries()
+#plot_execution_time_each_query()
+#plot_source_selection_each_query()
+#plot_http_request_each_query()
 plot_data_repartition()
-plot_graph_ontology()
-plot_graph_entity()
-plot_graph_link_between_site()
+#plot_graph_ontology()
 
+#plot_graph_link_between_site()
+#data_comparator()
+
+#plot_graph_entity()

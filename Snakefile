@@ -7,16 +7,31 @@ CONFIGURATION = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 SITE = CONFIGURATION["site"]
 ENDPOINT = CONFIGURATION["endpoint"]
 ISQL = CONFIGURATION["isql_virtuoso_path"]
-RUN=range(0,1)
+RUN=range(0,CONFIGURATION["run"])
+clean_after = CONFIGURATION["clean_after"]
+use_watdiv = CONFIGURATION["use_watdiv"]
+use_fixator = str(CONFIGURATION["use_fixator"]).lower()
 
-KEEP_QUERIES = 20
+KEEP_QUERIES = CONFIGURATION["queries"]
 
 USE_CASE_INPUT_FILE = "lib/gmark/use-cases/shop.xml"
-GMARK_RAW_QUERY_NUMBER = int(BeautifulSoup(open(USE_CASE_INPUT_FILE, 'r').read(),'html.parser').find('workload').get('size'))
-print("GMARK_RAW_QUERY_NUMBER", " ", GMARK_RAW_QUERY_NUMBER)
+
+if use_watdiv:
+    GMARK_RAW_QUERY_NUMBER = 20
+else:
+    GMARK_RAW_QUERY_NUMBER = int(BeautifulSoup(open(USE_CASE_INPUT_FILE, 'r').read(),'html.parser').find('workload').get('size'))
+
 USE_CASE_OUTPUT_FILE = "prepa/gmark/" + str(SITE) + "/use-case/shop.xml"
 
-GMARK_RAW_QUERY="prepa/gmark/" + str(SITE) + "/query/query-{query_id}.sparql"
+GMARK_RAW_QUERY="prepa/gmark/" + str(SITE) + "/query/query-{query_id}"  # + r"(\.sparql)|(\.template\.sparql)"
+if use_watdiv:
+    GMARK_RAW_QUERY += ".template.sparql"
+else:
+    GMARK_RAW_QUERY += ".sparql"
+#GMARK_RAW_QUERY="prepa/gmark/" + str(SITE) + "/query/query-{query_id}.template.sparql"
+#GMARK_RAW_QUERY_NUMBER = 10
+use_watdiv = str(use_watdiv).lower()
+
 GMARK_RAW_QUERY_EXPAND =  expand(GMARK_RAW_QUERY, query_id=range(0,GMARK_RAW_QUERY_NUMBER))
 
 GMARK_RAW_DATA = "prepa/gmark/" + str(SITE) + "/data/shop-a-graph.txt0.txt"
@@ -41,7 +56,6 @@ QUERIES_SOURCE_SELECTION_PREPA="prepa/queries/" + str(SITE) +"/query-{query_id}.
 QUERIES_SOURCE_SELECTION_PREPA_EXPAND=expand(QUERIES_SOURCE_SELECTION_PREPA, query_id=range(0,GMARK_RAW_QUERY_NUMBER))
 
 INGESTUOSO_PREPA_LOG="prepa/" + str(SITE)  + "/log/ingestuoso.log"
-
 
 FILTERROYAL_PREPA_QUERIES="prepa/filter_queries/" + str(SITE)  + "/query-{query_id}.noask.sparql"
 FILTERROYAL_PREPA_QUERIES_EXPAND=expand(FILTERROYAL_PREPA_QUERIES, query_id=range(0,KEEP_QUERIES))
@@ -100,9 +114,6 @@ FEDERAPP_VARIATION_DEFAULT_SS_EXPAND=expand(FEDERAPP_VARIATION_DEFAULT_SS,run_id
 FEDERAPP_VARIATION_DEFAULT_HTTPREQ="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "default/" +"query-{query_id}-{query_variation_id}.httpreq.txt"
 FEDERAPP_VARIATION_DEFAULT_HTTPREQ_EXPAND=expand(FEDERAPP_VARIATION_DEFAULT_HTTPREQ,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
 
-
-
-
 FEDERAPP_FORCE_RESULT="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}/rdf4j/"+ "force/" +"query-{query_id}.out"
 FEDERAPP_FORCE_RESULT_EXPAND=expand(FEDERAPP_FORCE_RESULT,run_id=RUN,query_id=range(0,KEEP_QUERIES))
 FEDERAPP_FORCE_STAT="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}/rdf4j/"+ "force/" +"query-{query_id}.csv"
@@ -125,8 +136,6 @@ FEDERAPP_VARIATION_FORCE_SS_EXPAND=expand(FEDERAPP_VARIATION_FORCE_SS,run_id=RUN
 FEDERAPP_VARIATION_FORCE_HTTPREQ="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "force/" +"query-{query_id}-{query_variation_id}.httpreq.txt"
 FEDERAPP_VARIATION_FORCE_HTTPREQ_EXPAND=expand(FEDERAPP_VARIATION_FORCE_HTTPREQ,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
 
-
-
 VIRTUOSO_CST_QUERY_OUT="result/"+ "site-" + str(SITE)+"/run-{run_id}/query-{query_id}-{query_variation_id}/virtuoso/query-{query_id}-{query_variation_id}.out"
 VIRTUOSO_CST_QUERY_OUT_EXPAND=expand(VIRTUOSO_CST_QUERY_OUT,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
 VIRTUOSO_CST_QUERY_STAT="result/"+ "site-" +str(SITE)+"/run-{run_id}/query-{query_id}-{query_variation_id}/virtuoso/query-{query_id}-{query_variation_id}.csv"
@@ -145,9 +154,8 @@ rule all:
         MERGEALL_RDF4J_DEFAULT,
         MERGEALL_RDF4J_FORCE,
         MERGEALL_VIRTUOSO,
-        DIGESTUOSO_LOG,
+        DIGESTUOSO_LOG if clean_after else [],
         STATOR_OUT
-
 
 
 # PREPARATION PHASE
@@ -158,8 +166,6 @@ rule run_generate_use_case:
         USE_CASE_OUTPUT_FILE
     shell:
         "python3 ./scripts/retailer_evolution.py {input} " + str(SITE) + " {output}"
-        #"cp {input} {output}"
-
 
 # run gmark and generate queries
 rule run_gmark:
@@ -170,7 +176,7 @@ rule run_gmark:
         query=GMARK_RAW_QUERY_EXPAND,
         workload=GMARK_RAW_WORKLOAD
     shell:
-         "cd lib/gmark/src/ && ./test -a -c ../../../{input.use_case}  -g ../../../" + "prepa/gmark/" + str(SITE) + "/data/shop-a-graph.txt "+" -w ../../../{output.workload} && cd ../src/querytranslate && ./test -w ../../../../{output.workload} -o ../../../../" + os.path.dirname(GMARK_RAW_QUERY) 
+         "cd lib/gmark/src/ && ./test -a -c ../../../{input.use_case}  -g ../../../" + "prepa/gmark/" + str(SITE) + "/data/shop-a-graph.txt "+" -w ../../../{output.workload} && cd ../src/querytranslate && if "+ str(use_watdiv) +" ; then cp ../../../../lib/watdiv-queries/* ../../../../" + os.path.dirname(GMARK_RAW_QUERY) + " ; else ./test -w ../../../../{output.workload} -o ../../../../" + os.path.dirname(GMARK_RAW_QUERY) + " ; fi"
 
 # PREPARATION PHASE - GENERATE THE DATASET
 
@@ -181,8 +187,7 @@ rule run_fixator:
     output:
         graph=FIXATOR_DATA
     shell:
-        #"cp {input.graph} {output.graph}" # debug mode
-        "python3 scripts/fixator.py {input.graph} {output.graph}"
+        "if "+ str(use_fixator) +" ; then python3 scripts/fixator.py {input.graph} {output.graph} ; else cat {input.graph} >> {output.graph} ; fi"
 
 # convert txt in ttl
 rule run_fixatordata_2_ttl:
@@ -202,7 +207,7 @@ rule run_ingest_ttl:
     output:
         log=INGEST_TTL_LOG
     shell:
-        "./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(TTL_RAW) + " >> {output.log}"
+        "./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(TTL_RAW) + " > {output.log}"
 
 # generate the final dataset
 rule run_constructor:
@@ -220,7 +225,7 @@ rule run_digest_ttl:
     output:
         log=DIGEST_TTL_LOG
     shell:
-        "./scripts/digestuoso.sh '" + ISQL + "' >> {output.log}"
+        "./scripts/digestuoso.sh '" + ISQL + "' > {output.log}"
 
 # PREPARATION PHASE - .GENERATE THE DATASET
 
@@ -229,7 +234,7 @@ rule run_digest_ttl:
 # translate queries to safe format
 rule run_querylator_prepa:
     input:
-        DIGEST_TTL_LOG, # pré-condition
+        DIGEST_TTL_LOG, # pre condition
         queries=GMARK_RAW_QUERY
     output:
         queries=QUERIES_PREPA,
@@ -242,12 +247,12 @@ rule run_querylator_prepa:
 # ingest the dataset
 rule run_ingestuoso_prepa:
     input:
-        DIGEST_TTL_LOG, # pré-condition
+        DIGEST_TTL_LOG, # pre condition
         data=DATA
     output:
         log=INGESTUOSO_PREPA_LOG
     shell:
-        "./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(DATA) + " >> {output.log}"
+        "./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(DATA) + " > {output.log}"
 
 # keep queries that return atleast 1 result
 rule run_filterroyal_prepa:
@@ -284,7 +289,7 @@ rule run_digestuoso_prepa:
     output:
         DIGESTUOSO_PREPA_LOG
     shell:
-        "./scripts/digestuoso.sh '" + ISQL + "' >> {output}"
+        "./scripts/digestuoso.sh '" + ISQL + "' > {output}"
 
 # PREPARATION PHASE - .PREPARE QUERIES
 # .PREPARATION PHASE
@@ -298,7 +303,7 @@ rule run_ingestuoso:
     output:
         log=INGESTUOSO_LOG
     shell:
-        "./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(DATA) + " >> {output.log}"
+        "./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(DATA) + " > {output.log}"
 
 
 # generate the ttl configuration for fedx
@@ -310,7 +315,6 @@ rule run_configator:
     shell:
          "python3 scripts/configator.py {input.data} {output.config} " + ENDPOINT
 
-## section critique
 
 rule run_virtuoso_sourceselection_query: # compute source selection query
     input:
@@ -471,29 +475,21 @@ rule compile_and_run_federapp_variation_force:
          + os.getcwd() +"/{input.ssopt} "
         + " > " + os.getcwd() +"/{output.log}"
 
-## .section critique
-
 rule run_digestuoso:
     input:
         # pré-condition
-        #FEDERAPP_DEFAULT_LOG_EXPAND,
-        #FEDERAPP_FORCE_LOG_EXPAND,
-        #VIRTUOSO_QUERY_OUT_EXPAND,
         FEDERAPP_VARIATION_DEFAULT_LOG_EXPAND,
         FEDERAPP_VARIATION_FORCE_LOG_EXPAND,
         VIRTUOSO_QUERY_VARIATION_OUT_EXPAND
     output:
         log=DIGESTUOSO_LOG
     shell:
-        "./scripts/digestuoso.sh '" + ISQL + "' >> {output.log}"
+        "./scripts/digestuoso.sh '" + ISQL + "' > {output.log}"
 
 
 rule run_mergeall:
     input:
         #pré-condition
-        #FEDERAPP_DEFAULT_STAT_EXPAND, 
-        #FEDERAPP_FORCE_STAT_EXPAND,
-        #VIRTUOSO_QUERY_STAT_EXPAND,
         VIRTUOSO_QUERY_VARIATION_STAT_EXPAND,
         FEDERAPP_VARIATION_DEFAULT_STAT_EXPAND,
         FEDERAPP_VARIATION_FORCE_STAT_EXPAND

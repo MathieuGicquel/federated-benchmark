@@ -93,8 +93,8 @@ def virtuoso(queries,format,output,entrypoint,nb_query):
                             with open(f'{queries}/{query_ss_name}.ss.sparql', 'r') as ss_file:
                                 output_file.write(ss_file.read())
 
-                        with open(f'{output}/query-{i_query}.noask.sparql', 'a') as output_file:
-                            output_file.write(querys)
+                        with open(f'{output}/query-{i_query}.noask.sparql', 'w') as output_file:
+                            output_file.write(f"# {query} \n{querys}")
                         i_query+=1
                 else:
                     print(data[0].decode())

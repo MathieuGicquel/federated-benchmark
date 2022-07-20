@@ -1,0 +1,106 @@
+= SPARQL Federated Benchmark
+GICQUEL Mathieu; LE CROM Yotlan
+:toc:
+
+== Meaning
+
+This benchmark create automatcly **RDF data** and **SPARQL queries** based on link:https://github.com/gbagan/gmark[gMark]. Indeed, you need to set whatever you want in the setting file `lib/gmark/use-cases/shop.xml`. Moreover, you can set additionnal setting in the setting file `configuration.yaml`. To conclude on setting, you can set the number of site in the file `multiple-run.sh`.
+
+== How to use SPARQL Federated Benchmark ?
+
+.To execute the whole project, you can execute on of these command :
+- `snakemake -c1 -p` to execute just one time with one setting number of site
+- `./multiple-run.sh` to execute multiple time with multiple setting number of site
+
+=== How it works ? : Preparation steps
+
+.When you execute the whole project, the execution follows theses steps :
+- `"python3 ./scripts/retailer_evolution.py {input} " + str(SITE) + " {output}"` where input is the original use-cases file, and output is the use-cases file with the number of Retailer corresponding to the number of site.
+- `"cd lib/gmark/src/ && ./test -a -c ../../../{input.use_case}  -g ../../../" + "prepa/gmark/" + str(SITE) + "/data/shop-a-graph.txt "+" -w ../../../{output.workload} && cd ../src/querytranslate && ./test -w ../../../../{output.workload} -o ../../../../" + os.path.dirname(GMARK_RAW_QUERY)` where input.use_case is our new use-cases file with the fixed number of Retailer and output.workload is the file which use to generate **SPARQL queries**. Moreover, GMARK_RAW_QUERY is the folder which contains the original **SPARQL queries** without any modifications.
+- `"python3 scripts/fixator.py {input.graph} {output.graph}"` where input.graph is the original text file which contains gMark generated data, and output.graph is the text file which contains fixed gMark generated data (to have a logical data schema)
+- `awk '{{print "<http://example.org/_/"$1">" " <http://example.org/_/"$2"> " "<http://example.org/_/"$3"> ."}}' {input.graph} > {output.graph}` where input.graph is fixed data from the last steps and output.graph is convert data (to be like turtle file)
+- `"./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(TTL_RAW) + " > {output.log}"` where ISQL is the place of the virtuoso's isql terminal and TTL_RAW is the convert data from the last steps. This steps is crucial for the next step, because we use **CONSTRUCT SPARL queries** to distribute Retailer domain on our data.
+- `"python3 ./scripts/constructor.py ./scripts/constructor/ {output.data}"` where output.data is our data with distributed Retailer domain
+- `"./scripts/digestuoso.sh '" + ISQL + "' > {output.log}"` is very important because we delete previous data (with no distributed domain) to add in the next steps data in virtuoso
+- `"python3 scripts/querylator.py {params.query} {output.queries} {output.queries_ss}"` is crucial too because we fixe original query to work with our fixed and distributed data. Moreover, output.queries is translated queries and output.queries_ss is special queries to get optimal source selection for each triples in corresponding query
+- `"./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(DATA) + " > {output.log}"` where we again add data in virtuoso, but with our fixed and distributed data !
+- `"python3 ./scripts/filter_royal.py " 
+            + os.path.dirname(QUERIES_PREPA) + " " 
+            + "--output " + os.path.dirname(FILTERROYAL_PREPA_QUERIES) + " "
+            + "--entrypoint " + ENDPOINT + " "
+            + str(KEEP_QUERIES) + " "` where QUERIES_PREPA is the folder where our fixed and distributed queries are, FILTERROYAL_PREPA_QUERIES  is the folder where queries who return result are, ENDPOINT is virtuoso endpoint and KEEP_QUERIES is the number of queries who return result we want to keep.
+            
+- `"python3 ./scripts/constantin_first.py "
+            + os.path.dirname(FILTERROYAL_PREPA_QUERIES)
+            + " --output " + os.path.dirname(QUERY_VARIATION) + ""` where FILTERROYAL_PREPA_QUERIES are our queries we keep from the previous step and QUERY_VARIATION is our keeping queries with some constant inside
+            
+- `"./scripts/digestuoso.sh '" + ISQL + "' > {output}"` where we delete data for this preparation step !
+
+NOTE: You can disabled `./scripts/fixator.py` to decrease execution time, but without this scripts, you may not have a logical data schema !
+
+NOTE: You can decrease number of node to decrease execution time and to have logical data schema !
+
+=== How it works ? : Experiments steps
+
+.When you execute the whole project, the execution follows theses steps :
+- `"./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(DATA) + " > {output.log}"` where we add our fixed and distributed data in virtuoso
+- `"python3 scripts/configator.py {input.data} {output.config} " + ENDPOINT` where input.data is our fixed and distributed data, output.config is the config file we generate to use it in RDF4J - FedX (one named graph = one endpoint) and ENDPOINT is our virtuoso endpoint
+- `"python3 ./scripts/virtuoso.py {input.query} \
+            --entrypoint {params.endpoint} \
+            --output {output.result}"` where input.query is our source selection query, to get optimal source selection to precize for each triples for corresponding query in RDF4J - FedX, params.endpoint is our virtuoso endpoint and output.result is result for each query
+            
+- `"python3 ./scripts/virtuoso.py {input.query} \
+            --entrypoint {params.endpoint} \
+            --output {output.result}"` where is the same steps as the previous step, but with the query with some constant inside
+            
+- `"python3 ./scripts/virtuoso.py {input.query} \
+            --entrypoint {params.endpoint} \
+            --output {output.out} --measures {output.stat}"` where is the same steps as the previous step, but is our true query we run to have the optimal execution time
+            
+- `"python3 ./scripts/virtuoso.py {input.query} \
+            --entrypoint {params.endpoint} \
+            --output {output.out} --measures {output.stat}"` where is the same steps as the previous step, but with the query with constant inside
+            
+- `"./scripts/federapp_com_and_run.sh "
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+        + " > " + os.getcwd() +"/{output.log}"` where is the same steps as the previous step, but with RDF4J. Moreover, here we execute query with no constant inside and with no forced source selection for triples
+        
+- `"./scripts/federapp_com_and_run.sh "
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+        + " > " + os.getcwd() +"/{output.log}"` where is the same steps as the previous step, but with query with constant instead of query with no constant
+        
+- `"./scripts/federapp_com_and_run.sh "
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+         + os.getcwd() +"/{input.ssopt} "
+        + " > " + os.getcwd() +"/{output.log}"` where is the same steps as the previous step, but with query with no constant and with forced source selection for triples
+        
+- `"./scripts/federapp_com_and_run.sh "
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+         + os.getcwd() +"/{input.ssopt} "
+        + " > " + os.getcwd() +"/{output.log}"` where is the same stteps as the previous step, but with query with constant
+        
+- `"./scripts/digestuoso.sh '" + ISQL + "' > {output.log}"` to delete data from virtuoso
+
+- `"python3 scripts/mergall.py 'result/site-" + str(SITE) + "' 'result/'"` where we merge result in 3 files (one for virtuoso, one for RDF4J with default source selection and one for RDF4J with forced source selection)
+
+- `"python3 ./scripts/stator.py {input.data} {output}"` where we create a yaml statistic file to get some statistic for number of entity for each Retailer and link between them
