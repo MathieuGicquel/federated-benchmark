@@ -104,3 +104,19 @@ NOTE: You can decrease number of node to decrease execution time and to have log
 - `"python3 scripts/mergall.py 'result/site-" + str(SITE) + "' 'result/'"` where we merge result in 3 files (one for virtuoso, one for RDF4J with default source selection and one for RDF4J with forced source selection)
 
 - `"python3 ./scripts/stator.py {input.data} {output}"` where we create a yaml statistic file to get some statistic for number of entity for each Retailer and link between them
+
+NOTE: You can disabled `./scripts/digestuoso.sh` by setting in `configuration.yaml` clean_after to False
+
+NOTE: You can use WatDiv queries by setting in `configuration.yaml` use_watdiv to True
+
+== How to understand result and generate some plot on it ?
+
+.To do this is simple, you only need to let `./multiple-run.sh` do it, or if you use the snakemake command, you can execute this command:
+- `python3 ./scripts/harry_plotter.py`
+
+NOTE: You can choose what plot you want by comment or uncomment some line in `./scripts/harry_plotter.py` (see in harry_plotter commentary to have more information on it)
+
+== Demonstration
+
+.In the `demo` folder, we put all data, queries and plot for this configuration:
+- TODO
