@@ -11,7 +11,7 @@ import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-coloredlogs.install(level='DEBUG', fmt='%(asctime)s - %(levelname)s %(message)s')
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
@@ -22,8 +22,11 @@ configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 
 def convert(input_folder, output):
 
+    logger.debug(input_folder)
+
     files = glob.glob(f'{input_folder}/*.txt')
     nb_site = len(files)
+    logger.debug(files)
 
     dfs = dict()
     for file in files:
@@ -33,16 +36,18 @@ def convert(input_folder, output):
         df["site"] = site
         dfs[site] = df
     
+    logger.debug(dfs)
     
     result_df = pd.concat(dfs.values())
     result_df = result_df[~result_df['p'].isin(['sameAs'])]
     logger.debug("Result df " + str(result_df))
     result_df = result_df.reset_index().drop(["index"], axis=1)
     
-    
-    result_df = join_literal(result_df)
-    result_df = add_predicates(result_df)
     logger.debug("Tail " + str(result_df.tail(5)))
+
+    result_df = add_federated_shop(result_df)
+    result_df = add_types(result_df)
+
 
 
     result_df["sNq"] = result_df.apply(lambda l: subject(l), axis=1)
@@ -59,17 +64,23 @@ def convert(input_folder, output):
 
 def subject(line):
     subject = str(line['s'])
+    if subject.startswith('<'):
+        return subject
+
+
     site = str(line['site'])
     if "#" in subject:
         logger.debug("Found # in " + subject)
         site = subject.split('#')[0]
         subject = subject.split('#')[1]
         
+    subject_split = subject.split("_")
+    subject = str(subject_split[0] + "_s" + site +"_" + subject_split[1])
     return "<http://example.org/s" + str(int(site)) + "/" + str(subject) + ">"
 
 def predicate(line):
-    if line['p'].startswith('http://'):
-        return "<" + line['p'] + ">"
+    if line['p'].startswith('<http://'):
+        return line['p']
     else:
         predicate = line['p']
         predicate = "<http://example.org/" + str(predicate) + ">"
@@ -78,6 +89,8 @@ def predicate(line):
 def objecte(line):
     go2 = str(line['o']).split('_')[0]
     objecte = str(line['o'])
+    if objecte.startswith('<'):
+        return objecte
     site = str(line['site'])
     if "#" in objecte:
         logger.debug("Found # in " + str(objecte))
@@ -87,288 +100,69 @@ def objecte(line):
     if str(go2) in ["string", "integer", "date"] :
         if str(go2) in ["string"]:
             objecte = "\"" + str(objecte) + "\""
+            logger.debug(f"String found {objecte}")
         else:
-            objecte = str(objecte)
+            if str(go2) in ["integer","date"]:
+                logger.debug(str(go2))
+                objecte = str(objecte).replace(go2 + "_","")
+            else:
+                objecte = str(objecte)
+
     else:
+        objecte_split = str(objecte).split("_")
+        objecte = str(objecte_split[0] + "_s" + site +"_" + objecte_split[1])
+        logger.debug(objecte)
         objecte = "<http://example.org/s" + str(int(site)) + "/" + str(objecte) + ">"
     return objecte
     
+
+def add_types(df: pd.DataFrame) -> pd.DataFrame:
+    logger.debug(df)
+
+    done_entites = set()
+    for index, row in df.iterrows():
+        if row["o"] in ["integer","string","date"]:
+            if row["o"] not in done_entites:
+                df.loc[len(df)] = [row["o"],"<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>","<http://example.org/federated_shop/" + row["o"].split("_")[0] + ">", row["site"]]
+                done_entites.add(row["o"])
+                logger.debug(f"Add rdf:type on  {row['o']} ({index})")
+        
+        if row["s"] not in done_entites:
+                df.loc[len(df)] = [row["s"],"<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>","<http://example.org/federated_shop/" + row["s"].split("_")[0] + ">", row["site"]]
+                done_entites.add(row["s"])
+                logger.debug(f"Add rdf:type on  {row['s']} ({index})")
+
+    return df
+
+
 def generate_nq(df: pd.DataFrame) -> str:
     data = df[["sNq","pNq","oNq","gNq"]]
    
     rdf = ""
     for index, row in data.iterrows():
-        rdf += f'{row["sNq"]} {row["pNq"]} {row["oNq"]} {row["gNq"]} . \n'
+        rdf += f'{row["sNq"]} {row["pNq"]} {row["oNq"]} {row["gNq"]} .\n'
         
    
     return rdf
 
-def add_predicates(df:pd.DataFrame) -> pd.DataFrame:
-    df_new_quad = pd.DataFrame(columns=df.columns)
-    for predicate in list(configuration["predicate"].keys()):
-        logger.debug(predicate)
-        osite = set()
-        ssite = set()
-        for source_yaml in (configuration["predicate"].get(predicate)):
-            source = (list(source_yaml.keys())[0])
-            osite.add(source.replace('s',''))
-            for target_str in source_yaml:
-                logger.debug("target_str = "+ target_str)
-                if(target_str == "default"):
-                    # Generic default (unknown source & target)
-                    for target_yaml in source_yaml.get(target_str):
-                        others_site = set(df["site"].unique()) - osite
-                        for other_site_origin in others_site:
-                            for other_site_target in set(df["site"].unique()):
-                                for target_site in source_yaml.get(target_str):
-                                    logger.debug(str(target_site))
-                                    logger.debug(str(target_str))
-                                    logger.debug(str(target_site.get("proba")))
-                                    proba = float(target_site.get("proba"))
-                                    random_number = random.random()
-                                    if proba > random_number:
-                                        logger.debug(str(proba)+  str(random_number))
-                                        logger.debug("target_info = "+ str(target_site))
-                            
-                                        df_type_src = df.loc[df['s'].str.contains(target_site.get("source_type"))]
-                                        logger.debug("df_type_src = "+ df_type_src)
-                                        df_type_targ = df.loc[df['s'].str.contains(target_site.get("target_type"))]
-                                        logger.debug("df_type_targ = "+ df_type_targ)
-                                        site_src = int(other_site_origin)
-                                        site_targ = int(other_site_target)
-                                        res_src = df_type_src.groupby('site')['s'].unique()[site_src]
-                                        res_targ = df_type_targ.groupby('site')['s'].unique()[site_targ]
+def add_federated_shop(df: pd.DataFrame) -> pd.DataFrame:
+    for idx, row in df.iterrows():
+        subject = row["s"]
+        object = row["o"]
+        
+        type_subject = row["s"].split("_")[0]
+        type_object = row["o"].split("_")[0]
 
+        if type_subject in configuration["shared_types"]:
+            new_subject = "<http://example.org/federated_shop/" + subject + ">"
+            df.loc[idx] = [new_subject, row["p"], row["o"], row["site"]]
+            logger.debug(idx)
 
-                                        n_times = random.randint(target_site.get("min"),target_site.get("max"))
-                                        logger.debug("n_times = "+ str(n_times))
-                                        for i in range(0,n_times):
-                                            entity1 = np.random.choice(res_src,1)[0]
-                                            entity2 = np.random.choice(res_targ,1)[0]
-                                            while (entity1 == entity2) and (site_src == site_targ):
-                                                entity1 = np.random.choice(res_src,1)[0]
-                                                entity2 = np.random.choice(res_targ,1)[0]
-                                                
-                                            logger.info(f"Adding {predicate} from s{site_src}#{entity1} to s{site_targ}#{entity2}")
-                                            df_new_quad = df_new_quad.append({'s':str(site_src) + "#" + str(entity1), 'p':predicate, 'o':str(site_targ) + "#" + str(entity2), 'site':site_src}, ignore_index=True) 
-                                            logger.debug("--------------")
+        if type_object in configuration["shared_types"]:
+            new_object = "<http://example.org/federated_shop/" + object + ">"
+            df.loc[idx] = [row["s"], row["p"], new_object, row["site"]]
+            logger.debug(idx)
 
-                    logger.debug("Found default")
-                else:
-                
-                    for target_yaml in source_yaml.get(target_str):
-                        for target_site in (target_yaml["target"]):
-                            logger.debug("target_site ="+ str(target_site))
-                            trg_site = list(target_site.keys())[0]
-                            logger.debug("trg_site = " + str(trg_site))
-                            if(trg_site == "default"):
-                                logger.debug("Found default")
-                                # Specific default (unkown target)
-                                others_site = set(df["site"].unique()) - ssite
-                                for other_site in others_site:
-                                    proba = float(target_site.get(trg_site).get("proba"))
-                                    random_number = random.random()
-                                    if proba > random_number:
-                                        logger.debug(str(proba)+  str(random_number))
-                                        logger.debug("target_info = "+ str(target_site))
-                            
-                                        df_type_src = df.loc[df['s'].str.contains(target_site.get(trg_site).get("source_type"))]
-                                        logger.debug("df_type_src = "+ df_type_src)
-                                        df_type_targ = df.loc[df['s'].str.contains(target_site.get(trg_site).get("target_type"))]
-                                        logger.debug("df_type_targ = "+ df_type_targ)
-                                        site_src = int(source.replace("s",""))
-                                        site_targ = int(other_site)
-                                        res_src = df_type_src.groupby('site')['s'].unique()[site_src]
-                                        res_targ = df_type_targ.groupby('site')['s'].unique()[site_targ]
-
-
-                                        n_times = random.randint(target_site.get(trg_site).get("min"),target_site.get(trg_site).get("max"))
-                                        logger.debug("n_times = "+ str(n_times))
-                                        for i in range(0,n_times):
-                                            entity1 = np.random.choice(res_src,1)[0]
-                                            entity2 = np.random.choice(res_targ,1)[0]
-                                            while (entity1 == entity2) and (site_src == site_targ):
-                                                entity1 = np.random.choice(res_src,1)[0]
-                                                entity2 = np.random.choice(res_targ,1)[0]
-                                                
-                                            logger.info(f"Adding {predicate} from s{site_src}#{entity1} to s{site_targ}#{entity2}")
-                                            df_new_quad = df_new_quad.append({'s':str(site_src) + "#" + str(entity1), 'p':predicate, 'o':str(site_targ) + "#" + str(entity2), 'site':site_src}, ignore_index=True) 
-                                            logger.debug("--------------")
-                            else:
-                                ssite.add(trg_site.replace('s',''))
-
-                                logger.debug("target_info = "+ str(target_site))
-                                
-                                df_type_src = df.loc[df['s'].str.contains(target_site.get(trg_site).get("source_type"))]
-                                logger.debug("df_type_src = "+ df_type_src)
-                                df_type_targ = df.loc[df['s'].str.contains(target_site.get(trg_site).get("target_type"))]
-                                logger.debug("df_type_targ = "+ df_type_targ)
-                                site_src = int(source.replace("s",""))
-                                site_targ = int(trg_site.replace("s",""))
-                                res_src = df_type_src.groupby('site')['s'].unique()[site_src]
-                                res_targ = df_type_targ.groupby('site')['s'].unique()[site_targ]
-
-
-                                n_times = random.randint(target_site.get(trg_site).get("min"),target_site.get(trg_site).get("max"))
-                                logger.debug("n_times = "+ str(n_times))
-                                for i in range(0,n_times):
-                                    entity1 = np.random.choice(res_src,1)[0]
-                                    entity2 = np.random.choice(res_targ,1)[0]
-                                    while (entity1 == entity2) and (site_src == site_targ):
-                                        entity1 = np.random.choice(res_src,1)[0]
-                                        entity2 = np.random.choice(res_targ,1)[0]
-                                        
-                                    logger.info(f"Adding {predicate} from s{site_src}#{entity1} to s{site_targ}#{entity2}")
-                                    df_new_quad = df_new_quad.append({'s':str(site_src) + "#" + str(entity1), 'p':predicate, 'o':str(site_targ) + "#" + str(entity2), 'site':site_src}, ignore_index=True) 
-                                    logger.debug("--------------")
-                    
-    
-    logger.info(df_new_quad.shape)
-    return pd.concat([df, df_new_quad],ignore_index=True, sort=False)
-
-def join_literal(df:pd.DataFrame) -> pd.DataFrame:
-    for literal in list(configuration["literal"].keys()):
-        logger.debug(literal)
-        osite = set()
-        ssite = set()
-        for source_yaml in (configuration["literal"].get(literal)):
-            source = (list(source_yaml.keys())[0])
-            osite.add(source.replace('s',''))
-            for target_str in source_yaml:
-                logger.debug("target_str = "+ target_str)
-                if(target_str == "default"):
-                    # Generic default (unknown source & target)
-                    for target_yaml in source_yaml.get(target_str):
-                        others_site = set(df["site"].unique()) - osite
-                        for other_site_origin in others_site:
-                            for other_site_target in set(df["site"].unique()):
-                                for target_site in source_yaml.get(target_str):
-                                    logger.debug(str(target_site))
-                                    logger.debug(str(target_str))
-                                    logger.debug(str(target_site.get("proba")))
-                                    proba = float(target_site.get("proba"))
-                                    random_number = random.random()
-                                    if proba > random_number:
-                                        logger.debug(str(proba)+  str(random_number))
-                                        logger.debug("target_info = "+ str(target_site))
-                            
-                                        #df_type_src = df.loc[df['s'].str.contains(target_site.get("source_type"))]
-                                        df_type_src = df.loc[(df['s'].str.contains(target_site.get("source_type"))) & (df['p'] == literal.split('/')[3])]
-                                        logger.debug("df_type_src = "+ df_type_src)
-                                        #df_type_targ = df.loc[df['o'].str.contains(target_site.get("target_type"))]
-                                        df_type_targ = df.loc[(df['o'].str.contains(target_site.get("target_type"))) & df['s'].str.contains(target_site.get("source_type")) & (df['p'] == literal.split('/')[3])]
-                                        logger.debug("df_type_targ = "+ df_type_targ)
-                                        site_src = int(other_site_origin)
-                                        site_targ = int(other_site_target)
-                                        res_src = df_type_src.groupby('site')['s'].unique()[site_src]
-                                        res_targ = df_type_targ.groupby('site')['s'].unique()[site_targ]
-
-
-                                        n_times = random.randint(target_site.get("min"),target_site.get("max"))
-                                        logger.debug("n_times = "+ str(n_times))
-                                        for i in range(0,n_times):
-                                            entity1 = np.random.choice(res_src,1)[0]
-                                            entity2 = np.random.choice(res_targ,1)[0]
-                                            while (entity1 == entity2) and (site_src == site_targ):
-                                                entity1 = np.random.choice(res_src,1)[0]
-                                                entity2 = np.random.choice(res_targ,1)[0]
-                                               
-                                               
-                                            logger.debug("entity1 : " + entity1)
-                                            logger.debug("site : " + str(site_src))
-                                            logger.debug("literal : " + literal.split('/')[3])
-                                            lit1 = (df[(df['s'] == entity1) & (df['site'] == str(site_src)) & (df['p'] == literal.split('/')[3])].iloc[0]["o"])
-                                            df.loc[(df['s'] == entity2) & (df['site'] == str(site_targ)) & (df['p'] == literal.split('/')[3]),'o'] = lit1
-                                    
-                                            logger.info(f'Joining {literal} from s{site_src}#{entity1} ({lit1}) to s{site_targ}#{entity2}')
-
-                    logger.debug("Found default")
-                else:
-                
-                    for target_yaml in source_yaml.get(target_str):
-                        for target_site in (target_yaml["target"]):
-                            logger.debug("target_site ="+ str(target_site))
-                            trg_site = list(target_site.keys())[0]
-                            logger.debug("trg_site = " + str(trg_site))
-                            if(trg_site == "default"):
-                                logger.debug("Found default")
-                                # Specific default (unkown target)
-                                others_site = set(df["site"].unique()) - ssite
-                                for other_site in others_site:
-                                    proba = float(target_site.get(trg_site).get("proba"))
-                                    random_number = random.random()
-                                    if proba > random_number:
-                                        logger.debug(str(proba)+  str(random_number))
-                                        logger.debug("target_info = "+ str(target_site))
-                            
-                                        #df_type_src = df.loc[df['s'].str.contains(target_site.get(trg_site).get("source_type"))]
-                                        df_type_src = df.loc[(df['s'].str.contains(target_site.get(trg_site).get("source_type"))) & (df['p'] == literal.split('/')[3])]
-                                        logger.debug("df_type_src = "+ df_type_src)
-                                        #df_type_targ = df.loc[df['o'].str.contains(target_site.get(trg_site).get("target_type"))]
-                                        df_type_targ = df.loc[(df['o'].str.contains(target_site.get(trg_site).get("target_type"))) & df['s'].str.contains(target_site.get(trg_site).get("source_type")) & (df['p'] == literal.split('/')[3])]
-                                        logger.debug("df_type_targ = "+ df_type_targ)
-                                        site_src = int(source.replace("s",""))
-                                        site_targ = int(other_site)
-                                        res_src = df_type_src.groupby('site')['s'].unique()[site_src]
-                                        res_targ = df_type_targ.groupby('site')['s'].unique()[site_targ]
-
-
-                                        n_times = random.randint(target_site.get(trg_site).get("min"),target_site.get(trg_site).get("max"))
-                                        logger.debug("n_times = "+ str(n_times))
-                                        for i in range(0,n_times):
-                                            entity1 = np.random.choice(res_src,1)[0]
-                                            entity2 = np.random.choice(res_targ,1)[0]
-                                            while (entity1 == entity2) and (site_src == site_targ):
-                                                entity1 = np.random.choice(res_src,1)[0]
-                                                entity2 = np.random.choice(res_targ,1)[0]
-                                                
-                                            logger.debug("entity1 : " + entity1)
-                                            logger.debug("site : " + str(site_src))
-                                            logger.debug("literal : " + literal.split('/')[3])
-                                            lit1 = (df[(df['s'] == entity1) & (df['site'] == str(site_src)) & (df['p'] == literal.split('/')[3])].iloc[0]["o"])
-                                            df.loc[(df['s'] == entity2) & (df['site'] == str(site_targ)) & (df['p'] == literal.split('/')[3]),'o'] = lit1
-                                    
-                                            logger.info(f'Joining {literal} from s{site_src}#{entity1} ({lit1}) to s{site_targ}#{entity2}')
-                            else:
-                                ssite.add(trg_site.replace('s',''))
-
-                                logger.debug("target_info = "+ str(target_site))
-                                
-                                
-                                logger.debug('target_site.get(trg_site).get("source_type")) = ' + str(target_site.get(trg_site).get("source_type")))
-                                df_type_src = df.loc[(df['s'].str.contains(target_site.get(trg_site).get("source_type"))) & (df['p'] == literal.split('/')[3])]
-                                logger.debug("df_type_src = "+ df_type_src)
-                                logger.debug('target_site.get(trg_site).get("target_type")) = ' + str(target_site.get(trg_site).get("target_type")))
-                                df_type_targ = df.loc[(df['o'].str.contains(target_site.get(trg_site).get("target_type"))) & df['s'].str.contains(target_site.get(trg_site).get("source_type")) & (df['p'] == literal.split('/')[3])]
-                                logger.debug("df_type_targ = "+ df_type_targ)
-                                site_src = int(source.replace("s",""))
-                                site_targ = int(trg_site.replace("s",""))
-                                res_src = df_type_src.groupby('site')['s'].unique()[site_src]
-                                res_targ = df_type_targ.groupby('site')['s'].unique()[site_targ]
-                                logger.debug("res_src = ")
-                                logger.debug(str(res_src))
-                                logger.debug("res_targ = ")
-                                logger.debug(str(res_targ))
-
-                                n_times = random.randint(target_site.get(trg_site).get("min"),target_site.get(trg_site).get("max"))
-                                logger.debug("n_times = "+ str(n_times))
-                                for i in range(0,n_times):
-                                    entity1 = np.random.choice(res_src,1)[0]
-                                    entity2 = np.random.choice(res_targ,1)[0]
-                                    while (entity1 == entity2) and (site_src == site_targ):
-                                        entity1 = np.random.choice(res_src,1)[0]
-                                        entity2 = np.random.choice(res_targ,1)[0]
-                                        
-                                    logger.debug("entity1 : " + entity1)
-                                    logger.debug("site : " + str(site_src))
-                                    logger.debug("literal : " + literal.split('/')[3])
-                                    lit1 = (df[(df['s'] == entity1) & (df['site'] == str(site_src)) & (df['p'] == literal.split('/')[3])].iloc[0]["o"])
-                                    df.loc[(df['s'] == entity2) & (df['site'] == str(site_targ)) & (df['p'] == literal.split('/')[3]),'o'] = lit1
-                                    
-                                    logger.info(f'Joining {literal} from s{site_src}#{entity1} ({lit1}) to s{site_targ}#{entity2}')
-                    
-    
-    logger.info(df.shape)
     return df
     
 if __name__ == "__main__":

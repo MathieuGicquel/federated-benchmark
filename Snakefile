@@ -1,187 +1,317 @@
 from glob import glob
 from re import search
 import yaml
+from bs4 import BeautifulSoup
 
 CONFIGURATION = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 SITE = CONFIGURATION["site"]
 ENDPOINT = CONFIGURATION["endpoint"]
 ISQL = CONFIGURATION["isql_virtuoso_path"]
-QUERY_NUMBER=50
+USE_CASE_INPUT_FILE = "lib/gmark/use-cases/shop.xml"
 RUN=range(0,1)
+KEEP_QUERIES = CONFIGURATION["queries"]
+clean_after = CONFIGURATION["clean_after"]
+use_watdiv = CONFIGURATION["use_watdiv"]
+use_fixator = str(CONFIGURATION["use_fixator"]).lower()
+
+if use_watdiv:
+    QUERY_NUMBER = 20
+else:
+    QUERY_NUMBER = int(BeautifulSoup(open(USE_CASE_INPUT_FILE, 'r').read(),'html.parser').find('workload').get('size'))*SITE
+
+if use_watdiv:
+    EXT = ".template.sparql"
+else:
+    EXT = ".sparql"
+use_watdiv = str(use_watdiv).lower()
+
+MULTI_GMARK_GRAPH = "prepa/" + str(SITE) + "/" +"gmark/data-{i}.txt0.txt"
+MULTI_GMARK_GRAPH_EXPAND = expand(MULTI_GMARK_GRAPH,i=range(0,SITE))
+
+FIXATOR_GRAPH = "prepa/" + str(SITE) + "/" +"gmark/data-{i}.txt0.fixed.txt"
+FIXATOR_GRAPH_EXPAND = expand(FIXATOR_GRAPH,i=range(0,SITE))
 
 
-OUTPUT_FILES_FEDERATED = expand("result/{site}/{run}/query-{query_number}/rdf4j/{mode}/query-{query_number}.{ext}",
-    site=SITE,
-    query_number=range(0,QUERY_NUMBER),
-    ext=["out","csv","log","sourceselection.csv","httpreq.txt"],
-    run=RUN,
-    mode=["default","force"]
-)
-OUTPUT_FILES_VIRTUOSO = expand("result/{site}/{run}/query-{query_number}/virtuoso/query-{query_number}.{ext}",
-    site=SITE,
-    query_number=range(0,QUERY_NUMBER),
-    ext=["out","csv"],
-    run=RUN
-)
+MULTI_GMARK_QUERIES = "prepa/" + str(SITE) + "/" +"queries/query-{query_id}" + EXT
+MULTI_GMARK_QUERIES_EXPAND = expand(MULTI_GMARK_QUERIES,query_id=[i for i in range(0,QUERY_NUMBER)])
+
+SHOP_XML = "prepa/" + str(SITE) + "/" +"use-cases/shop-{i}.xml"
+SHOP_XML_EXPAND = expand(SHOP_XML,i=range(0,SITE))
+
+RAW_DATA_NQ = "prepa/" + str(SITE) + "/" +"data/" + "/data.tmp.nq" 
+
+DATA_NQ = "result/site-" + str(SITE) +"/data/data.nq"
+
+CONFIG_TTL="result/"+ "site-" +str(SITE) +"/config/config.ttl"
+
+QUERIES_PREPA="prepa/queries/" + str(SITE) +"/query-{query_id}.noask" + EXT
+QUERIES_PREPA_EXPAND=expand(QUERIES_PREPA, query_id=range(0,QUERY_NUMBER))
+
+INGEST_TTL_LOG="prepa/site-" + str(SITE) + "/log/ingest_ttl.log"
+
+FILTERROYAL_PREPA_QUERIES="prepa/filter_queries/" + str(SITE)  + "/query-{query_id}.noask" + EXT
+FILTERROYAL_PREPA_QUERIES_EXPAND=expand(FILTERROYAL_PREPA_QUERIES, query_id=range(0,KEEP_QUERIES))
+
+QUERY_VARIATION="result/site-" + str(SITE) + "/queries/query-{query_id}-{query_variation_id}.noask.cst.sparql"
+QUERY_VARIATION_EXPAND=expand(QUERY_VARIATION,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+
+QUERY_VARIATION_SS="result/site-" + str(SITE) + "/queries/query-{query_id}-{query_variation_id}.ss.cst.sparql"
+QUERY_VARIATION_SS_EXPAND=expand(QUERY_VARIATION_SS,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+
+SOURCE_SELECTION_QUERY="result/" + "site-" +str(SITE) + "/run-{run_id}/query-{query_id}-{query_variation_id}/ssopt/query-{query_id}-{query_variation_id}.ss.opt"
+SOURCE_SELECTION_QUERY_EXPAND=expand(SOURCE_SELECTION_QUERY,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+
+VIRTUOSO_QUERY_OUT="result/"+ "site-" + str(SITE)+"/run-{run_id}/query-{query_id}-{query_variation_id}/virtuoso/query-{query_id}-{query_variation_id}.out"
+VIRTUOSO_QUERY_OUT_EXPAND=expand(VIRTUOSO_QUERY_OUT,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+VIRTUOSO_QUERY_STAT="result/"+ "site-" +str(SITE)+"/run-{run_id}/query-{query_id}-{query_variation_id}/virtuoso/query-{query_id}-{query_variation_id}.csv"
+VIRTUOSO_QUERY_STAT_EXPAND=expand(VIRTUOSO_QUERY_STAT,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+
+FEDERAPP_DEFAULT_RESULT="result/"+"site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "default/" +"query-{query_id}-{query_variation_id}.out"
+FEDERAPP_DEFAULT_RESULT_EXPAND=expand(FEDERAPP_DEFAULT_RESULT,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+FEDERAPP_DEFAULT_STAT="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "default/" +"query-{query_id}-{query_variation_id}.csv"
+FEDERAPP_DEFAULT_STAT_EXPAND=expand(FEDERAPP_DEFAULT_STAT,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+FEDERAPP_DEFAULT_LOG="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "default/" +"query-{query_id}-{query_variation_id}.log"
+FEDERAPP_DEFAULT_LOG_EXPAND=expand(FEDERAPP_DEFAULT_LOG,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+FEDERAPP_DEFAULT_SS="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "default/" +"query-{query_id}-{query_variation_id}.ss.csv"
+FEDERAPP_DEFAULT_SS_EXPAND=expand(FEDERAPP_DEFAULT_SS,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+FEDERAPP_DEFAULT_HTTPREQ="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "default/" +"query-{query_id}-{query_variation_id}.httpreq.txt"
+FEDERAPP_DEFAULT_HTTPREQ_EXPAND=expand(FEDERAPP_DEFAULT_HTTPREQ,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+
+
+FEDERAPP_VARIATION_FORCE_RESULT="result/"+"site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "force/" +"query-{query_id}-{query_variation_id}.out"
+FEDERAPP_VARIATION_FORCE_RESULT_EXPAND=expand(FEDERAPP_VARIATION_FORCE_RESULT,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+FEDERAPP_VARIATION_FORCE_STAT="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "force/" +"query-{query_id}-{query_variation_id}.csv"
+FEDERAPP_VARIATION_FORCE_STAT_EXPAND=expand(FEDERAPP_VARIATION_FORCE_STAT,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+FEDERAPP_VARIATION_FORCE_LOG="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "force/" +"query-{query_id}-{query_variation_id}.log"
+FEDERAPP_VARIATION_FORCE_LOG_EXPAND=expand(FEDERAPP_VARIATION_FORCE_LOG,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+FEDERAPP_VARIATION_FORCE_SS="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "force/" +"query-{query_id}-{query_variation_id}.ss.csv"
+FEDERAPP_VARIATION_FORCE_SS_EXPAND=expand(FEDERAPP_VARIATION_FORCE_SS,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+FEDERAPP_VARIATION_FORCE_HTTPREQ="result/"+ "site-" +str(SITE) +"/run-{run_id}/query-{query_id}-{query_variation_id}/rdf4j/"+ "force/" +"query-{query_id}-{query_variation_id}.httpreq.txt"
+FEDERAPP_VARIATION_FORCE_HTTPREQ_EXPAND=expand(FEDERAPP_VARIATION_FORCE_HTTPREQ,run_id=RUN,query_id=range(0,KEEP_QUERIES),query_variation_id=1)
+
+
+DIGESTUOSO_LOG="result/" + "site-" +str(SITE) + "/log/digestuoso.log"
+
+MERGEALL_RDF4J_DEFAULT="result/" + "all_" + str(SITE) +"_"  + "rdf4j_default" + ".csv"
+MERGEALL_RDF4J_FORCE="result/" + "all_"   +str(SITE) +"_"  + "rdf4j_force" + ".csv"
+MERGEALL_VIRTUOSO="result/" + "all_" +str(SITE) +"_"  + "virtuoso" + ".csv"
+        
+STATOR_OUT = "result/stat_" + str(SITE) + ".yaml"  
 
 rule all:
     input:
-        OUTPUT_FILES_FEDERATED,
-        OUTPUT_FILES_VIRTUOSO,
-        "result/" + "all_" + str(SITE) +"_"  + "virtuoso" + ".csv",
-        "result/" + "all_" + str(SITE) +"_"  + "rdf4j_force" + ".csv",
-        "result/" + "all_" + str(SITE) +"_"  + "rdf4j_default" + ".csv",
-        expand("queries/{site}/query-{query_number}.sourceselection.sparql", site=SITE, query_number=range(0,QUERY_NUMBER)),
-        "./log/" + str(SITE) + "/digestuoso.log", # pré-condition : run_digestuoso
+        MERGEALL_RDF4J_DEFAULT,
+        MERGEALL_RDF4J_FORCE,
+        MERGEALL_VIRTUOSO,
+        DIGESTUOSO_LOG if clean_after else [],
+        STATOR_OUT
 
+rule run_shopanhour:
+    output:
+        SHOP_XML_EXPAND
+    shell:
+        "python3 ./scripts/shopanhour.py " + USE_CASE_INPUT_FILE + " " + os.path.dirname(SHOP_XML)
 
 rule compile_gmark:
+    input:
+        SHOP_XML_EXPAND
     output:
-        graph="lib/gmark/demo/shop/shop-graph.txt0.txt",
-        queries=expand("lib/gmark/demo/shop/shop-translated/query-{query_id}.{query_type}", query_id=[i for i in range(0,QUERY_NUMBER)], query_type=['sparql', 'cypher', 'lb', 'sql'])
+        graph=MULTI_GMARK_GRAPH_EXPAND,
+        queries=MULTI_GMARK_QUERIES_EXPAND
     shell:
-        "cd lib/gmark/demo/scripts && ./compile-all.sh && ./shop.sh"
+        "./scripts/multi_gmark.sh " + str(SITE) + " " + str(use_watdiv)
+
+rule run_fixator:
+    input:
+        graph=MULTI_GMARK_GRAPH
+    output:
+        graph=FIXATOR_GRAPH
+    shell:
+        "if "+ str(use_fixator) +" ; then python3 scripts/fixator.py {input.graph} {output.graph} ; else cat {input.graph} >> {output.graph} ; fi"
 
 rule run_turshop:
     input:
-        "lib/gmark/demo/shop/shop-graph.txt0.txt"
+        FIXATOR_GRAPH_EXPAND
     output:
-        "data/{site}/shop-graph.nq"
+        RAW_DATA_NQ
     shell:
-        "python3 scripts/turshop.py {input} "+ str(SITE) +" {output}"
+        "python3 scripts/turshop.py "+ os.path.dirname(MULTI_GMARK_GRAPH) +" {output}"
+
+
+rule run_replicator:
+    input:
+        RAW_DATA_NQ
+    output:
+        DATA_NQ
+    shell:
+        "python3 scripts/replicator.py {input} {output}"
+
 
 rule run_configator:
     input:
-        "data/{site}/shop-graph.nq"
+        DATA_NQ
     output:
-        "Federator/{site}/config.ttl"
+       CONFIG_TTL
     shell:
-        "python3 scripts/configator.py {input} {output} " + ENDPOINT + " data/{wildcards.site}/sitelist.txt"
-
-
+        "python3 scripts/configator.py {input} {output} " + ENDPOINT
 
 
 rule run_querylator:
     input:
-        queries="lib/gmark/demo/shop/shop-translated/query-{query_number}.sparql",
+        queries=MULTI_GMARK_QUERIES,
     output:
-        output_query="queries/{site}/query-{query_number}.noask.sparql",
-        output_source_selection_query="queries/{site}/query-{query_number}.sourceselection.sparql"
+        output_query=QUERIES_PREPA
     params:
-        query="lib/gmark/demo/shop/shop-translated/query-{query_number}.sparql"
+        query=MULTI_GMARK_QUERIES
     shell:
-        "python3 scripts/querylator.py {params.query} {output.output_query} {output.output_source_selection_query}"
+        "python3 scripts/querylator.py {params.query} {output.output_query}"
+
 
 rule run_ingestuoso:
     input:
-        "data/{site}/shop-graph.nq"
+        DATA_NQ
     output:
-        "log/{site}/ingestuoso.log"
+        INGEST_TTL_LOG
     shell:
-        "./scripts/ingestuoso.sh '" + ISQL + "' '" + os.getcwd() + "/data/{wildcards.site}' >> {output}"
+        "./scripts/ingestuoso.sh '" + ISQL + "' " + os.path.dirname(os.path.abspath(DATA_NQ)) + " > {output}"
     #"./scripts/ingestuoso.sh " + ISQL + " C:/Users/yotla/OneDrive/Bureau/Code/TER/yotmat/federated-benchmark/data/{wildcards.site} >> {output}" #Work on Windows with WSL
 
-rule run_virtuoso_sourceselection_query:
+rule run_filterroyal_prepa:
     input:
-        "log/{site}/ingestuoso.log", # pré-condition : run_ingestuoso
-        query="queries/{site}/{query}.sourceselection.sparql",
+        INGEST_TTL_LOG,
+        queries=QUERIES_PREPA_EXPAND
     output:
-        result="result/{site}/{run}/{query}/rdf4j/force/{query}.sourceselection.opt"
+        queries=FILTERROYAL_PREPA_QUERIES_EXPAND
+    shell:
+        "python3 ./scripts/filter_royal.py " 
+            + os.path.dirname(QUERIES_PREPA) + " " 
+            + "--output " + os.path.dirname(FILTERROYAL_PREPA_QUERIES) + " "
+            + "--entrypoint " + ENDPOINT + " "
+            + str(KEEP_QUERIES) + " "
+
+# add constant to queries
+rule run_constantin:
+    input:
+        query=FILTERROYAL_PREPA_QUERIES_EXPAND
+    output:
+        QUERY_VARIATION_EXPAND,
+        QUERY_VARIATION_SS_EXPAND
+    shell:
+        "python3 ./scripts/constantin_first.py "
+            + os.path.dirname(FILTERROYAL_PREPA_QUERIES) # get the directory of queries
+            + " --output " + os.path.dirname(QUERY_VARIATION) + ""
+
+
+
+
+rule run_virtuoso_sourceselection_query: # compute source selection query
+    input:
+        query=QUERY_VARIATION_SS
+    output:
+        result=SOURCE_SELECTION_QUERY
     params:
         endpoint=ENDPOINT,
-        run=RUN
+        run_id=RUN
     shell:
         "python3 ./scripts/virtuoso.py {input.query} \
             --entrypoint {params.endpoint} \
             --output {output.result}"
 
-rule compile_and_run_federapp_default:
-    threads: 1
+
+rule run_virtuoso:
     input:
-        "log/{site}/ingestuoso.log", # pré-condition : run_ingestuoso
-        query="queries/{site}/{query}.noask.sparql",
-        config="Federator/{site}/config.ttl"
-    params:
-        run=RUN
+        query=QUERY_VARIATION
     output:
-        result="result/{site}/{run}/{query}/rdf4j/"+ "default/" +"{query}.out",
-        stat="result/{site}/{run}/{query}/rdf4j/"+ "default/" +"{query}.csv",
-        log="result/{site}/{run}/{query}/rdf4j/"+ "default/" +"{query}.log",
-        sourceselection="result/{site}/{run}/{query}/rdf4j/default/{query}.sourceselection.csv",
-        httpreq="result/{site}/{run}/{query}/rdf4j/"+ "default/" +"{query}.httpreq.txt"
-
-    shell:
-        "./scripts/federapp_com_and_run.sh "
-        + os.getcwd() +"/{input.config} "
-        + os.getcwd() +"/{input.query} "
-        + os.getcwd() +"/{output.result}  "
-        + os.getcwd() +"/{output.stat} "
-        + os.getcwd() +"/{output.sourceselection} "
-        + os.getcwd() +"/{output.httpreq} "
-        + " > " + os.getcwd() +"/{output.log}"
-
-
-
-rule compile_and_run_federapp_force:
-    threads: 1
-    input:
-        expand("result/{site}/{run}/query-{query_number}/rdf4j/"+ "default/" +"query-{query_number}.out",run=RUN, site=SITE, query_number=range(0,QUERY_NUMBER)), # pré-condition: compile_and_run_federapp_default
-        query="queries/{site}/{query}.noask.sparql",
-        config="Federator/{site}/config.ttl",
-        ssopt="result/{site}/{run}/{query}/rdf4j/force/{query}.sourceselection.opt"
-    params:
-        run=RUN
-    output:
-        result="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.out",
-        stat="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.csv",
-        log="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.log",
-        sourceselection="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.sourceselection.csv",
-        httpreq="result/{site}/{run}/{query}/rdf4j/"+ "force/" +"{query}.httpreq.txt",
-
-
-    shell:
-        "./scripts/federapp_com_and_run.sh "
-        + os.getcwd() +"/{input.config} "
-        + os.getcwd() +"/{input.query} "
-        + os.getcwd() +"/{output.result}  "
-        + os.getcwd() +"/{output.stat} "
-        + os.getcwd() +"/{output.sourceselection} "
-        + os.getcwd() +"/{output.httpreq} "
-        + os.getcwd() +"/{input.ssopt} "
-        + " > " + os.getcwd() +"/{output.log}"
-
-rule run_virtuoso_query:
-    input:
-        expand("result/{site}/{run}/query-{query_number}/rdf4j/"+ "force/" +"query-{query_number}.out",run=RUN, site=SITE, query_number=range(0,QUERY_NUMBER)), # pré-condition
-        query="queries/{site}/{query}.noask.sparql"
-    output:
-        result="result/{site}/{run}/{query}/virtuoso/{query}.out",
-        stats="result/{site}/{run}/{query}/virtuoso/{query}.csv"
+        out=VIRTUOSO_QUERY_OUT,
+        stat=VIRTUOSO_QUERY_STAT
     params:
         endpoint=ENDPOINT,
-        run=RUN
+        run_id=RUN
     shell:
         "python3 ./scripts/virtuoso.py {input.query} \
             --entrypoint {params.endpoint} \
-            --output {output.result} --measures {output.stats}"
+            --output {output.out} --measures {output.stat}"
+
+
+
+
+rule compile_and_run_federapp_default:
+    input:
+        query=QUERY_VARIATION,
+        config=CONFIG_TTL
+    params:
+        run=RUN
+    output:
+        result=FEDERAPP_DEFAULT_RESULT,
+        stat=FEDERAPP_DEFAULT_STAT,
+        log=FEDERAPP_DEFAULT_LOG,
+        sourceselection=FEDERAPP_DEFAULT_SS,
+        httpreq=FEDERAPP_DEFAULT_HTTPREQ
+    shell:
+        "./scripts/federapp_com_and_run.sh "
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+        + " > " + os.getcwd() +"/{output.log}"
+
+rule compile_and_run_federapp_variation_force:
+    input:
+        query=QUERY_VARIATION,
+        config=CONFIG_TTL,
+        ssopt=SOURCE_SELECTION_QUERY
+    params:
+        run=RUN
+    output:
+        result=FEDERAPP_VARIATION_FORCE_RESULT,
+        stat=FEDERAPP_VARIATION_FORCE_STAT,
+        log=FEDERAPP_VARIATION_FORCE_LOG,
+        sourceselection=FEDERAPP_VARIATION_FORCE_SS,
+        httpreq=FEDERAPP_VARIATION_FORCE_HTTPREQ
+    shell:
+        "./scripts/federapp_com_and_run.sh "
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+         + os.getcwd() +"/{input.ssopt} "
+        + " > " + os.getcwd() +"/{output.log}"
+
 
 rule run_digestuoso:
     input:
-        OUTPUT_FILES_VIRTUOSO,
-        OUTPUT_FILES_FEDERATED
+        # pré-condition
+        VIRTUOSO_QUERY_STAT_EXPAND,
+        FEDERAPP_DEFAULT_STAT_EXPAND,
+        FEDERAPP_VARIATION_FORCE_STAT_EXPAND
     output:
-        "./log/" + str(SITE) + "/digestuoso.log"
+        log=DIGESTUOSO_LOG
     shell:
-        "./scripts/digestuoso.sh '" + ISQL + "' '" + os.getcwd() + "/data/" + str(SITE) +"/sitelist.txt' >> {output}"
-        #"./scripts/digestuoso.sh " + ISQL + " 'C:/Users/yotla/OneDrive/Bureau/Code/TER/yotmat/federated-benchmark/data/" + str(SITE) + "/sitelist.txt' >> {output}" #Work on Windows with WSL
+        "./scripts/digestuoso.sh '" + ISQL + "' > {output.log}"
+
 
 rule run_mergeall:
     input:
-        OUTPUT_FILES_VIRTUOSO, #pré-condition
-        OUTPUT_FILES_FEDERATED
+        #pré-condition
+        VIRTUOSO_QUERY_STAT_EXPAND,
+        FEDERAPP_DEFAULT_STAT_EXPAND,
+        FEDERAPP_VARIATION_FORCE_STAT_EXPAND
     output:
-        "result/" + "all_" + str(SITE) +"_"  + "virtuoso" + ".csv",
-        "result/" + "all_" + str(SITE) +"_"  + "rdf4j_force" + ".csv",
-        "result/" + "all_" + str(SITE) +"_"  + "rdf4j_default" + ".csv"
+        MERGEALL_RDF4J_DEFAULT,
+        MERGEALL_RDF4J_FORCE,
+        MERGEALL_VIRTUOSO
     shell:
-        "python3 scripts/mergall.py 'result/" + str(SITE) + "' 'result/'"
+        "python3 scripts/mergall.py 'result/site-" + str(SITE) + "' 'result/'"
+
+
+rule run_stator:
+    input:
+        data=DATA_NQ
+    output:
+        STATOR_OUT
+    shell:
+        "python3 ./scripts/stator.py {input.data} {output}"

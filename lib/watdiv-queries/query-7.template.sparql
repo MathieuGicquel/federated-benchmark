@@ -1,0 +1,2 @@
+PREFIX : <http://example.org/>  SELECT ?x0 ?x1 ?x3 ?x4 ?x5 ?x6 WHERE {  ?x0 :includes ?x1 .  ?c2 :offers ?x0 .  ?x0 :price ?x3 .  ?x0 :validThrough ?x4 .  ?x1 :title ?x5 .  ?x1 rdf:type ?x7 . OPTIONAL {  ?x1 owl:sameAs ?x6  } } 
+# F5

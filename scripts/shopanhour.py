@@ -5,8 +5,13 @@ import yaml
 import logging
 import coloredlogs
 import numpy as np
+from html import escape
+from html.parser import HTMLParser
+from lxml.html.soupparser import fromstring
+from lxml.etree import tostring
+import re
 
-coloredlogs.install(level='DEBUG', fmt='%(asctime)s - %(levelname)s %(message)s')
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 #python3 ./scripts/shopanhour.py ./use-case/shop.xml ./prepa/use-cases
@@ -22,7 +27,8 @@ def shopanhour(shop_template,output):
     nb_shop = str(configuration.get("site"))
     with open(shop_template, 'r') as xmlfile:
         xmldata = xmlfile.read()
-    bs_data = BeautifulSoup(xmldata,'html.parser')
+        xmldata = re.sub(r"<!--.*-->","",xmldata)
+    bs_data = BeautifulSoup(xmldata,'xml')
 
     # Data distribution
 
@@ -51,10 +57,13 @@ def shopanhour(shop_template,output):
         tag.string.replace_with(str(int(val)))
         logger.debug(str(tag.string))
         with open(f'{output}/shop-{i}.xml','w') as outfile:
-            outfile.write(bs_data.prettify())
+            str_xml = str(bs_data.prettify())
+            str_xml = re.sub(r"(\s*<.+>)\n\s*([A-Za-z0-9\.]+)\n\s*(</.+>)\n",r"\1\2\3\n",str_xml)
+            outfile.write(str_xml)
 
     # sameAs distribution
 
+    """
     sameas_distrib = configuration["sameas_distribution"]
     logger.debug(str(sameas_distrib))
     typ_str_sameas = sameas_distrib.get("choosen_type")
@@ -77,7 +86,7 @@ def shopanhour(shop_template,output):
 
         with open(f'{output}/shop-{i}.xml','r') as xmlfile:
             xmldata = xmlfile.read()
-        bs_data = BeautifulSoup(xmldata,'html.parser')
+        bs_data = BeautifulSoup(xmldata,'xml')
 
         total_sameAs = 0
         for tag_sameas in bs_data.find_all('target', {'symbol':'82'}):
@@ -95,7 +104,15 @@ def shopanhour(shop_template,output):
             #tag_sameas.append(str(f"<outdistribution type=\"uniform\"><min>{nb_sameAs}</min><max>{nb_sameAs}</max></outdistribution>"))
             #logger.debug(str(tag_sameas))
             with open(f'{output}/shop-{i}.xml','w') as outfile:
-                outfile.write(bs_data.prettify())
+                str_xml = str(bs_data.prettify())
+                str_xml = re.sub(r"(\s*<.+>)\n\s*([A-Za-z0-9\.]+)\n\s*(</.+>)\n",r"\1\2\3\n",str_xml)
+                #str_xml = re.sub("\n <","\n\t<",str_xml)
+                #str_xml = re.sub("\n  <","\n\t\t<",str_xml)
+                #str_xml = re.sub("\n   <","\n\t\t\t<",str_xml)
+                #str_xml = re.sub("\n    <","\n\t\t\t\t<",str_xml)
+                #str_xml = re.sub("\n     <","\n\t\t\t\t\t<",str_xml)
+                outfile.write(str_xml)
+    """
 
 if __name__ == "__main__":
     shopanhour()

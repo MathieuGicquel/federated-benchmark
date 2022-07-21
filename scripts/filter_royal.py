@@ -15,7 +15,7 @@ from glob import glob
 #print(tabulate(data, headers=headers))
 
 
-coloredlogs.install(level='INFO', fmt='%(asctime)s - %(levelname)s %(message)s')
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 # text/csv
@@ -58,8 +58,8 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
 
 def virtuoso(queries,format,output,entrypoint,nb_query):
 
-    queries_files = glob(f"{queries}/*.noask.sparql")
-
+    queries_files = glob(f"{queries}/*.sparql")
+    logger.debug(str(queries_files))
     i_query = 0
 
     for query in queries_files:
@@ -68,6 +68,7 @@ def virtuoso(queries,format,output,entrypoint,nb_query):
         with open(query) as query_file:
             querys=query_file.read()
             query_name=os.path.basename(query)
+            query_ext="".join(Path(query).suffixes)
 
             logger.info(f'Virtuoso processing query:{query_name}')
             start_time = time()
@@ -87,13 +88,10 @@ def virtuoso(queries,format,output,entrypoint,nb_query):
                             break
                     if j == 3:
                         logger.info(f'Query {query_name} has result')
-                        with open(f'{output}/query-{i_query}.ss.sparql', 'a') as output_file:
-                            query_ss_name = query_name.split('.')[0]
-                            with open(f'{queries}/{query_ss_name}.ss.sparql', 'r') as ss_file:
-                                output_file.write(ss_file.read())
+                        logger.debug(data)
 
-                        with open(f'{output}/query-{i_query}.noask.sparql', 'a') as output_file:
-                            output_file.write(querys)
+                        with open(f'{output}/query-{i_query}{query_ext}', 'w') as output_file:
+                            output_file.write(f"# {query} \n{querys}")
                         i_query+=1
                 else:
                     print(data[0].decode())

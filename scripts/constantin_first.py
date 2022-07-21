@@ -18,7 +18,7 @@ import pandas as pd
 import io
 import sys
 
-coloredlogs.install(level='DEBUG', fmt='%(asctime)s - %(levelname)s %(message)s')
+coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 # text/csv
@@ -45,7 +45,9 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
         with urllib.request.urlopen(req,data=data) as f:
             response = f.read()
             df = pd.read_csv(io.StringIO(response.decode('utf-8')),quotechar="'",)
+            
             columns = df.columns
+            print(columns)
             new_columns = [s.replace('"','') for s in columns]
             df.set_axis(new_columns, axis=1,inplace=True)
 
@@ -56,9 +58,19 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
             # for each column
             #   create a new column containing the last number : \d+(?!.*\d)
             regex_columns = []
+
+            def get_entity_id(s: str) -> str:
+                groups = re.search(r"(\d+)(?!.*\d)",str(s))
+                if groups is not None:
+                    return groups.group(1)
+                else:
+                    return s
+
+
             for c in df.columns:
                 new_c = "regex_" + c
-                df[new_c] = df[c].apply(lambda s: int(re.search(r"(\d+)(?!.*\d)",str(s)).group(1)))
+                
+                df[new_c] = df[c].apply(lambda s: get_entity_id(s))
                 regex_columns.append(new_c)
 
             df = df.sort_values(regex_columns)
@@ -85,7 +97,7 @@ def virtuoso(queries,format,output,entrypoint,seed,variation):
     output = os.path.abspath(output)
     random.seed(int(seed))
     variations = range(1,variation + 1)
-    queries_files = sorted(glob(f"{queries}/*.noask.sparql"))
+    queries_files = sorted(glob(f"{queries}/*.sparql"))
     for query_file in queries_files:
         for variation_id in variations:
             seed = random.randint(0, 1000000) 
@@ -101,7 +113,11 @@ def virtuoso(queries,format,output,entrypoint,seed,variation):
                 logger.debug(f"Query : {query_absolute_path}")
                 query = query.read()
                 replacement_df = get_replacement_df(query,entrypoint, format)
-                new_query = add_cst_to_query(query,replacement_df,seed)
+
+                if "template" in query_file:
+                    new_query = add_fixed_cst_to_query(query,replacement_df,seed)
+                else:
+                    new_query = add_random_cst_to_query(query,replacement_df,seed)
                 new_query_ss = get_ss_query(new_query)
 
                 new_query = f"# Variation {variation_id} from {query_absolute_path} - seed {seed}\n\n" + new_query
@@ -128,7 +144,34 @@ def get_replacement_df(query: str,entrypoint: str, format: str):
     return df
 
 
-def add_cst_to_query(query: str, df: pd.DataFrame,seed) -> str:
+def add_fixed_cst_to_query(query:str, df: pd.DataFrame, seed) -> str:
+    for m in re.finditer(r"(\?c[0-9]+)", str(query)):
+        var = str(m.group(1))
+        x_c = var.replace("?","")
+        logger.debug(var)
+        logger.debug(df[x_c])
+
+        if len(df[x_c]) > 0:
+            column = str(df[x_c].sample(n=1,random_state=seed).iloc[0])
+
+            column = re.sub(r"\[([A-Za-z]+_[0-9]+)\]",r'\1', column)
+            column = re.sub(r'\[([A-Za-z]+_[0-9]+)"\]',r'"\1"', column)
+            column = re.sub(r"(http://example.org/(s[0-9]+|federated_shop)/[A-Za-z]+(_s[0-9]+)?_[0-9]+)",r'<\1>', column)
+
+            prepa = query.split('WHERE {')
+            prepa[0] = prepa[0].replace(f'?{x_c}', '')
+            if '?x' not in prepa[0] and '*' not in prepa[0]:
+                prepa[0] = prepa[0] + ' * '
+            prepa[1] = prepa[1].replace(f'?{x_c}', f'{column}')
+            result = prepa[0] + 'WHERE {' + prepa[1]
+            query = result
+        else:
+            logger.debug(f"Empty df[{x_c}]")
+
+    return query
+
+
+def add_random_cst_to_query(query: str, df: pd.DataFrame,seed) -> str:
     triples = get_triples_without_cst(query)
     var_0 = [tp[0] for tp in triples]
     var_1 = [tp[2] for tp in triples]
@@ -143,12 +186,14 @@ def add_cst_to_query(query: str, df: pd.DataFrame,seed) -> str:
 
 
     #column = str(random.sample(list(sorted(df[str(x_c)])),k=1)[0])
+    logger.debug(f"df = {df}")
+    logger.debug(f"df[x_c] = {df[x_c]}")
     column = str(df[x_c].sample(n=1,random_state=seed).iloc[0])
-    print(column)
+    logger.debug(str(column))
 
-    column = re.sub(r"\[([0-9]+)\]",r'\1', column)
-    column = re.sub(r'\[([0-9]+)"\]',r'"\1"', column)
-    column = re.sub(r"(http://example.org/s[0-9]+/[0-9]+)",r'<\1>', column)
+    column = re.sub(r"\[([A-Za-z]+_[0-9]+)\]",r'\1', column)
+    column = re.sub(r'\[([A-Za-z]+_[0-9]+)"\]',r'"\1"', column)
+    column = re.sub(r"(http://example.org/(s[0-9]+|federated_shop)/[A-Za-z]+(_s[0-9]+)?_[0-9]+)",r'<\1>', column)
 
     prepa = query.split('WHERE {')
     prepa[0] = prepa[0].replace(f'?{x_c}', '')
@@ -164,7 +209,7 @@ def get_triples_without_cst(query: str):
     return triples
 
 def get_triples(query:str):
-    triples = re.findall(r"(\?x[0-9]+|<http://example.org/s[0-9]+/[0-9]+>|\"[0-9]+\"|[0-9]+) (\S+) (\?x[0-9]+|<http://example.org/s[0-9]+/[0-9]+>|\"[0-9]+\"|[0-9]+) \.", query)
+    triples = re.findall(r"(\?x[0-9]+|<http://example.org/s[0-9]+/[A-Za-z]+_s[0-9]+_[0-9]+>|<http://example.org/federated_shop/[A-Za-z]+_s[0-9]+_[0-9]+>|<http://example.org/s[0-9]+/[A-Za-z]+>|<http://example.org/federated_shop/[A-Za-z]+>) (\S+) (\?x[0-9]+|<http://example.org/s[0-9]+/[A-Za-z]+_s[0-9]+_[0-9]+>|<http://example.org/federated_shop/[A-Za-z]+_s[0-9]+_[0-9]+>|<http://example.org/s[0-9]+/[A-Za-z]+>|<http://example.org/federated_shop/[A-Za-z]+>|\"string_[0-9]+\"|[0-9]+) \.", query)
     return triples
 
 def get_ss_query(query: str) -> str:

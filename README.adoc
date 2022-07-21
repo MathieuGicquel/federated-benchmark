@@ -1,0 +1,79 @@
+= SPARQL Federated Benchmark
+GICQUEL Mathieu; LE CROM Yotlan
+:toc:
+
+== Meaning
+
+This benchmark create automatcly **RDF data** and **SPARQL queries** based on link:https://github.com/gbagan/gmark[gMark]. Indeed, you need to set whatever you want in the setting file `lib/gmark/use-cases/shop.xml`. Moreover, you can set additionnal setting in the setting file `configuration.yaml`. To conclude on setting, you can set the number of site in the file `multiple-run.sh`.
+
+== How to use SPARQL Federated Benchmark ?
+
+.To execute the whole project, you can execute on of these command :
+- `snakemake -c1 -p` to execute just one time with one setting number of site
+- `./multiple-run.sh` to execute multiple time with multiple setting number of site
+
+=== How it works ?
+
+.When you execute the whole project, the execution follows theses steps :
+- `"python3 ./scripts/shopanhour.py " + USE_CASE_INPUT_FILE + " " + os.path.dirname(SHOP_XML)` where USE_CASE_INPUT_FILE is the shop.xml file from gMark's use cases and SHOP_XML is the shop.xml file for each site
+- `"./scripts/multi_gmark.sh " + str(SITE) + " " + str(use_watdiv)` where SITE is the number of SITE and use_watdiv is a boolean to specify if we want to use WatDiv queries or not. Moreover, multi_gmark work like gMark, but we generate 1 gMark for each site. To conclude, after we generate all shop-workload.xml file into 1 shop-workload.xml file to generate all the queries for all site
+- `"if "+ str(use_fixator) +" ; then python3 scripts/fixator.py {input.graph} {output.graph} ; else cat {input.graph} >> {output.graph} ; fi"` where use_fixator is a boolean to specify to use fixator or not. Moreover, input.graph is the file without fixed data, and output.graph is the file with fixed data
+- `"python3 scripts/turshop.py "+ os.path.dirname(MULTI_GMARK_GRAPH) +" {output}"` where  MULTI_GMARK_GRAPH is the folder where all the txt data are and output is the ttl data file (One file for all txt data file)
+- `"python3 scripts/replicator.py {input} {output}"` work like fixator, but with ttl file. Moreover, replicator.py scripts add sameAs predicate between Product from same Retailer but on different site (he duplicate Retailer)
+- `"python3 scripts/configator.py {input.data} {output.config} " + ENDPOINT` where input.data is our fixed and distributed data, output.config is the config file we generate to use it in RDF4J - FedX (one named graph = one endpoint) and ENDPOINT is our virtuoso endpoint
+- `"python3 scripts/querylator.py {params.query} {output.queries} {output.queries_ss}"` is crucial too because we fixe original query to work with our fixed and distributed data. Moreover, output.queries is translated queries and output.queries_ss is special queries to get optimal source selection for each triples in corresponding query
+- `"./scripts/ingestuoso.sh '" + ISQL + "' " + os.getcwd()+ "/" + os.path.dirname(DATA_NQ) + " > {output}"` where ISQL is the place of the virtuoso's isql terminal and DATA_NQ is the convert data from the last steps
+- `"python3 ./scripts/filter_royal.py " 
+            + os.path.dirname(QUERIES_PREPA) + " " 
+            + "--output " + os.path.dirname(FILTERROYAL_PREPA_QUERIES) + " "
+            + "--entrypoint " + ENDPOINT + " "
+            + str(KEEP_QUERIES) + " "` where QUERIES_PREPA is the folder where our fixed and distributed queries are, FILTERROYAL_PREPA_QUERIES  is the folder where queries who return result are, ENDPOINT is virtuoso endpoint and KEEP_QUERIES is the number of queries who return result we want to keep.
+- `"python3 ./scripts/constantin_first.py "
+            + os.path.dirname(FILTERROYAL_PREPA_QUERIES)
+            + " --output " + os.path.dirname(QUERY_VARIATION) + ""` where FILTERROYAL_PREPA_QUERIES are our queries we keep from the previous step and QUERY_VARIATION is our keeping queries with some constant inside
+- `"python3 ./scripts/virtuoso.py {input.query} \
+            --entrypoint {params.endpoint} \
+            --output {output.result}"` where input.query is our source selection query, to get optimal source selection to precize for each triples for corresponding query in RDF4J - FedX, params.endpoint is our virtuoso endpoint and output.result is result for each query
+- `"python3 ./scripts/virtuoso.py {input.query} \
+            --entrypoint {params.endpoint} \
+            --output {output.result}"` where is the same steps as the previous step, but with the query with some constant inside
+- `"./scripts/federapp_com_and_run.sh "
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+        + " > " + os.getcwd() +"/{output.log}"` where is the same steps as the previous step, but with RDF4J. Moreover, here we execute query with constant inside and with no forced source selection for triples
+- `"./scripts/federapp_com_and_run.sh "
+        + os.getcwd() +"/{input.config} "
+        + os.getcwd() +"/{input.query} "
+        + os.getcwd() +"/{output.result}  "
+        + os.getcwd() +"/{output.stat} "
+        + os.getcwd() +"/{output.sourceselection} "
+        + os.getcwd() +"/{output.httpreq} "
+         + os.getcwd() +"/{input.ssopt} "
+        + " > " + os.getcwd() +"/{output.log}"` where is the same steps as the previous step, but with query with constant and with forced source selection for triples
+- `"./scripts/digestuoso.sh '" + ISQL + "' > {output.log}"` to delete data from virtuoso
+- `"python3 scripts/mergall.py 'result/site-" + str(SITE) + "' 'result/'"` where we merge result in 3 files (one for virtuoso, one for RDF4J with default source selection and one for RDF4J with forced source selection)
+- `"python3 ./scripts/stator.py {input.data} {output}"` where we create a yaml statistic file to get some statistic for number of entity for each Retailer and link between them
+
+NOTE: You can disabled `./scripts/fixator.py` by setting in `configuration.yaml` use_fixator to False to decrease execution time, but without this scripts, you may not have a logical data schema !
+
+NOTE: You can decrease number of node to decrease execution time and to have logical data schema !
+
+NOTE: You can disabled `./scripts/digestuoso.sh` by setting in `configuration.yaml` clean_after to False
+
+NOTE: You can use WatDiv queries by setting in `configuration.yaml` use_watdiv to True
+
+== How to understand result and generate some plot on it ?
+
+.To do this is simple, you only need to let `./multiple-run.sh` do it, or if you use the snakemake command, you can execute this command:
+- `python3 ./scripts/harry_plotter.py`
+
+NOTE: You can choose what plot you want by comment or uncomment some line in `./scripts/harry_plotter.py` (see in harry_plotter commentary to have more information on it)
+
+== Demonstration
+
+.In the `demo` folder, we put all data, queries and plot for this configuration:
+- TODO

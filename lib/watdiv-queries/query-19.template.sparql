@@ -1,0 +1,2 @@
+PREFIX : <http://example.org/>  SELECT ?x0 ?x2 ?x4 ?x5 WHERE {  ?x0 rdf:type ?type .  ?x0 :text ?x2 .  ?c3 :like ?x0 .  OPTIONAL {  ?x0 owl:sameAs ?x4 .  }  OPTIONAL {  ?c3 owl:sameAs ?x5 .  } } 
+# S7 

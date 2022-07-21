@@ -1,0 +1,2 @@
+PREFIX : <http://example.org/>  SELECT ?x0 ?x1 ?x4 WHERE {  ?x0 :conductor ?x1 .  ?x0 rdf:type ?type .  ?x0 :hasGenre ?c3 .   OPTIONAL {  ?x0 owl:sameAs ?x4 .  } } 
+# S6
