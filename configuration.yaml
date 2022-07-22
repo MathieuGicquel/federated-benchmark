@@ -1,4 +1,0 @@
-site: 10
-endpoint: "http://172.18.224.1:8890/sparql" #Following this tutorial to match http://localhost:8890/sparql from Windows with current endpoint from WSL : https://devdojo.com/mvnarendrareddy/access-windows-localhost-from-wsl2
-#isql_virtuoso_path: "'C:/Program\\ Files/OpenLink\\ Software/Virtuoso\\ OpenSource\\ 7.2/bin/isql.exe'"
-isql_virtuoso_path: '/Applications/Virtuoso\\ Open\\ Source\\ Edition\\ v7.2.app/Contents/virtuoso-opensource/bin/isql'

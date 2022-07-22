@@ -1,1 +1,0 @@
-MATCH (x0)<-[:pcreationDate]-()-[:plikes]->()-[:phasTag]->(x1), (x0)-[:pcreationDate*]->(x2), (x2)<-[:pbirthday]-()<-[:phasMember]-()-[:phasMember]->()-[:pcreationDate]->(x1) RETURN DISTINCT x0, x1, x2;

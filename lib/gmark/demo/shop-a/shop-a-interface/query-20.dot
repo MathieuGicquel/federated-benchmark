@@ -1,8 +1,0 @@
-digraph g {
-	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
-	x2 [fillcolor="yellow", style="filled," shape=circle, label="?x2"];
-	x1 [fillcolor="yellow", style="filled," shape=circle, label="?x1"];
-	x0 -> x1 [label="(((homepage.homepage-.actor-)+(homepage.trailer-)+(actor.actor-)))*"];
-	x0 -> x2 [label="(((director.subscribes.trailer-)+(trailer.homepage-.hasReview.hasReview-)+(director.makesPurchase.purchaseFor)))*"];
-	x2 -> x1 [label="(((hasReview.hasReview-.homepage.homepage-)+(trailer.trailer-)+(actor.friendOf-.director-)))*"];
-}

@@ -1,6 +1,0 @@
-.git/
-.devcontainer/
-.vscode/
-build*
-demo/
-test*/

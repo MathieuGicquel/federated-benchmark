@@ -1,1 +1,0 @@
-PREFIX : <http://example.org/gmark/> ASK {  {  ?x0 (((^:ppurchaseFor/:ppurchaseFor))){,3} ?x1 . ?x1 ((:phomepage/^:phomepage/^:plike/^:pauthor)) ?x2 . ?x2 (((:phomepage/^:phomepage)|(^:pincludes/:pincludes/:pactor/^:peditor))){,3} ?x3 . } }

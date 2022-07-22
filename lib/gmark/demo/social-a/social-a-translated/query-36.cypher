@@ -1,1 +1,0 @@
-MATCH (x0)<-[:pworksAt]-()<-[:pknows]-()-[:pcreationDate]->(x1), (x1)-[:pbirthday*]->(x2), (x2)-[:pcreationDate|pbirthday*]->(x3), (x3)<-[:pcreationDate]-()<-[:phasCreator]-()-[:pisLocatedIn]->()<-[:pisPartOf]-(x4) RETURN DISTINCT x0, x4;

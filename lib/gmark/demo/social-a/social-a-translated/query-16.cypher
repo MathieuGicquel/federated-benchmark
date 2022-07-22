@@ -1,1 +1,0 @@
-MATCH (x0)<-[:pcreationDate]-()-[:pbirthday]->()<-[:pcreationDate]-(x1), (x0)<-[:pcreationDate]-()-[:pcreationDate]->()<-[:pcreationDate]-(x2), (x0)<-[:pcreationDate]-()-[:pbrowserUsed]->()<-[:plength]-(x3), (x0)<-[:pcreationDate]-()-[:plocationIP]->()<-[:plength]-(x4) RETURN DISTINCT x0;

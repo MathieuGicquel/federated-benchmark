@@ -1,1 +1,0 @@
-PREFIX : <http://example.org/gmark/> ASK {  {  ?x0 ((^:pnationality/^:pcontactPoint)|(^:pnationality/^:pconductor/:pdescription/^:pname)|(^:pnationality/^:pemployee)) ?x1 . ?x1 ((:pfaxNumber/^:pprintPage)|(:poffers/:peligibleQuantity/^:pprintEdition)|(:pemployee/:puserId/^:pcontentRating)) ?x2 . ?x2 ((:pauthor/:plike/^:plike/:page)) ?x3 . } }

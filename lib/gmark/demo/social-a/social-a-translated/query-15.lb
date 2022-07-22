@@ -1,6 +1,0 @@
-BEGIN
-gmarkSubquery00(x, y) <- core:edge:edge(x1, email, x0), core:edge:edge(x1, speaks, x2), core:edge:edge(x3, name, x2), core:edge:edge(x3, studyAt, x4), x = x0, y = x4.
-gmarkSubquery01(x, y) <- core:edge:edge(x1, locationIP, x0), core:edge:edge(x1, isLocatedIn, x2), core:edge:edge(x3, isLocatedIn, x2), x = x0, y = x3.
-gmarkSubquery02(x, y) <- core:edge:edge(x1, speaks, x0), core:edge:edge(x1, email, x2), core:edge:edge(x3, name, x2), x = x0, y = x3.
-query(x3, x0, x2, x1) <- gmarkSubquery00(x0, x1), gmarkSubquery01(x0, x2), gmarkSubquery02(x0, x3).
-END

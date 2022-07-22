@@ -1,1 +1,0 @@
-MATCH (x0)<-[:pReference]-()-[:pReference]->()-[:pAuthoredBy]->(x1), (x1)<-[:pAuthoredBy]-()<-[:pReference]-()-[:pReference]->()-[:pAuthoredBy]->(x2), (x0)-[:pAuthoredBy]->(x3), (x3)<-[:pAuthoredBy]-()<-[:pReference]-()<-[:pInteracts]-(x2) RETURN "true" LIMIT 1;

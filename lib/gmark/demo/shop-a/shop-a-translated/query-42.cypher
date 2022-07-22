@@ -1,1 +1,0 @@
-MATCH (x0)<-[:pnationality]-()-[:pfamilyName]->()<-[:ppublished]-(x1), (x1)-[:phomepage|pincludes*]->(x2), (x2)-[:phasReview*]->(x3), (x3)-[:pcontentSize]->()<-[:ptelephone]-()-[:ptype]->(x4) RETURN DISTINCT x0;

@@ -1,1 +1,0 @@
-MATCH (x0)-[:pname|pname|pname*]->(x1), (x1)-[:pname]->()<-[:plength]-()-[:phasModerator]->()-[:pbirthday]->(x2), (x2)-[:pcreationDate|pbirthday*]->(x3), (x3)-[:pcreationDate|pbirthday|pbirthday*]->(x4) RETURN DISTINCT x0, x4 UNION ;

@@ -1,1 +1,0 @@
-MATCH (x0)-[:pname|pname*]->(x1), (x1)<-[:pstudyAt]-()-[:pisLocatedIn]->()<-[:pisLocatedIn]-(x2), (x0)-[:pname]->()<-[:plength]-()-[:phasModerator]->()-[:plocationIP]->(x3), (x3)<-[:pname]-()-[:pisPartOf]->()<-[:pisPartOf]-(x2) RETURN DISTINCT x1, x2, x0;

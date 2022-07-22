@@ -1,1 +1,0 @@
-PREFIX : <http://example.org/gmark/> ASK {  {  ?x0 (((:pname/^:pbrowserUsed/:plocationIP/^:pname)|(:pname/^:pname/:plocationIP/^:pname))){,3} ?x1 . ?x0 (((^:pisLocatedIn/^:pknows/:pspeaks))){,3} ?x2 . ?x1 (((^:pisLocatedIn/^:pknows/:pspeaks)|(:pname/^:pspeaks/:pspeaks)|(:pisPartOf/^:pisLocatedIn/^:pisSubclassOf/:pcontent))){,3} ?x3 . } }

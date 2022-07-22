@@ -1,8 +1,0 @@
-digraph g {
-	x1 [fillcolor="yellow", style="filled," shape=circle, label="?x1"];
-	x2 [fillcolor="yellow", style="filled," shape=circle, label="?x2"];
-	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
-	x0 -> x1 [label="((AuthoredBy-.Reference-.Reference)+(AuthoredBy-.Reference-.Reference)+(AuthoredBy-.Reference-.Interacts.Reference))"];
-	x0 -> x2 [label="((AuthoredBy-.Reference-.Interacts))"];
-	x2 -> x1 [label="(((Interacts-.Interacts)))*"];
-}

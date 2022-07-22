@@ -1,9 +1,0 @@
-BEGIN
-gmarkSubquery00(x, y) <- core:edge:edge(x0, knows, x1), core:edge:edge(x2, hasCreator, x1), core:edge:edge(x2, locationIP, x3), core:edge:edge(x4, name, x3), x = x0, y = x4.
-gmarkSubquery01(x, y) <- core:edge:edge(x1, knows, x0), core:edge:edge(x2, knows, x1), core:edge:edge(x2, worksAt, x3), x = x0, y = x3.
-gmarkSubquery01(x, y) <- core:edge:edge(x1, hasMember, x0), core:edge:edge(x1, hasMember, x2), core:edge:edge(x2, worksAt, x3), x = x0, y = x3.
-gmarkSubquery02(x, y) <- core:edge:edge(x1, knows, x0), core:edge:edge(x2, knows, x1), core:edge:edge(x2, worksAt, x3), x = x0, y = x3.
-gmarkSubquery02(x, y) <- core:edge:edge(x0, knows, x1), core:edge:edge(x1, knows, x2), core:edge:edge(x2, worksAt, x3), x = x0, y = x3.
-gmarkSubquery02(x, y) <- core:edge:edge(x0, knows, x1), core:edge:edge(x1, speaks, x2), core:edge:edge(x3, name, x2), x = x0, y = x3.
-query(x0, x1) <- gmarkSubquery00(x0, x1), gmarkSubquery01(x0, x2), gmarkSubquery02(x0, x3).
-END

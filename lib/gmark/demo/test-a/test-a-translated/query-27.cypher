@@ -1,1 +1,0 @@
-MATCH (x0)<-[:pextendedTo]-()-[:ppublishedIn]->()-[:pheldIn]->()<-[:pheldIn]-(x1), (x0)<-[:pextendedTo]-()-[:pextendedTo]->()<-[:pextendedTo]-()-[:ppublishedIn]->(x2), (x0)<-[:pextendedTo]-()-[:ppublishedIn]->()-[:pheldIn]->()<-[:pheldIn]-(x3), (x0)<-[:pextendedTo]-()-[:pextendedTo]->()<-[:pextendedTo]-()-[:ppublishedIn]->(x4) RETURN "true" LIMIT 1;

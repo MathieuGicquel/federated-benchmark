@@ -1,1 +1,0 @@
-WITH RECURSIVE c0(src, trg) AS ((SELECT s0.src, s0.trg FROM edge s0 WHERE s0.label = 52)) , c1(src, trg) AS ((SELECT s0.src, s0.trg FROM edge s0 WHERE s0.label = 52)) , c2(src, trg) AS ((SELECT s0.src, s0.trg FROM edge s0 WHERE s0.label = 52)) SELECT "true" FROM edge WHERE EXISTS (SELECT * FROM c0, c1, c2 WHERE c0.src = c1.src AND c0.src = c2.src);

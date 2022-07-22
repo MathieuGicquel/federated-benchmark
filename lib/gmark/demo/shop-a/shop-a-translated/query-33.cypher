@@ -1,1 +1,0 @@
-MATCH (x0)<-[:ptype]-()<-[:pfriendOf]-()-[:ptype]->(x1), (x0)<-[:ptype]-()-[:ptelephone]->()<-[:pprintColumn]-()-[:phasGenre]->(x2), (x1)<-[:ptype]-()-[:pjobTitle]->()<-[:ptext]-()-[:phasGenre]->(x3) RETURN DISTINCT x0;

@@ -1,1 +1,0 @@
-MATCH (x0)<-[:pgender]-()<-[:pfriendOf]-()-[:page]->(x1), (x1)<-[:page]-()-[:pnationality]->(x2), (x0)<-[:pgender]-()-[:ptelephone]->(x3), (x2)<-[:pgender]-()<-[:pfriendOf]-()-[:ptelephone]->(x4) RETURN DISTINCT x2, x0, x1, x3;

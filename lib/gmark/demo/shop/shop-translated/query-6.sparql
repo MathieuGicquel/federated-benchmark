@@ -1,1 +1,0 @@
-PREFIX : <http://example.org/gmark/> SELECT DISTINCT ?x0 ?x2 ?x1 ?x3 WHERE {  {  ?x0 ((^:p65)) ?x1 . ?x1 ((:p66)) ?x2 . ?x2 ((^:p61)) ?x3 . } }

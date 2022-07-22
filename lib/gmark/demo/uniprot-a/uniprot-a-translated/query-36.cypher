@@ -1,1 +1,0 @@
-MATCH (x0)-[:pInteracts]->()<-[:pInteracts]-()<-[:pInteracts]-()-[:pReference]->(x1), (x0)-[:pInteracts]->()-[:pInteracts]->(x2), (x1)<-[:pInteracts]-()-[:pInteracts]->()<-[:pInteracts]-(x3) RETURN DISTINCT x2, x1, x0;

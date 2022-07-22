@@ -1,1 +1,0 @@
-MATCH (x0)<-[:phasTag]-()-[:pcontainerOf]->()<-[:pcontainerOf]-()-[:phasTag]->(x1), (x0)-[:phasType]->()-[:pisSubclassOf]->()<-[:phasType]-(x2), (x0)-[:phasType]->()<-[:phasType]-(x3) RETURN "true" LIMIT 1;

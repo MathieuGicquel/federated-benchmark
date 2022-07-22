@@ -1,1 +1,0 @@
-MATCH (x0)<-[:ptag]-()-[:pperformedIn]->()-[:pparentContry]->(x1), (x1)<-[:pnationality]-()<-[:peditor]-()-[:phasGenre]->()-[:ptype]->(x2), (x0)<-[:ptag]-()-[:pkeywords]->()<-[:pgivenName]-()-[:pnationality]->(x3), (x2)<-[:ptag]-()<-[:plike]-()-[:pnationality]->(x4) RETURN DISTINCT x0, x2, x3, x1;

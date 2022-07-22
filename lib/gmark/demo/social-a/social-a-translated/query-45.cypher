@@ -1,1 +1,0 @@
-MATCH (x0)-[:pname]->()<-[:pname]-()-[:pisLocatedIn]->()-[:pname]->(x1), (x1)-[:pimageFile*]->(x2), (x0)-[:pname]->()<-[:planguage]-()-[:planguage]->()<-[:pgender]-(x3), (x2)-[:pname]->()<-[:plocationIP]-()-[:plocationIP]->()<-[:plocationIP]-(x4) RETURN DISTINCT x0, x2;

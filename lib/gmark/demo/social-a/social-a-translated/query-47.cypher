@@ -1,1 +1,0 @@
-MATCH (x0)-[:pisLocatedIn]->()-[:pname]->()<-[:pname]-(x1), (x1)-[:pname]->()<-[:pname]-()-[:pname]->(x2), (x2)<-[:pname]-()-[:pgender]->()<-[:pname]-(x3), (x3)-[:pname|pname|pname*]->(x4) RETURN "true" LIMIT 1;

@@ -1,9 +1,0 @@
-digraph g {
-	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
-	x1 [fillcolor="yellow", style="filled," shape=circle, label="?x1"];
-	x0 -> x1 [label="((tag-.caption)+(tag-.hasReview.hasReview-.award))"];
-	x2 [shape=circle, label="?x2"];
-	x0 -> x2 [label="((tag-.hasGenre-.producer)+(tag-.like-.givenName)+(tag-.like-.email))"];
-	x3 [shape=circle, label="?x3"];
-	x0 -> x3 [label="((tag-.keywords.caption-.title))"];
-}

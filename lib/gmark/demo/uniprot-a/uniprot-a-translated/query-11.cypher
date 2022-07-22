@@ -1,1 +1,0 @@
-MATCH (x0)<-[:pPublishedIn]-()-[:pPublishedIn]->()<-[:pPublishedIn]-(x1), (x1)<-[:pReference]-()-[:pHasKeyword]->(x2), (x2)<-[:pHasKeyword]-()-[:pInteracts]->()-[:pEncodedOn]->(x3) RETURN "true" LIMIT 1;

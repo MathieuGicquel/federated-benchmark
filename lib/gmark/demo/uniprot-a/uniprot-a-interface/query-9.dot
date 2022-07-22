@@ -1,8 +1,0 @@
-digraph g {
-	x0 [fillcolor="yellow", style="filled," shape=circle, label="?x0"];
-	x1 [fillcolor="yellow", style="filled," shape=circle, label="?x1"];
-	x2 [fillcolor="yellow", style="filled," shape=circle, label="?x2"];
-	x0 -> x1 [label="((PublishedIn.PublishedIn-.Reference-.EncodedOn))"];
-	x0 -> x2 [label="((Reference-.HasKeyword.HasKeyword-.EncodedOn)+(Reference-.Reference.Reference-.EncodedOn)+(Reference-.HasKeyword.HasKeyword-.EncodedOn))"];
-	x2 -> x1 [label="((EncodedOn-.Reference))"];
-}

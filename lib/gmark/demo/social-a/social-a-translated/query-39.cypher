@@ -1,1 +1,0 @@
-MATCH (x0)-[:pknows]->()<-[:phasCreator]-()-[:plocationIP]->()<-[:pname]-(x1), (x0)<-[:pknows]-()<-[:pknows]-()-[:pworksAt]->(x2), (x0)<-[:pknows]-()<-[:pknows]-()-[:pworksAt]->(x3) RETURN DISTINCT x0, x1;

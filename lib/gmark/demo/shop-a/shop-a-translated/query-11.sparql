@@ -1,1 +1,0 @@
-PREFIX : <http://example.org/gmark/> SELECT DISTINCT ?x0 ?x3 WHERE {  {  ?x0 ((:pmakesPurchase/:ppurchaseFor)) ?x1 . ?x1 ((:ptitle/^:ppaymentAccepted/:poffers)|(:pcaption/^:pdescription/^:pincludes)|(:pcaption/^:ptext/:prelease/^:pvalidForm)) ?x2 . ?x2 ((:pincludes/:ptag)|(:pincludes/:ptag/^:ptag/:ptag)|(:pincludes/:ptag)) ?x3 . } }

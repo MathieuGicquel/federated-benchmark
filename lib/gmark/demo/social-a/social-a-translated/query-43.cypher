@@ -1,1 +1,0 @@
-MATCH (x0)-[:pisSubclassOf]->()-[:pname]->()<-[:planguage]-()-[:pcontent]->(x1), (x1)-[:plength|pcontent*]->(x2), (x0)<-[:phasType]-()-[:phasType]->(x3), (x3)<-[:pisSubclassOf]-()-[:pname]->()<-[:plocationIP]-()-[:pcreationDate]->(x2) RETURN DISTINCT x2, x0, x1;

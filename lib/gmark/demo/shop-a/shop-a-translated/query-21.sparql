@@ -1,1 +1,0 @@
-PREFIX : <http://example.org/gmark/> SELECT DISTINCT ?x0 ?x1 WHERE {  {  ?x0 ((^:ptype/^:phasGenre/:pwordCount)|(^:ptype/^:phasGenre/^:ppurchaseFor/:pprice)) ?x1 . ?x0 ((^:ptype/^:phasGenre/:pcontentRating)|(^:ptype/^:phasGenre/:ptrailer/:phits)) ?x2 . ?x0 ((^:ptype/^:phasGenre/:pcontentRating)) ?x3 . ?x0 ((^:ptype/:ptag/^:ptag/:pcontentSize)) ?x4 . } }
