@@ -1,0 +1,17 @@
+= SPARQL Federated Benchmark
+GICQUEL Mathieu; LE CROM Yotlan
+:toc:
+
+== Meaning
+
+This benchmark create automatcly **RDF data** and **SPARQL queries** based on link:https://github.com/gbagan/gmark[gMark]. Indeed, you need to set whatever you want in the setting file `lib/gmark/use-cases/shop.xml`. Moreover, you can set additionnal setting in the setting file `configuration.yaml`. To conclude on setting, you can set the number of site in the file `multiple-run.sh`.
+
+== Approaches
+
+=== Data Partitioning
+
+link:https://github.com/MathieuGicquel/federated-benchmark/tree/data_partitioning[data_partitioning]
+
+=== Data Alignment
+
+link:https://github.com/MathieuGicquel/federated-benchmark/tree/data_alignment[data_alignment]
