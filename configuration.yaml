@@ -1,6 +1,19 @@
+# Configuration file
+# Instruction : 
+# - endpoint : set the URL address where you execute your SPARQL query
+# - isql_virtuoso_path : set where is the isql of Virtuoso
+# - site : set the number of site
+# - queries : set the number of queries you want to keep from all gMark/WatDiv queries
+# - run : set the number of run you want
+# - clean_after : set if you want to execute ./scripts/digestuoso.sh after each run
+# - use_watdiv : set if you want to use WatDiv queries or not
+# - use_fixator : set if you want to use ./scripts/fixator.py or not
+# - sameas_proba : set the probability of replication for each entities to create sameAs predicates between the original entity and the replicate entity
+# - data_distribution : set the data distribution for each site
+# - shared_types : set entities who are shared between site, and so are in federated_shop
+
 endpoint: "http://localhost:8890/sparql"
 isql_virtuoso_path: '/home/ubuntu/virtuoso-opensource/bin/isql'
-
 site: 10
 queries: 20
 clean_after: False

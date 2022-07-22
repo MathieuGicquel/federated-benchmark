@@ -1,30 +1,31 @@
+# Import part
+
 import logging
 import warnings
 from collections import defaultdict
-
 import click
 import coloredlogs
 import pandas as pd
 import yaml
 from yaml.representer import Representer
 
+# Goal : Create a yaml statistic files to do some plot on it
+
 yaml.add_representer(defaultdict, Representer.represent_dict)
 warnings.simplefilter(action='ignore', category=FutureWarning)
 coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
-
 @click.command()
 @click.argument("input_file")
 @click.argument("output_file")
+
 def stator(input_file, output_file):
     df = pd.read_csv(input_file, sep=" ", names=['s', 'p', 'o', 'g','dot'])
     logger.debug(str(df.head()))
     logger.debug(str(df[df["p"].str.contains("sameAs")]))
-    #exit()
     set_predicates: set = set(df["p"].apply(lambda p: p.split("/")[3].replace(">","") if "#" not in p else "#type" if "#sameAs" not in p else "#sameAs").unique())
     logger.debug(set_predicates)
-    #exit()
 
     dict_type = defaultdict(lambda: defaultdict(set))
 

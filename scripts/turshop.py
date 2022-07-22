@@ -1,3 +1,5 @@
+# Import part
+
 import click
 import pandas as pd
 import glob
@@ -8,6 +10,8 @@ import yaml
 import logging
 import coloredlogs
 import warnings 
+
+# Goal : correctly convert txt data into nq data
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -48,8 +52,6 @@ def convert(input_folder, output):
     result_df = add_federated_shop(result_df)
     result_df = add_types(result_df)
 
-
-
     result_df["sNq"] = result_df.apply(lambda l: subject(l), axis=1)
     result_df["pNq"] = result_df.apply(lambda l: predicate(l), axis=1)
     result_df["oNq"] = result_df.apply(lambda l: objecte(l), axis=1)
@@ -59,8 +61,7 @@ def convert(input_folder, output):
 
 
     with open(f'{output}', 'w') as nqfile:
-        nqfile.write(result)
-    
+        nqfile.write(result)   
 
 def subject(line):
     subject = str(line['s'])
@@ -113,8 +114,7 @@ def objecte(line):
         objecte = str(objecte_split[0] + "_s" + site +"_" + objecte_split[1])
         logger.debug(objecte)
         objecte = "<http://example.org/s" + str(int(site)) + "/" + str(objecte) + ">"
-    return objecte
-    
+    return objecte   
 
 def add_types(df: pd.DataFrame) -> pd.DataFrame:
     logger.debug(df)
@@ -134,14 +134,12 @@ def add_types(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-
 def generate_nq(df: pd.DataFrame) -> str:
     data = df[["sNq","pNq","oNq","gNq"]]
    
     rdf = ""
     for index, row in data.iterrows():
-        rdf += f'{row["sNq"]} {row["pNq"]} {row["oNq"]} {row["gNq"]} .\n'
-        
+        rdf += f'{row["sNq"]} {row["pNq"]} {row["oNq"]} {row["gNq"]} .\n'        
    
     return rdf
 

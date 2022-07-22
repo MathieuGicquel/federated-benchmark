@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Goal : Generate one gMark for each site and merge shop-workload.xml into 1 and then generate queries from this file
+
 cd lib/gmark/src/
 
 NB_SITE=$1

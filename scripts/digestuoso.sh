@@ -1,12 +1,21 @@
 #!/bin/bash
 
+# Example of use : 
 # ./scripts/digestuoso.sh  /home/ubuntu/virtuoso-opensource/bin/isql
+
+# The first parameters is where Virtuoso's isql are
 
 PARAM1=$1
 
+# Connect to Virtuoso's isql and get all named graph
+
 LINES=$($PARAM1 localhost:1111 dba dba exec=DB.DBA.SPARQL_SELECT_KNOWN_GRAPHS\(\));
 
+# Delete failed attempt
+
 string="DELETE FROM DB.DBA.load_list; \n"
+
+# Delete just named graph we add
 
 for LINE in $LINES
 do
