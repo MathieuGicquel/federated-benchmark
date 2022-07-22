@@ -1,3 +1,5 @@
+# Import part
+
 import click
 import pandas as pd
 import glob
@@ -9,6 +11,8 @@ import logging
 import coloredlogs
 import warnings
 
+# Goal : correctly convert txt data into ttl data
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
@@ -19,6 +23,7 @@ configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 @click.command()
 @click.argument("txt_file")
 @click.argument("output")
+
 def convert(txt_file, output):
     nb_site = int(configuration["site"])
 
@@ -32,13 +37,11 @@ def convert(txt_file, output):
 
         ffile.write(generate_nq(df))
 
-
 def subject(line, nb_site):
     subject_ = str(line['s'])
     site = int(subject_.split('_')[1]) % nb_site
 
     return "<http://example.org/s" + str(int(site)) + "/" + str(subject_) + ">"
-
 
 def predicate(line):
     predicate_ = line['p']
@@ -47,7 +50,6 @@ def predicate(line):
         return "<http://www.w3.org/2002/07/owl#sameAs>"
     else:
         return "<http://example.org/p" + str(predicate_) + ">"
-
 
 def objecte(line, nb_site):
     objecte_ = str(line['o'])
@@ -62,13 +64,11 @@ def objecte(line, nb_site):
         objecte_ = "<http://example.org/s" + str(int(site)) + "/" + str(objecte_) + ">"
     return objecte_
 
-
 def graph(line, nb_site):
     graph_ = str(line['s'])
     site = int(graph_.split('_')[1]) % nb_site
 
     return "<http://example.org/s" + str(int(site)) + ">"
-
 
 def generate_nq(df: pd.DataFrame) -> str:
     data = df[["sNq", "pNq", "oNq", "gNq"]]
@@ -78,7 +78,6 @@ def generate_nq(df: pd.DataFrame) -> str:
         rdf += f'{row["sNq"]} {row["pNq"]} {row["oNq"]} {row["gNq"]} .\n'
 
     return rdf
-
 
 if __name__ == "__main__":
     convert()

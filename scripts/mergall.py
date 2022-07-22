@@ -1,3 +1,5 @@
+# Import part
+
 import glob
 import csv
 import click
@@ -5,15 +7,22 @@ from pathlib import Path
 import pandas as pd
 import re
 
+# Goal : merge all statistic file into one statistic file to do some plot on it
+
 @click.command()
 @click.argument("input_path")
 @click.argument("output_path")
+
 def merge(input_path, output_path):
+
     #Select files
+
     files = Path(input_path).rglob('run-*/**/*.csv')
     dfs = dict()
     for file in files:
-        #print(str(file.absolute()))
+
+        # Do RDF4J with default source selection statistic files
+
         if re.search(r".*/rdf4j/default/query-\d+(-\d+)?\.csv",str(file.absolute())):
             print(str(file.absolute()))
             type = 'rdf4j_default'
@@ -29,6 +38,8 @@ def merge(input_path, output_path):
 
             dfs.get(type).append(df)
 
+        # Do RDF4J with forced source selection statistic files
+
         if re.search(r".*/rdf4j/force/query-\d+(-\d+)?\.csv",str(file.absolute())):
             type = 'rdf4j_force'
             df = pd.read_csv(file)
@@ -42,6 +53,8 @@ def merge(input_path, output_path):
                 dfs[type] = []
 
             dfs.get(type).append(df)
+
+        # Do Virtuoso statistic files
 
         if re.search(r".*/virtuoso/query-\d+(-\d+)?\.csv",str(file.absolute())):
             type = "virtuoso"

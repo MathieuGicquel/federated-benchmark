@@ -1,4 +1,15 @@
-endpoint: "http://localhost:8890/sparql" #Following this tutorial to match http://localhost:8890/sparql from Windows with current endpoint from WSL : https://devdojo.com/mvnarendrareddy/access-windows-localhost-from-wsl2
+# Configuration file
+# Instruction : 
+# - endpoint : set the URL address where you execute your SPARQL query
+# - isql_virtuoso_path : set where is the isql of Virtuoso
+# - site : set the number of site
+# - queries : set the number of queries you want to keep from all gMark/WatDiv queries
+# - run : set the number of run you want
+# - clean_after : set if you want to execute ./scripts/digestuoso.sh after each run
+# - use_watdiv : set if you want to use WatDiv queries or not
+# - use_fixator : set if you want to use ./scripts/fixator.py or not
+
+endpoint: "http://localhost:8890/sparql"
 isql_virtuoso_path: '/home/ubuntu/virtuoso-opensource/bin/isql'
 site: 100
 queries: 5

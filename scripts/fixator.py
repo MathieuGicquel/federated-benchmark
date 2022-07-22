@@ -1,16 +1,20 @@
+# Import part
+
 import logging
 import warnings
 from collections import defaultdict
-
 import click
 import coloredlogs
 import pandas as pd
 import yaml
 from yaml.representer import Representer
-
 import pandasql as ps
-
 import random
+
+# Example of use :
+# python3 ./scripts/fixator.py ./lib/gmark/demo/shop-a/shop-a-graph.txt0.txt ./tmp/tmp.txt
+
+# Goal : Fix gMark data to have a logical data schema
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
@@ -25,11 +29,7 @@ def fixator(input_file,output_file):
 
     # TODO : Need to fix problem for partial part (when object are in subject, but is bad construct) [Appaer few time]
 
-    # RUN FIXATOR : python3 ./scripts/fixator.py ./lib/gmark/demo/shop-a/shop-a-graph.txt0.txt ./tmp/tmp.txt
-
     # Fix SubGenre problem
-
-    # Force
 
     subgenre_df1 = ps.sqldf("select * from df where p == 'hasGenre'")
     logger.debug(subgenre_df1)
@@ -60,8 +60,6 @@ def fixator(input_file,output_file):
             wfile.write(rrfile + line2add)
 
     # Fix Website problem
-
-    # Force 
 
     websitep_df = ps.sqldf("select * from df where p == 'homepage' or p == 'trailer' or p == 'subscribes'") # Add subscribes to solve User problem earlier
     logger.debug(websitep_df)
@@ -95,8 +93,6 @@ def fixator(input_file,output_file):
         wfile.write(line2add)
 
     # Fix User problem
-
-    # Force 
 
     userp_df = ps.sqldf("select * from df where p == 'conductor' or p == 'artist' or p == 'actor' or p == 'director' or p == 'author' or p == 'editor' or p == 'contactPoint' or p == 'employee' or p == 'reviewer'") # Add contactPoint, employee and reviewer to solve Retailer and Review problem earlier
     logger.debug(userp_df)
@@ -150,8 +146,6 @@ def fixator(input_file,output_file):
 
     # Fix City problem
 
-    # Force
-
     location_perf_df = ps.sqldf("select * from df where p == 'location' or p == 'performedIn'") # Add performedIn to solve Product problem earlier
     logger.debug(location_perf_df)
 
@@ -174,8 +168,6 @@ def fixator(input_file,output_file):
         wfile.write(line2add)
 
     # Fix Review problem
-
-    # Force
 
     hasreview_df = ps.sqldf("select * from df where p == 'hasReview'")
     logger.debug(hasreview_df)
@@ -213,8 +205,6 @@ def fixator(input_file,output_file):
         wfile.write(line2add)
 
     # Fix Offer problem
-
-    # Force
 
     includes_df = ps.sqldf("select * from df where p == 'includes'")
     logger.debug(includes_df)
@@ -274,8 +264,6 @@ def fixator(input_file,output_file):
 
     # Fix Purchase problem
 
-    # Force
-
     makespurchase_df = ps.sqldf("select * from df where p == 'makesPurchase'")
     logger.debug(makespurchase_df)
 
@@ -333,8 +321,6 @@ def fixator(input_file,output_file):
 
     # Fix Product problem
 
-    # Force
-
     like_df = ps.sqldf("select * from df where p == 'like'")
     logger.debug(like_df)
 
@@ -363,8 +349,6 @@ def fixator(input_file,output_file):
         wfile.write(line2add)
 
     # Fix other User problem
-
-    # Force
 
     follows_foaf_df = ps.sqldf("select * from df where p == 'follows' or p == 'friendOf'")
     logger.debug(follows_foaf_df)
@@ -443,6 +427,7 @@ def fixator(input_file,output_file):
     line2add = ""
 
     # Product
+
     for typ in ['ClassicalMusicConcert','MusicConcert','HitMusicConcert','ClassicMusicAlbum','MusicAlbum','HitMusicAlbum','ClassicMovie','Movie','TopMovie','AnimatedMovie','ShortMovie','LongMovie','Book','ArticleBook','NewsArticleBook','ShortStoryBook','EncyclopediaBook','NovelBook','OtherProduct']:
         line2add += sameAsProduct(typ,df_output,max_chance)
 
@@ -452,6 +437,7 @@ def fixator(input_file,output_file):
     line2add = ""
 
     # User
+    
     for typ in ['User']:
         line2add += sameAsUser(df_output,max_chance)
 

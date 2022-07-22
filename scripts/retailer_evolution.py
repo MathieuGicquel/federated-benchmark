@@ -1,16 +1,18 @@
+# Import part
+
 import logging
 import warnings
 from collections import defaultdict
 import re
 from bs4 import BeautifulSoup 
-
 import click
 import coloredlogs
 import pandas as pd
 import yaml
 from yaml.representer import Representer
-
 import pandasql as ps
+
+# Goal : Increase number of retailer in gMark shop.xml use-cases files
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')

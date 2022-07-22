@@ -1,3 +1,5 @@
+# Import part
+
 import pandas as pd
 import seaborn as sns
 import glob
@@ -12,13 +14,17 @@ import re
 import random
 import colorcet as cc
 
+# Goal : create plot to understand the meaning of result we have 
+
 coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
-#
+# Folder where plot are save
+
 BASE_PLOT_PATH = "./plot/"
 
-#
+# Get all result csv files
+
 files = glob.glob(f'./result/*.csv')
 dfs = []
 for file in files:
@@ -38,6 +44,8 @@ result = result.reset_index().drop(["index"], axis=1)
 
 logger.debug(str(result))
 
+# Don't take failed query to avoid huge difference in plot
+
 tmp = result.loc[result['exec_time'] == "failed"]['query']
 tmp = tmp.tolist()
 tmp = [os.path.basename(file) for file in tmp]
@@ -56,6 +64,8 @@ logger.debug(selection)
 if len(tmp) > 0:
     result = result[~result['query'].str.contains(selection)]
 
+# Fix data inside pandas DataFrame
+
 result = result.replace("failed", None)
 result["exec_time"] = pd.to_numeric(result["exec_time"])
 result["query"] = result["query"].apply(lambda q: os.path.basename(q))
@@ -66,8 +76,8 @@ result["site"] = pd.to_numeric(result["site"])
 result["nb_http_request"] = pd.to_numeric(result["nb_http_request"])
 logger.debug(result)
 
+# Prepare folders
 
-# prepare folders
 def compute_query_folder(query: str) -> str:
     res = BASE_PLOT_PATH + query.split(".")[0] + "/"
     logger.debug(res)
@@ -78,8 +88,10 @@ for query in queries:
     os.makedirs(compute_query_folder(query), exist_ok=True)
     logger.debug(query)
 
+# Plot function part
 
 # Execution time for all queries
+
 def plot_execution_time_all_queries():
     fig = sns.lineplot(data=result.groupby(by=["site", "type","run_id"]).sum(), x="site", y="exec_time", marker="o",
                  hue="type").figure
@@ -93,6 +105,7 @@ def plot_execution_time_all_queries():
 
 
 # Number of source selection for all queries
+
 def plot_number_source_selection_all_queries():
     fig = sns.lineplot(data=result.groupby(by=["site", "type","run_id"]).sum(), x="site", y="total_ss", marker="o",
                  hue="type").figure
@@ -106,6 +119,7 @@ def plot_number_source_selection_all_queries():
 
 
 # Number of HTTP request for all queries
+
 def plot_number_http_request_all_queries():
     fig = sns.lineplot(data=result.groupby(by=["site", "type","run_id"]).sum(), x="site", y="nb_http_request",
                  marker="o", hue="type").figure
@@ -119,6 +133,7 @@ def plot_number_http_request_all_queries():
 
 
 # Execution time for each query default ss
+
 def plot_execution_time_default_source_selection_all_queries():
     for query in queries:
         current_df = result[(result["query"] == query) & (result["type"] == "rdf4j_default")]
@@ -129,6 +144,7 @@ def plot_execution_time_default_source_selection_all_queries():
 
 
 # Execution time for each query force ss
+
 def plot_execution_time_force_source_selection_all_queries():
     for query in queries:
         current_df = result[(result["query"] == query) & (result["type"] == "rdf4j_force")]
@@ -139,6 +155,7 @@ def plot_execution_time_force_source_selection_all_queries():
 
 
 # Execution time for each query
+
 def plot_execution_time_each_query():
     for query in queries:
         current_df = result[result["query"] == query]
@@ -149,6 +166,7 @@ def plot_execution_time_each_query():
 
 
 # Number of source selection for each query
+
 def plot_source_selection_each_query():
     for query in queries:
         current_df = result[result["query"] == query]
@@ -159,6 +177,7 @@ def plot_source_selection_each_query():
 
 
 # Number of HTTP request for each query
+
 def plot_http_request_each_query():
     for query in queries:
         current_df = result[(result["query"] == query) & (result["type"].str.startswith('rdf4j'))]
@@ -170,6 +189,7 @@ def plot_http_request_each_query():
 
 
 # Repartition of data per site
+
 def plot_data_repartition():
     rdata = glob.glob(f'./result/**/data/data.nq')
     logger.debug(rdata)
@@ -181,11 +201,21 @@ def plot_data_repartition():
         df['g'] = df['g'].replace(to_replace=r'<http://example.org/(.+)>', value=r'\1', regex=True)
         df = df.sort_values(by=['g'])
 
-        # repartition
+        # Get number of constant's object in data
+
         nb_cst = df[~df['o'].str.contains('http://example.org', regex=True)].groupby(['g'])['o'].count()
+
+        # Get number of object (no constant) in data
+
         nb_obj = df[(df['o'].str.contains('http://example.org', regex=True)) & (
             df['p'].str.contains('http://example.org', regex=True))].groupby(['g'])['o'].count()
+
+        # Get number of owl:sameAs predicate in data
+
         nb_sameas = df[df['p'].str.contains('#sameAs', regex=True)].groupby(['g'])['p'].count()
+
+        # Get number of rdf:type predicate in data
+
         nb_type = df[df['p'].str.contains('#type', regex=True)].groupby(['g'])['p'].count()
 
         list_site = list(df['g'].unique())
@@ -210,7 +240,7 @@ def plot_data_repartition():
 # Data compared
 
 def data_comparator():
-    #
+    
     rdf4j_files = glob.glob(f'./result/**/**/**/rdf4j/**/*.out')
     virtuoso_files = glob.glob(f'./result/**/**/**/virtuoso/*.out')
 
@@ -239,21 +269,16 @@ def data_comparator():
                         rdf4j_data = rdf4j_f.readlines()
                         if 'default' in rdf4j_result:
                             logger.debug(f'query : {query} rdf4j_default : {len(rdf4j_data)}')
-                            #rdf4j_list_default_result.append(len(rdf4j_data))
                             df_result.loc[len(df_result.index)] = [query,run,'rdf4j_default',len(rdf4j_data)]
                         elif 'force' in rdf4j_result:
                             logger.debug(f'query : {query} rdf4j_force : {len(rdf4j_data)}')
-                            #rdf4j_list_force_result.append(len(rdf4j_data))
                             df_result.loc[len(df_result.index)] = [query,run,'rdf4j_force',len(rdf4j_data)]
                 for virtuoso_result in virtuoso_results:
                     with open(virtuoso_result) as virtuoso_f:
                         virtuoso_data = virtuoso_f.readlines()
                         logger.debug(f'query : {query} virtuoso : {len(virtuoso_data)-1}')
-                        #virtuoso_list_result.append(len(virtuoso_data)-1)
                         df_result.loc[len(df_result.index)] = [query,run,'virtuoso',len(virtuoso_data)-1]
 
-        #df = pd.DataFrame({'rdf4j_default': rdf4j_list_default_result,'rdf4j_force': rdf4j_list_force_result,'virtuoso': virtuoso_list_result})
-        #fig = df.plot.bar(rot=90).legend(loc='center left',bbox_to_anchor=(1.0, 0.5)).figure
         fig = sns.barplot(x="query", y="result", hue="type", data=df_result).legend(loc='center left',bbox_to_anchor=(1.0, 0.5),fontsize=str(len(all_queries)*0.65)).figure
         fig.set_size_inches(len(all_queries),len(all_queries)*0.5)
         plt.xticks(fontsize=len(all_queries)*0.4,rotation=90)
@@ -266,7 +291,8 @@ def data_comparator():
         plt.clf()
 
 
-# graph
+# Graph of link between site
+
 def plot_graph_link_between_site():
     rdata = glob.glob(f'./result/*.yaml')
     for rd in rdata:
@@ -284,7 +310,6 @@ def plot_graph_link_between_site():
                 for predicate in data[site]["predicates"].keys():
                     if predicate in [
                         "#sameAs"
-                        # ,"phomepage"
                     ] or True:
                         logger.debug(data[site]["predicates"][predicate][site])
                         for target_site in data[site]["predicates"][predicate].keys():
@@ -293,7 +318,7 @@ def plot_graph_link_between_site():
                             out_: int = data[site]["predicates"][predicate][target_site]["out"]
                             logger.debug(data[site]["predicates"][predicate][target_site])
                             if in_ > 0:
-                                if target_site != site:  # outgoing link only
+                                if target_site != site:
                                     logger.info(f"Adding edge from {target_site} to {site}. ({predicate} : {in_})")
                                     if predicate in ["#sameAs"]:
                                         G.add_edge(target_site, site, title=f"{predicate} : {in_}",color='black', value=200)
@@ -304,12 +329,12 @@ def plot_graph_link_between_site():
         nt.from_nx(G, default_node_size=100)
         nt.barnes_hut(spring_length=5000, overlap=1)
 
-        # save graph
         nt.save_graph(f'{BASE_PLOT_PATH}repartition-{nb_site}.graph.html')
         nx.write_adjlist(G, f'{BASE_PLOT_PATH}repartition-{nb_site}.graph.adjlist')
 
 
-# Ontology
+# Data ontology
+
 def plot_graph_ontology():
     rdata = glob.glob(f'./result/**/data/data.nq')
     for rd in rdata:
@@ -317,13 +342,11 @@ def plot_graph_ontology():
         nb_sites = int(nb_sites.split('-')[1])
 
         df: pd.DataFrame = pd.read_csv(rd, sep=" ", names=['s', 'p', 'o', 'g', 'dot'])
-
         
         df["s_type"] = df["s"].apply(lambda s: s.split("/")[-1].split("_")[-2] if len(s.split("/")[-1].split("_")) > 1 else None)
         df["o_type"] = df["o"].apply(lambda s: s.split("/")[-1].split("_")[-2] if len(s.split("/")[-1].split("_")) > 1 else None)
 
-        G: nx.DiGraph() = nx.DiGraph()
-            
+        G: nx.DiGraph() = nx.DiGraph()    
 
         for idx, row in df.iterrows():
             logger.debug(str(row))
@@ -336,11 +359,11 @@ def plot_graph_ontology():
         nt = Network('1000px', '1000px', directed=True, layout=False)
         nt.show_buttons()
         nt.from_nx(G)
-        # nt.toggle_physics(False)
 
-        # save graph
         nt.save_graph(f'{BASE_PLOT_PATH}ontology-{nb_sites}.graph.html')
         nx.write_adjlist(G, f'{BASE_PLOT_PATH}ontology-{nb_sites}.graph.adjlist')
+
+# Entity graph
 
 def plot_graph_entity():
     rdata = glob.glob(f'./result/**/data/data.nq')
@@ -368,7 +391,9 @@ def plot_graph_entity():
             print(f"idx = {idx}, s = {s}, o = {o}")
             s_site_id = re.search(regex_extract_id, s).group(1)
             if "^^" in o or "string" in o:
-                # literal
+
+                # Literal
+
                 o_site_id = s_site_id
             else:
                 o_site_id = re.search(regex_extract_id, o).group(1)
@@ -381,7 +406,7 @@ def plot_graph_entity():
             nt.add_node(s, color=color_dict.get(s_site_id))
             nt.add_node(o, color=color_dict.get(o_site_id))
 
-            if s_site_id != o_site_id:  # outgoing link
+            if s_site_id != o_site_id:
                 logger.debug(f"Found outgoing link : {s} {p} {o} {g}")
                 nt.add_edge(s, o, color='black', title=p, value=200)
             else:
@@ -392,18 +417,33 @@ def plot_graph_entity():
         nt.barnes_hut(spring_length=5000, overlap=1)
         nt.save_graph(output_path)
 
+# Plotting part
+# You can decide which plot you want we you execute this scripts after running the whole project
+
+# Plot for all queries
+
 #plot_execution_time_all_queries()
 #plot_number_source_selection_all_queries()
 #plot_number_http_request_all_queries()
 #plot_execution_time_default_source_selection_all_queries()
 #plot_execution_time_force_source_selection_all_queries()
+
+# Plot for each queries
+
 #plot_execution_time_each_query()
 #plot_source_selection_each_query()
 #plot_http_request_each_query()
-plot_data_repartition()
-#plot_graph_ontology()
 
-#plot_graph_link_between_site()
+# Plot for data repartition
+
+plot_data_repartition()
+
+# Plot for result comparaison
+
 #data_comparator()
 
+# Plot for graph
+
+#plot_graph_ontology()
+#plot_graph_link_between_site()
 #plot_graph_entity()

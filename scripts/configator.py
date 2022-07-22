@@ -1,7 +1,11 @@
+# Import part
+
 import click
 
+# Example of use : 
+# python3 scripts/configator.py ./tmp/c/result.nq ./tmp/config.ttl http://localhost:8890/sparql
 
-# Example : python3 scripts/configator.py ./tmp/c/result.nq ./tmp/config.ttl http://localhost:8890/sparql
+# Goal : Generate a configuration file for RDF4J to set the use of named graph as endpoint thanks to data file
 
 @click.command()
 @click.argument("data_file")

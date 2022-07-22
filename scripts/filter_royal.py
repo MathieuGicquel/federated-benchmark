@@ -1,3 +1,5 @@
+# Import part
+
 import click
 import logging
 import coloredlogs
@@ -10,19 +12,15 @@ from urllib.error import HTTPError
 import os
 from glob import glob
 
-#headers = ['Name', 'Code']
-#data = sorted([(v,k) for k,v in d.items()]) # flip the code and name and sort
-#print(tabulate(data, headers=headers))
-
+# Goal : Take only queries who return result
 
 coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
-# text/csv
-# text/tsv
-# application/json
-# voir http://vos.openlinksw.com/owiki/wiki/VOS/VOSSparqlProtocol
 def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
+
+    # Set HTTP request's parameters
+
     params={
         "default-graph-uri": default_graph_uri,
         "should-sponge": "soft",
@@ -33,18 +31,28 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
         "save": "display",
         "fname": ""
         }
+
+    # Create HTTP request
+
     data = urllib.parse.urlencode(params).encode("utf-8")
     req = urllib.request.Request(baseURL)
+
     response=None
     exception=None
+
     try:
+
         with urllib.request.urlopen(req,data=data) as f:
+
+            # Read HTTP request's result
+
             response = f.read()
+
     except HTTPError as e:
+
         exception = e.read()
+
     return(response,exception)
-
-
 
 @click.command()
 @click.argument("queries")
@@ -58,6 +66,8 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
 
 def virtuoso(queries,format,output,entrypoint,nb_query):
 
+    # Get all queries files
+
     queries_files = glob(f"{queries}/*.noask.sparql")
 
     i_query = 0
@@ -66,6 +76,9 @@ def virtuoso(queries,format,output,entrypoint,nb_query):
         execution_time=0
         projs=[]
         with open(query) as query_file:
+
+            # Get different informations about the query
+
             querys=query_file.read()
             query_name=os.path.basename(query)
 
@@ -77,6 +90,8 @@ def virtuoso(queries,format,output,entrypoint,nb_query):
 
             if data[1]==None:
                 logger.info(f'Query {query_name} complete in {execution_time}ms')
+
+                # If the query return at least 1 result, we select it
 
                 if output is not None:
                     j = 0
@@ -99,9 +114,10 @@ def virtuoso(queries,format,output,entrypoint,nb_query):
                 else:
                     print(data[0].decode())
 
+        # If we have enough query, we not continue
+
         if i_query == int(nb_query):
             break
-
 
 if __name__ == "__main__":
     virtuoso()
