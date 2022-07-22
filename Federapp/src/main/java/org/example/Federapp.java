@@ -203,7 +203,7 @@ public class Federapp {
                     if(!tpMap.containsKey(j)){
                         tpMap.put(j, new HashSet<>());
                     }
-                    String ss = tp.split("g/")[1].replace("\"","");
+                    String ss = tp.split("g/")[1].replace("\"","").replace("/","_");
                     tpMap.get(j).add("sparql_example.org_"+ss);
                     j++;
                 }

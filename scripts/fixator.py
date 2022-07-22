@@ -256,10 +256,11 @@ def fixator(input_file,output_file):
     line2add = ""
         
     for index_offer, row_offer in offer_df.iterrows():
-        sbj = list(offers_df['s'].sample(n=1))[0]
-        obj_offer = row_offer['s']
-        line2add += f"{sbj} offers {obj_offer}\n"
-        logger.info(f"{sbj} offers {obj_offer}")
+        if len(list(offers_df['s'])) > 0:
+            sbj = list(offers_df['s'].sample(n=1))[0]
+            obj_offer = row_offer['s']
+            line2add += f"{sbj} offers {obj_offer}\n"
+            logger.info(f"{sbj} offers {obj_offer}")
 
     with open(output_file, 'a') as wfile:
         wfile.write(line2add)
@@ -286,10 +287,11 @@ def fixator(input_file,output_file):
     line2add = ""
         
     for index_purchase, row_purchase in purchase_df.iterrows():
-        sbj = list(makespurchase_df['s'].sample(n=1))[0]
-        obj_purchase = row_purchase['s']
-        line2add += f"{sbj} makesPurchase {obj_purchase}\n"
-        logger.info(f"{sbj} makesPurchase {obj_purchase}")
+        if len(list(makespurchase_df['s'])) > 0:
+            sbj = list(makespurchase_df['s'].sample(n=1))[0]
+            obj_purchase = row_purchase['s']
+            line2add += f"{sbj} makesPurchase {obj_purchase}\n"
+            logger.info(f"{sbj} makesPurchase {obj_purchase}")
 
     with open(output_file, 'a') as wfile:
         wfile.write(line2add)

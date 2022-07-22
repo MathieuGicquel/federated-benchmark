@@ -175,7 +175,9 @@ public class SourceSelection {
             if(endpoints == null) endpoints = new HashSet<>();
 
             for (String endpoint : endpoints) {
-                stmtToSources.get(stmt).add(new StatementSource(endpoint,StatementSourceType.REMOTE));
+                StatementSource s = new StatementSource(endpoint,StatementSourceType.REMOTE);
+                log.info(s.toString());
+                stmtToSources.get(stmt).add(s);
             }
 
             stmtId += 1;
@@ -218,7 +220,7 @@ public class SourceSelection {
                 stmt.replaceWith(new EmptyStatementPattern(stmt));
             }
         }
-
+        log.info(stmtToSources.toString());
         Federapp.CONTAINER.put(Federapp.SOURCE_SELECTION2_KEY,stmtToSources);
         //this.stmtToSources = new ConcurrentHashMap<>();
     }

@@ -28,7 +28,7 @@ echo "<queries>" > ../../../prepa/$NB_SITE/workload/shop-workload.xml
 cat ../../../prepa/$1/gmark/*.xml >> ../../../prepa/$NB_SITE/workload/shop-workload.xml
 echo "</queries>" >> ../../../prepa/$NB_SITE/workload/shop-workload.xml
 
-mkdir -p ../../../prepa/queries
+mkdir -p ../../../prepa/$NB_SITE/queries
 
 cd querytranslate
 

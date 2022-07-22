@@ -21,35 +21,35 @@ use_watdiv: False
 use_fixator: True
 
 sameas_proba:
-  ClassicalMusicConcert: 0.3
-  MusicConcert: 0.2
-  HitMusicConcert: 0.4
+  ClassicalMusicConcert: 0.6
+  MusicConcert: 0.4
+  HitMusicConcert: 0.8
   MusicAlbum: 0.5
-  ClassicMusicAlbum: 0.1
-  HitMusicAlbum: 0.4
-  Movie: 0.2
-  ClassicMovie: 0.2
-  TopMovie: 0.3
-  AnimatedMovie: 0.1
+  ClassicMusicAlbum: 0.7
+  HitMusicAlbum: 0.7
+  Movie: 0.4
+  ClassicMovie: 0.6
+  TopMovie: 0.4
+  AnimatedMovie: 0.2
   ShortMovie: 0.5
   LongMovie: 0.5
-  Book: 0.1
+  Book: 0.7
   NewsArticleBook: 0.3
   ArticleBook: 0.4
   NovelBook: 0.3
   ShortStoryBook: 0.3
-  EncyclopediaBook: 0.2
+  EncyclopediaBook: 0.34
   OtherProduct: 0.5
 
 data_distribution:
-  choosen_type: "uniform"
+  choosen_type: "gaussian"
   types:
       "zipfian":
-            alpha: 1.65
+            alpha: 1.22
             multiplicator: 10
       "gaussian":
-            mu: 6000
-            sigma: 2000
+            mu: 600000
+            sigma: 200000
       "uniform":
             min: 1000
             max: 10000

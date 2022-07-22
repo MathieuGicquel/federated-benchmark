@@ -44,12 +44,12 @@ DATA_NQ = "result/site-" + str(SITE) +"/data/data.nq"
 
 CONFIG_TTL="result/"+ "site-" +str(SITE) +"/config/config.ttl"
 
-QUERIES_PREPA="prepa/queries/" + str(SITE) +"/query-{query_id}.noask" + EXT
+QUERIES_PREPA="prepa/" + str(SITE) +"/queries_translated/query-{query_id}.noask" + EXT
 QUERIES_PREPA_EXPAND=expand(QUERIES_PREPA, query_id=range(0,QUERY_NUMBER))
 
-INGEST_TTL_LOG="prepa/site-" + str(SITE) + "/log/ingest_ttl.log"
+INGEST_TTL_LOG="prepa/" + str(SITE) + "/log/ingest_ttl.log"
 
-FILTERROYAL_PREPA_QUERIES="prepa/filter_queries/" + str(SITE)  + "/query-{query_id}.noask" + EXT
+FILTERROYAL_PREPA_QUERIES="prepa/"+ str(SITE)  +"/filter_queries/query-{query_id}.noask" + EXT
 FILTERROYAL_PREPA_QUERIES_EXPAND=expand(FILTERROYAL_PREPA_QUERIES, query_id=range(0,KEEP_QUERIES))
 
 QUERY_VARIATION="result/site-" + str(SITE) + "/queries/query-{query_id}-{query_variation_id}.noask.cst.sparql"
