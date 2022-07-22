@@ -10,8 +10,12 @@ This benchmark create automatcly **RDF data** and **SPARQL queries** based on li
 
 === Data Partitioning
 
+Our first idea is to do some data partitioning. After doing Hash Partitioning who was not very logical about the schema of a federated shop, this approach birth. Indeed, we decide to spread a source site above the whole data from a Retailer. To do this, we use **CONSTRUCT SPARQL queries**. The following branch is the subject of this idea :
+
 link:https://github.com/MathieuGicquel/federated-benchmark/tree/data_partitioning[data_partitioning]
 
 === Data Alignment
+
+Our second idea is to do data alignment. Indeed, in this case, we generate 1 gMark per site instead of the previous idea, who we generated 1 gMark for all site. In this case, is very simple to spread the source site, because all data of a site is in his data file. Moreover, is easier to add sameAs predicate. The following branch is the subject of this idea :
 
 link:https://github.com/MathieuGicquel/federated-benchmark/tree/data_alignment[data_alignment]
