@@ -1894,7 +1894,7 @@
 
 
 
-	<workload id="0" size="50">
+	<workload id="0" size="20">
 		<!-- bounds for the size of these queries -->
 		<size>
 			<conjuncts min="2" max="2"/>	<!-- number of A^M where M is a multiplicity 1 or * -->

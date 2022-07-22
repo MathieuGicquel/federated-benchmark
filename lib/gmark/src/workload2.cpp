@@ -890,7 +890,7 @@ void generate_workload(const config::config & conf, workload::workload & wl, rep
             size_t min_length = (size_t) 1000000000;
             size_t max_length = 0;
             workload::query & query = wl.queries[c];
-            //cout << "generate query " << i << endl;
+            cout << "generate query " << i << endl;
             for (int j = 0; j < 100; j++) {
                 try {
                     workload2::generate_query(conf, wconf, query);
