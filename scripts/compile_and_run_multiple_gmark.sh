@@ -36,4 +36,4 @@ mkdir -p ../../../prepa/$NB_SITE/queries
 
 cd querytranslate
 
-if $2 ; then cp ../../../../lib/watdiv-queries/* ../../../../prepa/queries ; else ./test -w ../../../../prepa/$NB_SITE/workload/shop-workload.xml -o ../../../../prepa/$NB_SITE/queries ; fi
+if $2 ; then cp ../../../../lib/watdiv-queries/* ../../../../prepa/$NB_SITE/queries ; else ./test -w ../../../../prepa/$NB_SITE/workload/shop-workload.xml -o ../../../../prepa/$NB_SITE/queries ; fi
