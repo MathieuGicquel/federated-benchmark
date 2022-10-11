@@ -1,4 +1,5 @@
-./scripts/digestuoso.sh  /home/ubuntu/virtuoso-opensource/bin/isql
+./scripts/digestuoso.sh $(cat ./configuration.yaml | grep "isql_virtuoso_path" | sed 's/.*://')
+cd Federapp && mvn clean && cd -
 rm -rf result/
 rm -rf prepa/
 rm -rf plot/
