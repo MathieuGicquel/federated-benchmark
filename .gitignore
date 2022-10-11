@@ -13,3 +13,4 @@ snakemake.log
 lib/gmark/demo/**
 ./.idea
 prepa/
+configuration.yaml
