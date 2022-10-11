@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 @click.argument("input_file")
 @click.argument("output_file")
 
-def stator(input_file, output_file):
+def compute_statistics(input_file, output_file):
     df = pd.read_csv(input_file, sep=" ", names=['s', 'p', 'o', 'g','dot'])
     logger.debug(str(df.head()))
     logger.debug(str(df[df["p"].str.contains("sameAs")]))
@@ -97,4 +97,4 @@ def stator(input_file, output_file):
 
 
 if __name__ == "__main__":
-    stator()
+    compute_statistics()

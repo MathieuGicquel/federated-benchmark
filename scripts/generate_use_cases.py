@@ -14,7 +14,7 @@ from lxml.etree import tostring
 import re
 
 # Example of use :
-# python3 ./scripts/shopanhour.py ./use-case/shop.xml ./prepa/use-cases
+# python3 ./scripts/generate_use_cases.py ./use-case/shop.xml ./prepa/use-cases
 
 # Goal : Take a shop.xml file template and apply the data distribution from configuration.yaml on it to have a variation of number of nodes
 
@@ -27,7 +27,7 @@ configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 @click.argument("shop_template")
 @click.argument("output")
 
-def shopanhour(shop_template,output):
+def generate_use_cases(shop_template,output):
     nb_shop = str(configuration.get("site"))
     with open(shop_template, 'r') as xmlfile:
         xmldata = xmlfile.read()
@@ -66,4 +66,4 @@ def shopanhour(shop_template,output):
             outfile.write(str_xml)
 
 if __name__ == "__main__":
-    shopanhour()
+    generate_use_cases()

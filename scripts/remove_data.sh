@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Example of use : 
-# ./scripts/digestuoso.sh  /home/ubuntu/virtuoso-opensource/bin/isql
+# ./scripts/remove_data.sh  /home/ubuntu/virtuoso-opensource/bin/isql
 
 # The first parameters is where Virtuoso's isql are
 

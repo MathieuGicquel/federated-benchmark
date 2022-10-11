@@ -6,4 +6,4 @@ done
 
 mkdir -p plot
 
-python3 ./scripts/harry_plotter.py
+python3 ./scripts/plot.py

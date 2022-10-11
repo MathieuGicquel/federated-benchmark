@@ -24,7 +24,7 @@ configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 @click.argument("input_file")
 @click.argument("output_file")
 
-def replicator(input_file,output_file):
+def replicate_data_across_sites(input_file,output_file):
 
     df = pd.read_csv(input_file, sep=" ", names=['s','p','o','g','dot'],quotechar="'")
 
@@ -103,4 +103,4 @@ def duplicator(df: pd.DataFrame,row: pd.core.series.Series,other_site: str) -> p
         logger.info(f"Cloning row from {row} to {df.loc[len(df) - 1]}")
 
 if __name__ == "__main__":
-    replicator()
+    replicate_data_across_sites()

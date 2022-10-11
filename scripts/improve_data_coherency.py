@@ -12,7 +12,7 @@ import pandasql as ps
 import random
 
 # Example of use :
-# python3 ./scripts/fixator.py ./lib/gmark/demo/shop-a/shop-a-graph.txt0.txt ./tmp/tmp.txt
+# python3 ./scripts/improve_data_coherency.py ./lib/gmark/demo/shop-a/shop-a-graph.txt0.txt ./tmp/tmp.txt
 
 # Goal : Fix gMark data to have a logical data schema
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 @click.argument("input_file")
 @click.argument("output_file")
 
-def fixator(input_file,output_file):
+def improve_data_coherency(input_file,output_file):
     df = pd.read_csv(input_file, sep=" ", names=['s','p','o'])
 
     # TODO : Need to fix problem for partial part (when object are in subject, but is bad construct) [Appaer few time]
@@ -388,4 +388,4 @@ def fixator(input_file,output_file):
         wfile.write(line2add)
 
 if __name__ == "__main__":
-    fixator()
+    improve_data_coherency()

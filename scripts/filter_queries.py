@@ -65,7 +65,7 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
     help="URL of the Virtuoso SPARQL endpoint")
 @click.argument("nb_query")
 
-def virtuoso(queries,format,output,entrypoint,nb_query):
+def filter_queries(queries,format,output,entrypoint,nb_query):
 
     # Get all queries files
 
@@ -118,4 +118,4 @@ def virtuoso(queries,format,output,entrypoint,nb_query):
             break
 
 if __name__ == "__main__":
-    virtuoso()
+    filter_queries()

@@ -18,7 +18,7 @@ import io
 import sys
 
 # Examples of use :
-# python3 ./scripts/constantin_first.py /GDD/federated-benchmark/repo/prepa/filter_queries --output /GDD/federated-benchmark/repo/result/site-5/queries
+# python3 ./scripts/add_constant_to_queries.py /GDD/federated-benchmark/repo/prepa/filter_queries --output /GDD/federated-benchmark/repo/result/site-5/queries
 
 # Goal : Add constant in gMark/WatDiv queries from their own result
 
@@ -103,7 +103,7 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
 @click.option("--variation", type=int, default=1,
     help="Number of variation for each query")
 
-def virtuoso(queries,format,output,entrypoint,seed,variation):
+def add_constant_to_queries(queries,format,output,entrypoint,seed,variation):
     output = os.path.abspath(output)
 
     # Set seed to control random function
@@ -301,4 +301,4 @@ def get_ss_query(query: str) -> str:
     return source_selection_query              
 
 if __name__ == "__main__":
-    virtuoso()
+    add_constant_to_queries()

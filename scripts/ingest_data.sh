@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Examples of use :
-# ./scripts/ingestuoso.sh  /home/ubuntu/virtuoso-opensource/bin/isql /GDD/federated-benchmark/repo/prepa/
-# ./scripts/ingestuoso.sh  /home/ubuntu/virtuoso-opensource/bin/isql /GDD/federated-benchmark/repo/result/site-5000/data
+# ./scripts/ingest_data.sh  /home/ubuntu/virtuoso-opensource/bin/isql /GDD/federated-benchmark/repo/prepa/
+# ./scripts/ingest_data.sh  /home/ubuntu/virtuoso-opensource/bin/isql /GDD/federated-benchmark/repo/result/site-5000/data
 
 # Parameters 1 is where Virtuoso's isql are
 
