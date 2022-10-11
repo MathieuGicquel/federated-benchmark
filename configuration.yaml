@@ -13,10 +13,10 @@
 # - shared_types : set entities who are shared between site, and so are in federated_shop
 
 endpoint: "http://localhost:8890/sparql"
-isql_virtuoso_path: '/home/ubuntu/virtuoso-opensource/bin/isql'
-site: 10
-queries: 20
-clean_after: False
+isql_virtuoso_path: '/Applications/Virtuoso_Open_Source_Edition_v7.2.app/Contents/virtuoso-opensource/bin/isql'
+site: 3
+queries: 10
+clean_after: True
 use_watdiv: False
 use_fixator: True
 
@@ -42,7 +42,7 @@ sameas_proba:
   OtherProduct: 0.5
 
 data_distribution:
-  choosen_type: "gaussian"
+  choosen_type: "uniform"
   types:
       "zipfian":
             alpha: 1.22
@@ -52,6 +52,6 @@ data_distribution:
             sigma: 200000
       "uniform":
             min: 1000
-            max: 10000
+            max: 2000
 
 shared_types: ['Genre', 'SubGenre', 'Topic', 'HotTopic', 'City', 'Country', 'Language', 'Role', 'AgeGroup', 'Gender']
