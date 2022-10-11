@@ -1,3 +1,6 @@
+import sys 
+print(sys.version)
+print(sys.executable)
 from glob import glob
 from re import search
 import yaml
@@ -38,7 +41,7 @@ MULTI_GMARK_QUERIES_EXPAND = expand(MULTI_GMARK_QUERIES,query_id=[i for i in ran
 SHOP_XML = "prepa/" + str(SITE) + "/" +"use-cases/shop-{i}.xml"
 SHOP_XML_EXPAND = expand(SHOP_XML,i=range(0,SITE))
 
-RAW_DATA_NQ = "prepa/" + str(SITE) + "/" +"data/" + "/data.tmp.nq" 
+RAW_DATA_NQ = "prepa/" + str(SITE) + "/" +"data/" + "data.tmp.nq" 
 
 DATA_NQ = "result/site-" + str(SITE) +"/data/data.nq"
 
