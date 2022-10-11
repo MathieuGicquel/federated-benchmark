@@ -199,9 +199,10 @@ def add_fixed_cst_to_query(query:str, df: pd.DataFrame, seed) -> str:
             # http://example.org/s[0-9]/Retailer_[0-9]+ -> <http://example.org/s[0-9]/Retailer_[0-9]+>
             # http://example.org/federated_shop/Topic_[0-9]+ -> <http://example.org/federated_shop/Topic_[0-9]+>
 
-            column = re.sub(r"\[([A-Za-z]+_[0-9]+)\]",r'\1', column)
-            column = re.sub(r'\[([A-Za-z]+_[0-9]+)"\]',r'"\1"', column)
-            column = re.sub(r"(http://example.org/(s[0-9]+|federated_shop)/[A-Za-z]+(_s[0-9]+)?_[0-9]+)",r'<\1>', column)
+            column = re.sub(r"\b\[([A-Za-z]+_[0-9]+)\]\b",r'\1', column)
+            column = re.sub(r'\b\[([A-Za-z]+_[0-9]+)"\]\b',r'"\1"', column)
+            column = re.sub(r"\b(http://example.org/(s[0-9]+|federated_shop)/[A-Za-z]+(_s[0-9]+)?_[0-9]+)\b",r'<\1>', column)
+            column = re.sub(r"\b(http://example.org/federated_shop/[A-Za-z]+)\b",r'<\1>', column)
 
             # Correct SELECT :
             # SELECT ?x[0-9]+ WHERE { ... } -> SELECT * WHERE { ... } where ?x[0-9] are transformed into a constant
@@ -247,10 +248,10 @@ def add_random_cst_to_query(query: str, df: pd.DataFrame,seed) -> str:
     # http://example.org/s[0-9]/Retailer_[0-9]+ -> <http://example.org/s[0-9]/Retailer_[0-9]+>
     # http://example.org/federated_shop/Topic_[0-9]+ -> <http://example.org/federated_shop/Topic_[0-9]+>
 
-    column = re.sub(r"\[([A-Za-z]+_[0-9]+)\]",r'\1', column)
-    column = re.sub(r'\[([A-Za-z]+_[0-9]+)"\]',r'"\1"', column)
-    column = re.sub(r"(http://example.org/(s[0-9]+|federated_shop)/[A-Za-z]+(_s[0-9]+)?_[0-9]+)",r'<\1>', column)
-    column = re.sub(r"(http://example.org/federated_shop/[A-Za-z]+)",r'<\1>', column) # types
+    column = re.sub(r"\b\[([A-Za-z]+_[0-9]+)\]\b",r'\1', column)
+    column = re.sub(r'\b\[([A-Za-z]+_[0-9]+)"\]\b',r'"\1"', column)
+    column = re.sub(r"\b(http://example.org/(s[0-9]+|federated_shop)/[A-Za-z]+(_s[0-9]+)?_[0-9]+)\b",r'<\1>', column)
+    column = re.sub(r"\b(http://example.org/federated_shop/[A-Za-z]+)\b",r'<\1>', column) # types
 
     # Correct SELECT :
     # SELECT ?x[0-9]+ WHERE { ... } -> SELECT * WHERE { ... } where ?x[0-9] are transformed into a constant
