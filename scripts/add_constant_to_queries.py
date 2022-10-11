@@ -250,6 +250,7 @@ def add_random_cst_to_query(query: str, df: pd.DataFrame,seed) -> str:
     column = re.sub(r"\[([A-Za-z]+_[0-9]+)\]",r'\1', column)
     column = re.sub(r'\[([A-Za-z]+_[0-9]+)"\]',r'"\1"', column)
     column = re.sub(r"(http://example.org/(s[0-9]+|federated_shop)/[A-Za-z]+(_s[0-9]+)?_[0-9]+)",r'<\1>', column)
+    column = re.sub(r"(http://example.org/federated_shop/[A-Za-z]+)",r'<\1>', column) # types
 
     # Correct SELECT :
     # SELECT ?x[0-9]+ WHERE { ... } -> SELECT * WHERE { ... } where ?x[0-9] are transformed into a constant

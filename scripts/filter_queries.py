@@ -14,7 +14,7 @@ from glob import glob
 
 # Goal : Take only queries who return result
 
-coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
+coloredlogs.install(level='INFO', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
 def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
@@ -84,14 +84,14 @@ def filter_queries(queries,format,output,entrypoint,nb_query):
             query_name=os.path.basename(query)
             query_ext="".join(Path(query).suffixes)
 
-            logger.info(f'Virtuoso processing query:{query_name}')
+            logger.debug(f'Virtuoso processing query:{query_name}')
             start_time = time()
 
             data=sparqlQuery(querys, entrypoint, format)
             execution_time = round((time() - start_time) * 1000)
 
             if data[1]==None:
-                logger.info(f'Query {query_name} complete in {execution_time}ms')
+                logger.debug(f'Query {query_name} complete in {execution_time}ms')
 
                 # If the query return at least 1 result, we select it
 
@@ -103,12 +103,14 @@ def filter_queries(queries,format,output,entrypoint,nb_query):
                         elif j == 3:
                             break
                     if j == 3:
-                        logger.info(f'Query {query_name} has result')
+                        logger.debug(f'Query {query} has result')
                         logger.debug(data)
 
                         with open(f'{output}/query-{i_query}{query_ext}', 'w') as output_file:
                             output_file.write(f"# {query} \n{querys}")
                         i_query+=1
+                    else:
+                        logger.info(f'Query {query} has no result')
                 else:
                     print(data[0].decode())
 
