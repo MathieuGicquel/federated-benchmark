@@ -2,13 +2,17 @@
 
 # Goal : Generate one gMark for each site and merge shop-workload.xml into 1 and then generate queries from this file
 
+# Compile gMark at first
+cd lib/gmark/demo/scripts
+./compile-all.sh
+cd - 
 cd lib/gmark/src/
 
 NB_SITE=$1
 
 for (( i=0; i<$NB_SITE; i++))
 do
-    if [[ -f "../../../prepa/gmark/data-$i.txt0.txt" ]]
+    if [[ -f "../../../prepa/$NB_SITE/gmark/data-$i.txt0.txt" ]]
     then
         echo "File data-$i.txt already exist !"
     else
