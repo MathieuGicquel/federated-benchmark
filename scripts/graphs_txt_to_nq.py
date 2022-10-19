@@ -123,12 +123,12 @@ def add_types(df: pd.DataFrame) -> pd.DataFrame:
     for index, row in df.iterrows():
         if row["o"] in ["integer","string","date"]:
             if row["o"] not in done_entites:
-                df.loc[len(df)] = [row["o"],"<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>","<http://example.org/federated_shop/" + row["o"].split("_")[0] + ">", row["site"]]
+                df.loc[len(df)] = [row["o"],"<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>","<http://example.org/federated_shop/" + row["o"].split("/")[-1].split("_")[0] + ">", row["site"]]
                 done_entites.add(row["o"])
                 logger.debug(f"Add rdf:type on  {row['o']} ({index})")
         
         if row["s"] not in done_entites:
-                df.loc[len(df)] = [row["s"],"<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>","<http://example.org/federated_shop/" + row["s"].split("_")[0] + ">", row["site"]]
+                df.loc[len(df)] = [row["s"],"<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>","<http://example.org/federated_shop/" + row["s"].split("/")[-1].split("_")[0] + ">", row["site"]]
                 done_entites.add(row["s"])
                 logger.debug(f"Add rdf:type on  {row['s']} ({index})")
 
