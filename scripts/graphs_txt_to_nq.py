@@ -4,164 +4,176 @@ import click
 import pandas as pd
 import glob
 import os
-import random
 import numpy as np
 import yaml
 import logging
 import coloredlogs
-import warnings 
+import warnings
+from pyspark.sql import SparkSession
+import re
 
 # Goal : correctly convert txt data into nq data
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-coloredlogs.install(level='DEBUG', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
+coloredlogs.install(level='INFO', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
-configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
+configuration = yaml.load(open("./configuration.yaml"), Loader=yaml.FullLoader)
+spark = SparkSession.builder.master("local").appName("federated-benchmark").config("spark.ui.port",
+                                                                                   '4050').getOrCreate()
+
 
 @click.command()
 @click.argument("input_folder")
 @click.argument("output")
-
 def graphs_txt_to_nq(input_folder, output):
-
     logger.debug(input_folder)
+    files = glob.glob(f'{input_folder}/*.fixed.txt')
+    triples = spark.sparkContext.emptyRDD()
 
-    files = glob.glob(f'{input_folder}/*.txt')
-    nb_site = len(files)
-    logger.debug(files)
+    def parseQuads(line, src):
+        parts = re.split(r'\s+', line)
+        return parts[0], parts[1], parts[2], src
 
-    dfs = dict()
     for file in files:
-        df = pd.read_csv(file,sep=" ",names=['s','p','o'])
-        
-        site = os.path.basename(file).split('-')[1].split('.')[0]
-        df["site"] = site
-        dfs[site] = df
-    
-    logger.debug(dfs)
-    
-    result_df = pd.concat(dfs.values())
-    result_df = result_df[~result_df['p'].isin(['sameAs'])]
-    logger.debug("Result df " + str(result_df))
-    result_df = result_df.reset_index().drop(["index"], axis=1)
-    
-    logger.debug("Tail " + str(result_df.tail(5)))
+        rdd = spark.read.text(file).rdd.map(lambda x: x[0]).map(lambda x: parseQuads(x, file))
+        print("Sample = ", rdd.take(1))
+        triples = triples.union(rdd)
 
-    result_df = add_federated_shop(result_df)
-    result_df = add_types(result_df)
+    triples = triples.map(to_federated_shop)
+    print(triples.take(1))
+    object_type = triples.filter(lambda x: not x[0].startswith("integer") and  not x[0].startswith("string") and not x[0].startswith("date")).map(
+        lambda x: add_type(x[0], x[3])).distinct()
+    subject_type = triples.filter(lambda x: not x[2].startswith("integer") and  not x[2].startswith("string") and not x[2].startswith("date")).map(
+        lambda x: add_type(x[2], x[3])).distinct()
+    types = object_type.union(subject_type).distinct()
+    triples = triples.union(types)
+    quads = triples.map(tuple_to_quads)
 
-    result_df["sNq"] = result_df.apply(lambda l: subject(l), axis=1)
-    result_df["pNq"] = result_df.apply(lambda l: predicate(l), axis=1)
-    result_df["oNq"] = result_df.apply(lambda l: objecte(l), axis=1)
-    result_df["gNq"] = result_df.apply(lambda l: "<http://example.org/s" + str(l["site"]) + ">", axis=1)
-    
-    result = generate_nq(result_df)
+    workdir = os.path.dirname(output)
+    workdir_spark = workdir + "/spark"
 
+    import shutil
+    shutil.rmtree(workdir_spark, ignore_errors=True)
 
-    with open(f'{output}', 'w') as nqfile:
-        nqfile.write(result)   
+    quads.saveAsTextFile(workdir_spark)
 
-def subject(line):
-    subject = str(line['s'])
-    if subject.startswith('<'):
-        return subject
+    # concatenate
+    import shutil
+    with open(output, 'wb') as wfd:
+        for f in glob.glob(f'{workdir_spark}/*'):
+            with open(f, 'rb') as fd:
+                shutil.copyfileobj(fd, wfd)
 
 
-    site = str(line['site'])
-    if "#" in subject:
-        logger.debug("Found # in " + subject)
-        site = subject.split('#')[0]
-        subject = subject.split('#')[1]
-        
-    subject_split = subject.split("_")
-    subject = str(subject_split[0] + "_s" + site +"_" + subject_split[1])
+
+def to_federated_shop(x: str):
+    s = x[0]
+    p = x[1]
+    o = x[2]
+    g = x[3]
+
+    if (s.split("_")[0] in configuration["shared_types"]):
+        s = "<http://example.org/federated_shop/" + s + ">"
+
+    if (o.split("_")[0] in configuration["shared_types"]):
+        o = "<http://example.org/federated_shop/" + o + ">"
+
+    if (s.startswith("<http://example.org/federated_shop/")):
+        g = "<http://example.org/federated_shop>"
+    return (s, p, o, g)
+
+
+def add_type(entity, file):
+    if file.startswith("<http://example.org/federated_shop"):
+        site = "<http://example.org/federated_shop>"
+        entity_nq = entity
+    else:
+        search = re.search(r"<http://example.org/s([0-9]+)", file)
+        if search is not None:
+            site = f"<http://example.org/s{search.group(1)}>"
+            entity_nq = entity
+        else:
+            try:
+                match = re.search(r"/data-([0-9]+).txt0.fixed.txt", file).group(1)
+            except:
+                print(file)
+                raise Exception()
+            site = f"<http://example.org/s{match}>"
+            subject = str(entity.split("_")[0] + "_" + site + "_" + entity.split("_")[1])
+            entity_nq = f"<http://example.org/{site}/" + str(subject) + ">"
+
+    return (entity_nq,
+            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+            "<http://example.org/federated_shop/" + entity.split("/")[-1].split("_")[0] + ">",
+            f"{site}"
+            )
+
+
+def tuple_to_quads(t):
+    match = None
+    if(t[3].startswith("<http://")):
+        g = t[3]
+    else:
+        search = re.search(r"/data-([0-9]+).txt0.fixed.txt", t[3])
+        if search != None:
+            match = search.group(1)
+            g = f"<http://example.org/s{match}>"
+        else:
+            g = "<http://example.org/federated_shop>"
+    return subject_to_uri(t[0], match) + " " + predicate_to_uri(t[1]) + " " + objecte(t[2], match) + " " + g + " ."
+
+
+# TODO
+def subject_to_uri(s, site):
+    if s.startswith('<'):
+        return s
+
+    if site == None:
+        return "<http://example.org/federated_shop/" + str(s) + ">"
+
+    subject_split = s.split("_")
+    subject = str(subject_split[0] + "_s" + site + "_" + subject_split[1])
     return "<http://example.org/s" + str(int(site)) + "/" + str(subject) + ">"
 
-def predicate(line):
-    if line['p'].startswith('<http://'):
-        return line['p']
+
+def predicate_to_uri(p):
+    if p.startswith('<http://'):
+        return p
     else:
-        predicate = line['p']
+        predicate = p
         predicate = "<http://example.org/" + str(predicate) + ">"
         return predicate
 
-def objecte(line):
-    go2 = str(line['o']).split('_')[0]
-    objecte = str(line['o'])
+
+def objecte(o, site):
+    object_type = o.split('_')[0]
+    objecte = o
+
     if objecte.startswith('<'):
         return objecte
-    site = str(line['site'])
-    if "#" in objecte:
-        logger.debug("Found # in " + str(objecte))
-        site = objecte.split('#')[0]
-        objecte = objecte.split('#')[1]
-        
-    if str(go2) in ["string", "integer", "date"] :
-        if str(go2) in ["string"]:
+
+    if site == None:
+        return "<http://example.org/federated_shop/" + str(objecte) + ">"
+
+    if object_type in ["string", "integer", "date"]:
+        if str(object_type) in ["string"]:
             objecte = "\"" + str(objecte) + "\""
             logger.debug(f"String found {objecte}")
         else:
-            if str(go2) in ["integer","date"]:
-                logger.debug(str(go2))
-                objecte = str(objecte).replace(go2 + "_","")
+            if str(object_type) in ["integer", "date"]:
+                logger.debug(str(object_type))
+                objecte = str(objecte).replace(object_type + "_", "")
             else:
                 objecte = str(objecte)
-
     else:
         objecte_split = str(objecte).split("_")
-        objecte = str(objecte_split[0] + "_s" + site +"_" + objecte_split[1])
+        objecte = str(objecte_split[0] + "_s" + site + "_" + objecte_split[1])
         logger.debug(objecte)
         objecte = "<http://example.org/s" + str(int(site)) + "/" + str(objecte) + ">"
-    return objecte   
+    return objecte
 
-def add_types(df: pd.DataFrame) -> pd.DataFrame:
-    logger.debug(df)
 
-    done_entites = set()
-    for index, row in df.iterrows():
-        if row["o"] in ["integer","string","date"]:
-            if row["o"] not in done_entites:
-                df.loc[len(df)] = [row["o"],"<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>","<http://example.org/federated_shop/" + row["o"].split("/")[-1].split("_")[0] + ">", row["site"]]
-                done_entites.add(row["o"])
-                logger.debug(f"Add rdf:type on  {row['o']} ({index})")
-        
-        if row["s"] not in done_entites:
-                df.loc[len(df)] = [row["s"],"<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>","<http://example.org/federated_shop/" + row["s"].split("/")[-1].split("_")[0] + ">", row["site"]]
-                done_entites.add(row["s"])
-                logger.debug(f"Add rdf:type on  {row['s']} ({index})")
-
-    return df
-
-def generate_nq(df: pd.DataFrame) -> str:
-    data = df[["sNq","pNq","oNq","gNq"]]
-   
-    rdf = ""
-    for index, row in data.iterrows():
-        rdf += f'{row["sNq"]} {row["pNq"]} {row["oNq"]} {row["gNq"]} .\n'        
-   
-    return rdf
-
-def add_federated_shop(df: pd.DataFrame) -> pd.DataFrame:
-    for idx, row in df.iterrows():
-        subject = row["s"]
-        object = row["o"]
-        
-        type_subject = row["s"].split("_")[0]
-        type_object = row["o"].split("_")[0]
-
-        if type_subject in configuration["shared_types"]:
-            new_subject = "<http://example.org/federated_shop/" + subject + ">"
-            df.loc[idx] = [new_subject, row["p"], row["o"], row["site"]]
-            logger.debug(idx)
-
-        if type_object in configuration["shared_types"]:
-            new_object = "<http://example.org/federated_shop/" + object + ">"
-            df.loc[idx] = [row["s"], row["p"], new_object, row["site"]]
-            logger.debug(idx)
-
-    return df
-    
 if __name__ == "__main__":
     graphs_txt_to_nq()

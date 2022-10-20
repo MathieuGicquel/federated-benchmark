@@ -1,4 +1,4 @@
-./scripts/remove_data.sh $(cat ./configuration.yaml | grep "isql_virtuoso_path" | sed 's/.*://')
+./scripts/remove_data.sh $(cat ./configuration.yaml | grep "isql_virtuoso_path:" | sed 's/.*://')
 cd Federapp && mvn clean && cd -
 rm -rf result/
 rm -rf prepa/

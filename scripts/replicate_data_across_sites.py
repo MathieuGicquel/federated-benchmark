@@ -2,15 +2,13 @@
 
 import logging
 import warnings
-from collections import defaultdict
 import click
 import coloredlogs
-import pandas as pd
 import yaml
-from yaml.representer import Representer
-import pandasql as ps
 import random
 import re
+from pyspark.sql import SparkSession
+
 
 # Goal : Duplicate an entity and all object who arrived to it to another site and add a sameAs predicate between them
 
@@ -18,89 +16,128 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 coloredlogs.install(level='INFO', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
 
-configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
+configuration = yaml.load(open("./configuration.yaml"), Loader=yaml.FullLoader)
+
+
+class Quad:
+    def __init__(self, s: str, p: str, o: str, g: str):
+        self.s: str = s
+        self.o: str = o
+        self.p: str = p
+        self.g: str = g
+
+    def __str__(self):
+        return ("%s %s %s %s") % (self.s, self.p, self.o, self.g)
+
+    def move_to_site(self, site: int):
+        return Quad(
+            re.sub(r"/s[0-9]+/", "/s%s/" % site, self.s),
+            re.sub(r"/s[0-9]+/", "/s%s/" % site, self.p),
+            re.sub(r"/s[0-9]+/", "/s%s/" % site, self.o),
+            re.sub(r"/s[0-9]+", "/s%s" % site, self.g),
+        )
+
+    def move_entity_to_site(entity: str, site: int) -> str:
+        return re.sub(r"/s[0-9]+/", "/s%s/" % site, entity)
+
+    def move_named_graph_to_site(name: str, site: int) -> str:
+        return re.sub(r"/s[0-9]+", "/s%s" % site, name)
+
+    def toNq(self):
+        return ("%s %s %s %s .\n") % (self.s, self.p, self.o, self.g)
+
 
 @click.command()
 @click.argument("input_file")
 @click.argument("output_file")
+@click.argument("number_of_site")
+def replicate_data_across_sites(input_file, output_file, number_of_site):
+    nsite = int(number_of_site)
 
-def replicate_data_across_sites(input_file,output_file):
+    spark = SparkSession.builder.master("local").appName("Replicator").config("spark.ui.port", '4050').getOrCreate()
+    lines = spark.read.text(input_file).rdd.map(lambda row: row[0])
 
-    df = pd.read_csv(input_file, sep=" ", names=['s','p','o','g','dot'],quotechar="'")
+    def parseQuads(line):
+        parts = re.split(r'\s+', line)
+        return Quad(parts[0], parts[1], parts[2], parts[3])
 
+    triples = lines.map(lambda line: parseQuads(line))
     sameas_proba = configuration["sameas_proba"]
 
-    df_g = set(df['g'].unique())
+    toAddSameAs = triples \
+        .filter(
+        lambda quad: quad.p == "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>" and quad.s.split('/')[-1].startswith(
+            tuple(sameas_proba.keys()))) \
+        .filter(lambda quad: random.random() < sameas_proba.get(quad.s.split('/')[-1].split('_')[0]))
 
-    logger.debug(type(sameas_proba))
+    # select * where {
+    #   ?product a Product .
+    #   ?offer includes ?product .
+    #   ?retailer offers ?offer .
+    #   ?product ?p ?productInfo
+    #   }
+    tp1 = toAddSameAs.keyBy(lambda t: t.s)
+    tp2 = triples.filter(lambda t: t.p == '<http://example.org/includes>').keyBy(lambda t: t.o)
 
-    for index, row in df.iterrows():
-        type_s = (row['o'].split('_')[0]).split('/')[-1]
-        logger.debug(type_s)
-        if type_s in sameas_proba.keys():
-            sameas_proba_product = sameas_proba.get(str(type_s))
-            random_float = random.random()
-            if random_float <= sameas_proba_product:
-                row_g = set()
-                row_g.add(row['g'])
-                df_g_other = df_g - row_g
-                logger.debug(df_g)
-                logger.debug(row_g)
-                logger.debug(df_g_other)
-                new_g = random.sample(df_g_other,1)[0]
-                logger.debug(new_g)
-                duplicator(df,row,new_g)
+    join1 = tp1.join(tp2).keyBy(lambda b: b[1][1].s)
 
-    with open(f"{output_file}","w") as wfile:
-        wfile.write(generate_nq(df))
+    tp3 = triples.filter(lambda quad: quad.p == "<http://example.org/offers>").keyBy(lambda quad: quad.o)
 
-def generate_nq(df: pd.DataFrame) -> str:
-    data = df[["s","p","o","g"]]
-   
-    rdf = ""
-    len_df = len(df)
-    for index, row in data.iterrows():
-        rdf += f'{row["s"]} {row["p"]} {row["o"]} {row["g"]} .\n'
-        logger.debug(f"{index}/{len_df}")
-        
-   
-    return rdf
+    joined2 = join1.join(tp3).keyBy(lambda b: b[1][0][0])
 
-def duplicator(df: pd.DataFrame,row: pd.core.series.Series,other_site: str) -> pd.DataFrame:
-    duplicate_product = row['o']
-    logger.debug(duplicate_product)
-    origin_site = row['g']
-    logger.debug(origin_site)
-    offers = df[(df['o'] == duplicate_product) & (df['g'] == origin_site) & (df['p'].str.contains("includes"))]
-    logger.debug(list(offers['s']))
+    tp4 = triples.keyBy(lambda t: t.s)
 
-    for idx, row in offers.iterrows():
+    joined3 = joined2.join(tp4)
 
-        # Select all offers from a given product from a line and duplicate it on other_site (graph) :
-        # new_offer includes new_product other_site .
-        # And add sameAs between the original product and the duplicate product :
-        # new_product sameAs original_product other_site .
+    groupBy = joined3.keyBy(lambda b: b[0]).groupByKey()  # keyBy product
 
-        s_origin = (other_site.split('/')[-1]).replace(">","")
-        new_offer = re.sub(r"/s[0-9]+/",f"/{s_origin}/",(row['s']))
-        new_product = re.sub(r"/s[0-9]+/",f"/{s_origin}/",(row['o']))
-        df.loc[len(df)] = [new_product, "<http://www.w3.org/2002/07/owl#sameAs>", row['o'], other_site, "."]
-        logger.info(f"Cloning row from {row} to {df.loc[len(df) - 1]}")
+    def flatten_triples(x):
+        quads = set()
+        for data in x[1]:
+            q1 = data[1][0][1][1]
+            q2 = data[1][0][1][0][1][0]
+            q3 = data[1][0][1][0][1][1]
+            q4 = data[1][1]
+            quads.add(q1)
+            quads.add(q2)
+            quads.add(q3)
+            quads.add(q4)
 
-        df.loc[len(df)] = [new_offer, row["p"], new_product, other_site, "."]
+        return (x[0], quads)
 
-    retailers = df[(df['o'].isin(list(offers['s']))) & (df['g'] == origin_site) & (df['p'].str.contains("offers"))]
-    logger.debug(retailers)
-    for idx, row in retailers.iterrows():
+    flatten = groupBy.map(flatten_triples)
 
-        # Select all retailer from given offers from a line and duplicate it on other_site (graph) :
-        # new_retailer offers new_offer other_site .
+    def moveToOtherSite(x):
+        key = x[0]
+        quads = x[1]
 
-        s_origin = (other_site.split('/')[-1]).replace(">","")
-        new_retailer = re.sub(r"/s[0-9]+/",f"/{s_origin}/",(row['s']))
-        new_offer = re.sub(r"/s[0-9]+/",f"/{s_origin}/",(row['o']))
-        df.loc[len(df)] = [new_retailer, row["p"], new_offer, other_site, "."]
-        logger.info(f"Cloning row from {row} to {df.loc[len(df) - 1]}")
+        current_site = int(re.search(r"/s([0-9]+)/", key).group(1))
+        random_site = current_site
+        while random_site == current_site:
+            random_site = random.randrange(nsite)
+
+        new_quads = set()
+        for quad in quads:
+            new_quad = quad.move_to_site(random_site)
+            new_quads.add(new_quad)
+
+        new_quad = Quad(Quad.move_entity_to_site(key, random_site), "<http://www.w3.org/2002/07/owl#sameAs>", key,
+                        "<http://example.org/s%s>" % random_site)
+        new_quads.add(new_quad)
+        return (key, new_quads)
+
+    #todo remove collect : concat newSameas together then concat all newSameAs and data
+    moves = flatten.map(moveToOtherSite).collect()  # moved : (key, set)
+
+    import shutil
+    shutil.copyfile(input_file, output_file)
+    with open(f"{output_file}", "a") as wfile:
+        for move in moves:
+            key = move[0]
+            quads = move[1]
+            for quad in quads:
+                wfile.write(quad.toNq())
+
 
 if __name__ == "__main__":
     replicate_data_across_sites()

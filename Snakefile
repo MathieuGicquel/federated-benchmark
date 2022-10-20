@@ -107,7 +107,7 @@ rule all:
         MERGEALL_RDF4J_FORCE,
         MERGEALL_VIRTUOSO,
         REMOVEDATA_LOG if clean_after else [],
-        STATS_FILE
+        STATS_FILE if False else []
 
 rule run__generate_use_cases:
     output:
@@ -147,7 +147,7 @@ rule run__replicate_data_across_sites:
     output:
         DATA_NQ
     shell:
-        "python3 scripts/replicate_data_across_sites.py {input} {output}"
+        "python3 scripts/replicate_data_across_sites.py {input} {output} " + str(SITE)
 
 
 rule run__generate_fedx_config_file:
@@ -227,6 +227,7 @@ rule run__virtuoso_compute_query:
     output:
         out=VIRTUOSO_QUERY_OUT,
         stat=VIRTUOSO_QUERY_STAT
+    threads: 1
     params:
         endpoint=ENDPOINT,
         run_id=RUN
@@ -244,6 +245,7 @@ rule run__compile_and_run_federapp_default:
         config=CONFIG_TTL
     params:
         run=RUN
+    threads: 1
     output:
         result=FEDERAPP_DEFAULT_RESULT,
         stat=FEDERAPP_DEFAULT_STAT,
@@ -267,6 +269,7 @@ rule run__compile_and_run_federapp_forcess:
         ssopt=SOURCE_SELECTION_QUERY
     params:
         run=RUN
+    threads: 1
     output:
         result=FEDERAPP_VARIATION_FORCE_RESULT,
         stat=FEDERAPP_VARIATION_FORCE_STAT,
