@@ -22,11 +22,12 @@ def translate_gmark_query(query_input, query_output):
 
             # Fix predicate use in gMark query
                 
-            query = query.replace(":p",":")
-            query = query.replace(":sameAs","owl:sameAs")
-            query = query.replace("owlowl:","owl:")
-            query = query.replace("((","")
-            query = query.replace("))","")
+            if ".template" not in query_input:
+                query = query.replace(":p",":")
+                query = query.replace(":sameAs","owl:sameAs")
+                query = query.replace("owlowl:","owl:")
+                query = query.replace("((","")
+                query = query.replace("))","")
             
             # Get all triples of the query and fix some problem of duplicate triples
 
