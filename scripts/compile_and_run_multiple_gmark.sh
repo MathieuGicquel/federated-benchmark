@@ -16,7 +16,7 @@ do
     then
         echo "File data-$i.txt already exist !"
     else
-        ./test -c ../../../prepa/$NB_SITE/use-cases/shop-$i.xml  -g ../../../prepa/$NB_SITE/gmark/data-$i.txt -w ../../../prepa/$NB_SITE/gmark/shop-workload-$i.xml -a
+        ./test -c ../../../prepa/$NB_SITE/use-cases/shop-$i.xml  -g ../../../prepa/$NB_SITE/gmark/data-$i.txt -w ../../../prepa/$NB_SITE/gmark/shop-workload-$i.xml -a || exit 1
     fi
 done
 
