@@ -15,5 +15,5 @@ PARAM2=$2
 
 # Load in virtuoso rdf data files
 
-echo -e "ld_dir ('${PARAM2}','*.nq', 'http://example.org'); \n rdf_loader_run();" \
+echo -e "ld_dir ('${PARAM2}','*.nq', 'http://example.org'); \n rdf_loader_run(); \n select * from DB.DBA.load_list; \n" \
   | eval "$PARAM1" "localhost:1111 dba dba"
