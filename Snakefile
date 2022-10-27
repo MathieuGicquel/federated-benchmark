@@ -10,7 +10,7 @@ CONFIGURATION = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 SITE = CONFIGURATION["site"]
 ENDPOINT = CONFIGURATION["endpoint"]
 ISQL = CONFIGURATION["isql_virtuoso_path"]
-USE_CASE_INPUT_FILE = "lib/gmark/use-cases/shop.xml"
+USE_CASE_INPUT_FILE = "use-case/shop.xml"
 RUN=range(0,1)
 KEEP_QUERIES = CONFIGURATION["queries"]
 clean_after = CONFIGURATION["clean_after"]
