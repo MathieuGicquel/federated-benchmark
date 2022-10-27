@@ -29,7 +29,7 @@ spark = SparkSession.builder.master("local").appName("federated-benchmark").conf
 @click.argument("output")
 def graphs_txt_to_nq(input_folder, output):
     logger.debug(input_folder)
-    files = glob.glob(f'{input_folder}/*.fixed.txt')
+    files = glob.glob(f'{input_folder}/*.txt0.fixed.txt')
     triples = spark.sparkContext.emptyRDD()
 
     def parseQuads(line, src):
@@ -86,11 +86,11 @@ def to_federated_shop(x: str):
 
 
 def add_type(entity, file):
-    if file.startswith("<http://example.org/federated_shop"):
+    if file.startswith("<http://example.org/federated_shop") or entity.startswith("<http://example.org/federated_shop"):
         site = "<http://example.org/federated_shop>"
         entity_nq = entity
     else:
-        search = re.search(r"<http://example.org/s([0-9]+)", file)
+        search = re.search(r"http://example.org/s([0-9]+)", entity)
         if search is not None:
             site = f"<http://example.org/s{search.group(1)}>"
             entity_nq = entity
@@ -101,17 +101,18 @@ def add_type(entity, file):
                 print(file)
                 raise Exception()
             site = f"<http://example.org/s{match}>"
-            subject = str(entity.split("_")[0] + "_" + site + "_" + entity.split("_")[1])
-            entity_nq = f"<http://example.org/{site}/" + str(subject) + ">"
+            subject = str(entity.split("_")[0] + "_s" + match + "_" + entity.split("_")[1])
+            entity_nq = f"<http://example.org/s{match}/" + str(subject) + ">"
 
-    return (entity_nq,
+    new_q = (entity_nq,
             "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
             "<http://example.org/federated_shop/" + entity.split("/")[-1].split("_")[0] + ">",
             f"{site}"
             )
+    return new_q
 
 
-def tuple_to_quads(t):
+def tuple_to_quads(t):        
     match = None
     if(t[3].startswith("<http://")):
         g = t[3]
@@ -122,8 +123,9 @@ def tuple_to_quads(t):
             g = f"<http://example.org/s{match}>"
         else:
             g = "<http://example.org/federated_shop>"
-    return subject_to_uri(t[0], match) + " " + predicate_to_uri(t[1]) + " " + objecte(t[2], match) + " " + g + " ."
-
+            
+    q = subject_to_uri(t[0], match) + " " + predicate_to_uri(t[1]) + " " + objecte(t[2], match) + " " + g + " ."
+    return q
 
 # TODO
 def subject_to_uri(s, site):
@@ -132,6 +134,10 @@ def subject_to_uri(s, site):
 
     if site == None:
         return "<http://example.org/federated_shop/" + str(s) + ">"
+    
+    search = re.search(r"<http://example.org/s([0-9]+)", site)
+    if search != None:
+        site = search.group(1)
 
     subject_split = s.split("_")
     subject = str(subject_split[0] + "_s" + site + "_" + subject_split[1])
