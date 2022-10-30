@@ -107,7 +107,7 @@ rule all:
         MERGEALL_RDF4J_FORCE,
         MERGEALL_VIRTUOSO,
         REMOVEDATA_LOG if clean_after else [],
-        STATS_FILE if False else []
+        STATS_FILE if True else []
 
 rule run__generate_use_cases:
     output:
