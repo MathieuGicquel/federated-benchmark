@@ -3,30 +3,24 @@ package org.example;
 import org.eclipse.rdf4j.federated.FedXConfig;
 import org.eclipse.rdf4j.federated.FedXFactory;
 import org.eclipse.rdf4j.federated.algebra.StatementSource;
-import org.eclipse.rdf4j.federated.monitoring.MonitoringUtil;
-import org.eclipse.rdf4j.federated.monitoring.QueryPlanLog;
-import org.eclipse.rdf4j.federated.optimizer.SourceSelection;
 import org.eclipse.rdf4j.federated.repository.FedXRepository;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
-import org.eclipse.rdf4j.query.algebra.Str;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Federapp {
     private static final Logger log = LoggerFactory.getLogger(Federapp.class);
@@ -41,6 +35,20 @@ public class Federapp {
 
     public static final String CSV_HEADER = "query,exec_time,total_distinct_ss,nb_http_request,total_ss\n";
 
+    private static List<BindingSet> evaluate(RepositoryConnection conn, String rawQuery) throws Exception {
+        TupleQuery tq = conn.prepareTupleQuery(rawQuery);
+        List<BindingSet> results = new ArrayList<>(10000);
+        try  {
+            TupleQueryResult tqRes = tq.evaluate();
+            for (BindingSet b : tqRes) {
+                results.add(b);
+            }
+        }catch (Exception e) {
+            throw new Exception(e);
+        }
+        return results;
+    }
+
     public static void main(String[] args) throws Exception {
         System.out.println(Arrays.toString(args));
         // init
@@ -52,6 +60,7 @@ public class Federapp {
         String statPath = args[3];
         String sourceSelectionPath = args[4];
         String httpListFilePath = args[5];
+        boolean enableTimeout = true;
 
         if(args.length > 6) {
             String ssPath= args[6];
@@ -67,6 +76,8 @@ public class Federapp {
 
         Long startTime = null;
         Long endTime = null;
+        AtomicBoolean success = new AtomicBoolean(true);
+
 
         FedXRepository repo  = FedXFactory.newFederation()
                 .withMembers(dataConfig)
@@ -79,17 +90,45 @@ public class Federapp {
                 )
                 .create();
 
-        try (RepositoryConnection conn = repo.getConnection()) {
-            startTime = System.currentTimeMillis();
-            TupleQuery tq = conn.prepareTupleQuery(rawQuery);
-            List<BindingSet> results = new ArrayList<>(10000);
-            try (TupleQueryResult tqRes = tq.evaluate()) {
-                for (BindingSet b : tqRes) {
-                    results.add(b);
-                }
-            }
-            endTime = System.currentTimeMillis();
+        RepositoryConnection conn = null;
+        try {
+            conn = repo.getConnection();
+        }catch (RepositoryException e) {
+            log.error("Error", e);
+            throw e;
+        }
 
+
+        startTime = System.currentTimeMillis();
+
+
+        RepositoryConnection finalConn = conn;
+        CompletableFuture<List<BindingSet>> future = CompletableFuture.supplyAsync(() -> {
+            try {
+                return Federapp.evaluate(finalConn,rawQuery);
+            } catch (Exception e) {
+                log.error(String.valueOf(e));
+                success.set(false);
+                return null;
+            }
+        });
+
+        List<BindingSet> results = null;
+        if(enableTimeout) {
+            try {
+                results =  future.get(15,TimeUnit.MINUTES);
+            }catch (TimeoutException e) {
+                log.error("Timeout", e);
+                success.set(false);
+            }
+        } else {
+            results = future.join();
+        }
+
+        endTime = System.currentTimeMillis();
+
+
+        if(success.get()) {
             createResultFile(resultPath, results);
             long durationTime = endTime - startTime;
             statWriter.write(CSV_HEADER);
@@ -106,22 +145,16 @@ public class Federapp {
 
             createSourceSelectionFile(sourceSelectionPath);
             createHttpListFile(httpListFilePath);
-        }catch (Exception e) {
-            log.error("An exception occurred!",e);
-
+        } else {
             statWriter.write(CSV_HEADER);
             statWriter.write(queryPath + "," +"failed,failed,failed" + "\n");
 
             createSourceSelectionFile(sourceSelectionPath);
             createHttpListFile(httpListFilePath);
-            //throw e;
         }
-
 
         repo.shutDown();
         statWriter.close();
-
-
     }
 
 
