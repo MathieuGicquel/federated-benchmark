@@ -180,7 +180,6 @@ def plot_http_request_each_query():
 # Repartition of data per site
 
 def plot_data_repartition():
-    
     rdata = glob.glob(f'./result/**/data/data.nq')
     logger.debug(rdata)
     for rd in rdata:
@@ -192,7 +191,7 @@ def plot_data_repartition():
 
         # Get number of constant's object in data
 
-        nb_cst = df[~df['o'].str.contains('http://example.org', regex=True)].groupby(['g'])['o'].count()
+        nb_cst = df[ df['o'].str.contains('http://example.org', regex=True) == False].groupby(['g'])['o'].count()
 
         # Get number of object (no constant) in data
 
@@ -282,36 +281,22 @@ def data_comparator():
 # Graph of link between site
 
 def plot_graph_link_between_site():
-    rdata = glob.glob(f'./result/*.yaml')
+    rdata = glob.glob(f'../result/*.yaml')
     for rd in rdata:
-
         nb_site = str(str(str(rd).split('/')[2]).split('_')[1]).split('.')[0]
-
         G = nx.MultiDiGraph()
         data = yaml.load(open(rd), Loader=yaml.FullLoader)
-        logger.debug(rd)
+        perSite = data["perSite"]
+        for site in perSite.keys():
+            logger.debug(site)
+            G.add_node(site)
+            for predicate in perSite[site]["linksOut"].keys():
+                if predicate == "<http://www.w3.org/2002/07/owl#sameAs>" or False:
+                    for target_site in perSite[site]["linksOut"][predicate].keys():
+                        G.add_node(target_site)
+                        in_: int = perSite[site]["linksOut"][predicate][target_site]
+                        G.add_edge(target_site, site, title=f"{predicate} : {in_}",color='black', value=200)
 
-        for site in data.keys():
-            if site != "all_site":
-                logger.debug(site)
-                G.add_node(site)
-                for predicate in data[site]["predicates"].keys():
-                    if predicate in [
-                        "#sameAs"
-                    ] or True:
-                        logger.debug(data[site]["predicates"][predicate][site])
-                        for target_site in data[site]["predicates"][predicate].keys():
-                            G.add_node(target_site)
-                            in_: int = data[site]["predicates"][predicate][target_site]["in"]
-                            out_: int = data[site]["predicates"][predicate][target_site]["out"]
-                            logger.debug(data[site]["predicates"][predicate][target_site])
-                            if in_ > 0:
-                                if target_site != site:
-                                    logger.info(f"Adding edge from {target_site} to {site}. ({predicate} : {in_})")
-                                    if predicate in ["#sameAs"]:
-                                        G.add_edge(target_site, site, title=f"{predicate} : {in_}",color='black', value=200)
-                                    else:
-                                        G.add_edge(target_site, site, title=f"{predicate} : {in_}")
         nt = Network('1000px', '1000px', directed=True, layout=False)
         nt.show_buttons()
         nt.from_nx(G, default_node_size=100)
