@@ -8,7 +8,7 @@ import yaml
 import random
 import re
 from pyspark.sql import SparkSession
-
+import os
 
 # Goal : Duplicate an entity and all object who arrived to it to another site and add a sameAs predicate between them
 
@@ -18,6 +18,15 @@ logger = logging.getLogger(__name__)
 
 configuration = yaml.load(open("./configuration.yaml"), Loader=yaml.FullLoader)
 
+spark = SparkSession.builder \
+    .master("local") \
+    .appName("federated-benchmark") \
+    .config("spark.ui.port", '4050')
+if os.environ["TMPDIR"] is not None:
+    print(os.environ["TMPDIR"])
+    spark = spark.config("spark.local.dir", os.environ["TMPDIR"])
+
+spark = spark.getOrCreate()
 
 class Quad:
     def __init__(self, s: str, p: str, o: str, g: str):
@@ -54,7 +63,6 @@ class Quad:
 def replicate_data_across_sites(input_file, output_file, number_of_site):
     nsite = int(number_of_site)
 
-    spark = SparkSession.builder.master("local").appName("Replicator").config("spark.ui.port", '4050').getOrCreate()
     lines = spark.read.text(input_file).rdd.map(lambda row: row[0])
 
     def parseQuads(line):

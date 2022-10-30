@@ -10,12 +10,24 @@ from pyspark.sql import SparkSession
 from yaml.representer import Representer
 from pyspark.sql import Row
 import re
+import os
+
 # Goal : Create a yaml statistic files to do some plot on it
 
 yaml.add_representer(defaultdict, Representer.represent_dict)
 warnings.simplefilter(action='ignore', category=FutureWarning)
 coloredlogs.install(level='INFO', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 logger = logging.getLogger(__name__)
+
+spark = SparkSession.builder \
+    .master("local") \
+    .appName("federated-benchmark") \
+    .config("spark.ui.port", '4050')
+if os.environ["TMPDIR"] is not None:
+    print(os.environ["TMPDIR"])
+    spark = spark.config("spark.local.dir", os.environ["TMPDIR"])
+
+spark = spark.getOrCreate()
 
 class Quad:
     def __init__(self, s: str, p: str, o: str, g: str):
