@@ -26,6 +26,7 @@ spark = SparkSession.builder \
 if os.environ["TMPDIR"] is not None:
     print(os.environ["TMPDIR"])
     spark = spark.config("spark.local.dir", os.environ["TMPDIR"])
+    spark = spark.config("spark.driver.defaultJavaOptions","-Djava.io.tmpdir=" + os.environ["TMPDIR"])
 
 spark = spark.getOrCreate()
 

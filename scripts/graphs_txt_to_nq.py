@@ -20,13 +20,14 @@ coloredlogs.install(level='INFO', fmt='%(asctime)s,%(msecs)d %(levelname)-8s [%(
 logger = logging.getLogger(__name__)
 
 configuration = yaml.load(open("./configuration.yaml"), Loader=yaml.FullLoader)
-spark = SparkSession.builder\
-    .master("local")\
-    .appName("federated-benchmark")\
+spark = SparkSession.builder \
+    .master("local") \
+    .appName("federated-benchmark") \
     .config("spark.ui.port", '4050')
 if os.environ["TMPDIR"] is not None:
     print(os.environ["TMPDIR"])
     spark = spark.config("spark.local.dir", os.environ["TMPDIR"])
+    spark = spark.config("spark.driver.defaultJavaOptions","-Djava.io.tmpdir=" + os.environ["TMPDIR"])
 
 spark = spark.getOrCreate()
 
