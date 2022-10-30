@@ -281,7 +281,7 @@ def data_comparator():
 # Graph of link between site
 
 def plot_graph_link_between_site():
-    rdata = glob.glob(f'../result/*.yaml')
+    rdata = glob.glob(f'./result/*.yaml')
     for rd in rdata:
         nb_site = str(str(str(rd).split('/')[2]).split('_')[1]).split('.')[0]
         G = nx.MultiDiGraph()
