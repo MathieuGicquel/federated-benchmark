@@ -4,6 +4,8 @@
 # ./scripts/remove_data.sh  /home/ubuntu/virtuoso-opensource/bin/isql
 
 # The first parameters is where Virtuoso's isql are
+set -x
+
 
 PARAM1=$1
 
