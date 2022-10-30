@@ -27,4 +27,4 @@ mkdir -p "$(dirname "$6")" && touch "$6"
 
 cd Federapp
 mvn install dependency:copy-dependencies package
-java -Xmx32384m -Xms32384m -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp "$@"
+java -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp "$@"
