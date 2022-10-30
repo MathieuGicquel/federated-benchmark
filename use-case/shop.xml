@@ -564,8 +564,7 @@
 			<target type="5" symbol="56" > <!-- Movie language Language -->
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+					<min>1000</min><max>1000</max>
 			</indistribution>
 				<outdistribution type="zipfian">
 					<alpha>2.5</alpha>
@@ -806,8 +805,7 @@
 			<target type="23" symbol="36"> <!-- Offer validFrom date -->
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+					<min>1000</min><max>1000</max>
 			</indistribution>
 				<outdistribution type="uniform">
 					<min>1</min>
@@ -817,8 +815,7 @@
 			<target type="23" symbol="37"> <!-- Offer validThrough date -->
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+					<min>1000</min><max>1000</max>
 			</indistribution>
 				<outdistribution type="uniform">
 					<min>1</min>
@@ -829,8 +826,7 @@
 			<target type="22" symbol="39"> <!-- Offer eligibleQuantity integer -->
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+<min>1000</min><max>1000</max>
 			</indistribution>
 				<outdistribution type="uniform">
 					<min>1</min>
@@ -905,12 +901,11 @@
 			<target type="4" symbol="77" > <!-- Offer eligibleRegion Country -->
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+					<min>1000000</min><max>1000000</max>
 				</indistribution>
 				<outdistribution type="gaussian">
-						<mu>1</mu>
-						<sigma>3</sigma>
+						<mu>10</mu>
+						<sigma>5</sigma>
 				</outdistribution>
 			</target>
 		</source>
@@ -921,8 +916,7 @@
 			<target type="23" symbol="40">
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+					<min>1000</min><max>1000</max>
 			</indistribution>
 				<outdistribution type="uniform">
 					<min>1</min>
@@ -994,7 +988,7 @@
 			<target type="21" symbol="3" multiplicity="?"/>
 			<target type="22" symbol="44"> <!-- Review totalVotes integer-->
 				<indistribution type="zipfian">
-					<alpha>1.5</alpha>
+					<alpha>2.3</alpha>
 				</indistribution>
 				<outdistribution type="uniform">
 					<min>1</min>
@@ -1012,7 +1006,16 @@
 
 		<source type="20"> <!-- user -->
 			<target type="22" symbol="45" multiplicity="1"/> <!-- User userId integer -->
-			<target type="21" symbol="46" multiplicity="?"/> <!-- User givenName string -->
+			<target type="21" symbol="46"> <!-- User givenName string -->
+				<indistribution type="gaussian">
+					<mu>5</mu>
+					<sigma>3</sigma>
+				</indistribution>
+				<outdistribution type="uniform">
+					<min>1</min>
+					<max>3</max>
+				</outdistribution>
+			</target>
 			<target type="21" symbol="47"> <!-- User familyName string -->
 				<indistribution type="uniform">
 					<min>1</min>
@@ -1040,8 +1043,7 @@
 			<target type="4" symbol="64"> <!-- User nationality Country -->
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+					<min>100000</min><max>100000</max>
 			</indistribution>
 				<outdistribution type="uniform">
 					<min>1</min>
@@ -1113,8 +1115,7 @@
 			<target type="3" symbol="61"> <!-- User location City -->
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+					<min>1000</min><max>1000</max>
 			</indistribution>
 				<outdistribution type="zipfian">
 					<alpha>2.5</alpha>
@@ -1123,8 +1124,7 @@
 			<target type="7" symbol="62"> <!-- User age AgeGroup -->
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+					<min>1000</min><max>1000</max>
 			</indistribution>
 				<outdistribution type="uniform">
 					<min>1</min>
@@ -1134,8 +1134,7 @@
 			<target type="8" symbol="63"> <!-- User gender Gender -->
 				<indistribution type="uniform">
 					<!-- uncapped -->
-					<min>1000</min>
-					<max>1000</max>
+					<min>1000000</min><max>1000000</max>
 			</indistribution>
 				<outdistribution type="uniform">
 					<min>1</min>
