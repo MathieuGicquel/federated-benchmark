@@ -1,4 +1,5 @@
-import sys 
+import os.path
+import sys
 print("#", sys.version)
 print("#", sys.executable)
 from glob import glob
@@ -31,9 +32,15 @@ use_watdiv = str(use_watdiv).lower()
 MULTI_GMARK_GRAPH = "prepa/" + str(SITE) + "/" +"gmark/data-{i}.txt0.txt"
 MULTI_GMARK_GRAPH_EXPAND = expand(MULTI_GMARK_GRAPH,i=range(0,SITE))
 
+COMPILE_GMARK_LOG="prepa/" + str(SITE) + "/log/compile_gmark.log"
+
+WORKLOAD_GMARK="prepa/" + str(SITE) + "/" +"gmark/shop-workload-{i}.xml"
+WORKLOAD_GMARK_EXPAND=expand(MULTI_GMARK_GRAPH,i=range(0,SITE))
+
+ALLWORKLOAD_GMARK="prepa/" + str(SITE)+ "/workload/shop-workload.xml"
+
 IMPROVED_GRAPH = "prepa/" + str(SITE) + "/" +"gmark/data-{i}.txt0.fixed.txt"
 IMPROVED_GRAPH_EXPAND = expand(IMPROVED_GRAPH,i=range(0,SITE))
-
 
 MULTI_GMARK_QUERIES = "prepa/" + str(SITE) + "/" +"queries/query-{query_id}" + EXT
 MULTI_GMARK_QUERIES_EXPAND = expand(MULTI_GMARK_QUERIES,query_id=[i for i in range(0,QUERY_NUMBER)])
@@ -41,7 +48,7 @@ MULTI_GMARK_QUERIES_EXPAND = expand(MULTI_GMARK_QUERIES,query_id=[i for i in ran
 SHOP_XML = "prepa/" + str(SITE) + "/" +"use-cases/shop-{i}.xml"
 SHOP_XML_EXPAND = expand(SHOP_XML,i=range(0,SITE))
 
-RAW_DATA_NQ = "prepa/" + str(SITE) + "/" +"data/" + "data.tmp.nq" 
+RAW_DATA_NQ = "prepa/" + str(SITE) + "/" +"data/" + "data.tmp.nq"
 
 DATA_NQ = "result/site-" + str(SITE) +"/data/data.nq"
 
@@ -98,8 +105,8 @@ REMOVEDATA_LOG="result/" + "site-" +str(SITE) + "/log/digestuoso.log"
 MERGEALL_RDF4J_DEFAULT="result/" + "all_" + str(SITE) +"_"  + "rdf4j_default" + ".csv"
 MERGEALL_RDF4J_FORCE="result/" + "all_"   +str(SITE) +"_"  + "rdf4j_force" + ".csv"
 MERGEALL_VIRTUOSO="result/" + "all_" +str(SITE) +"_"  + "virtuoso" + ".csv"
-        
-STATS_FILE = "result/stat_" + str(SITE) + ".yaml"  
+
+STATS_FILE = "result/stat_" + str(SITE) + ".yaml"
 
 rule all:
     input:
@@ -109,20 +116,58 @@ rule all:
         REMOVEDATA_LOG if clean_after else [],
         STATS_FILE if True else []
 
+
+# -- gMark rules
 rule run__generate_use_cases:
     output:
         SHOP_XML_EXPAND
     shell:
         "python3 ./scripts/generate_use_cases.py " + USE_CASE_INPUT_FILE + " " + os.path.dirname(SHOP_XML)
 
-rule run__compile_and_run_multiple_gmark:
-    input:
-        SHOP_XML_EXPAND
+rule compile__gmark:
     output:
-        graph=MULTI_GMARK_GRAPH_EXPAND,
-        queries=MULTI_GMARK_QUERIES_EXPAND
+        COMPILE_GMARK_LOG
     shell:
-        "./scripts/compile_and_run_multiple_gmark.sh " + str(SITE) + " " + str(use_watdiv)
+        """cd lib/gmark/demo/scripts && ./compile-all.sh > ../../../../{output}"""
+
+rule run__graph_gmark:
+    input:
+        SHOP_XML,
+        COMPILE_GMARK_LOG
+    output:
+        graph=MULTI_GMARK_GRAPH,
+        workload=WORKLOAD_GMARK
+    params:
+        use_case=SHOP_XML
+    shell: #TODO: remove hardcoded -g path
+        "cd lib/gmark/src/ && ./test -c ../../../{params.use_case}  -g ../../../prepa/" + str(SITE) + "/gmark/data-{wildcards.i}.txt"+" -w ../../../{output.workload} -a && sed -i '1,1d' ../../../{output.workload} && sed -i '$d' ../../../{output.workload}"
+
+rule run__valide_gmark_workload:
+    input:
+        WORKLOAD_GMARK_EXPAND
+    output:
+        workload=ALLWORKLOAD_GMARK
+    shell:
+        """
+            cd lib/gmark/src/
+            echo "<queries>" > ../../../{output.workload}
+            cat ../../../"""+ os.path.dirname(WORKLOAD_GMARK) +"""/*.xml >> ../../../{output.workload}
+            echo "</queries>" >> ../../../{output.workload}
+        """
+
+rule run__compute_queries:
+    input:
+        workload=ALLWORKLOAD_GMARK
+    output:
+        MULTI_GMARK_QUERIES_EXPAND
+    shell:
+        """
+            cd lib/gmark/src/querytranslate
+            if """ + str(use_watdiv) +""" ; then cp ../../../../lib/watdiv-queries/* ../../../../"""+ os.path.dirname(MULTI_GMARK_QUERIES)+""" ; else ./test -w ../../../../{input.workload} -o ../../../../""" + os.path.dirname(MULTI_GMARK_QUERIES)+""" ; fi
+        """
+
+# -- .gMark rules
+# -- output: MULTI_GMARK_GRAPH, MULTI_GMARK_QUERIES_EXPAND
 
 rule run_or_skip__improve_data_coherency:
     input:
@@ -186,8 +231,8 @@ rule run__filter_queries:
     output:
         queries=FILTERED_QUERY_EXPAND
     shell:
-        "python3 ./scripts/filter_queries.py " 
-            + os.path.dirname(QUERY_TRANSLATED) + " " 
+        "python3 ./scripts/filter_queries.py "
+            + os.path.dirname(QUERY_TRANSLATED) + " "
             + "--output " + os.path.dirname(FILTERED_QUERY) + " "
             + "--entrypoint " + ENDPOINT + " "
             + str(KEEP_QUERIES) + " "
