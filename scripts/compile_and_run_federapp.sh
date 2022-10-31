@@ -28,7 +28,7 @@ mkdir -p "$(dirname "$6")" && touch "$6"
 cd Federapp
 mvn install dependency:copy-dependencies package
 
-timeout --signal=SIGKILL 1 java -Xmx32384m -Xms32384m -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp "$@"
+timeout --signal=SIGKILL 900 java -Xmx32384m -Xms32384m -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp "$@"
 EXIT_STATUS=$?
 echo "EXIT_STATUS = $EXIT_STATUS"
 if [ $EXIT_STATUS -eq 137 ]
