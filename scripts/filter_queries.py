@@ -26,7 +26,7 @@ def sparqlQuery(query, baseURL, format="text/csv",default_graph_uri=""):
         "should-sponge": "soft",
         "query": query,
         "debug": "on",
-        "timeout": "3000",
+        "timeout": "",
         "format": format,
         "save": "display",
         "fname": ""
