@@ -27,4 +27,15 @@ mkdir -p "$(dirname "$6")" && touch "$6"
 
 cd Federapp
 mvn install dependency:copy-dependencies package
-java -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp "$@"
+
+timeout --signal=SIGKILL 900 java -classpath "target/Federapp-1.0-SNAPSHOT.jar:target/lib/*" org.example.Federapp "$@"
+EXIT_STATUS=$?
+echo "EXIT_STATUS = $EXIT_STATUS"
+if [ $EXIT_STATUS -eq 137 ]
+then
+    echo 'Process Timed Out!'
+    echo "query,exec_time,total_distinct_ss,nb_http_request,total_ss " > "$4"
+    echo "$1,failed,failed,failed,failed" > "$4"
+else
+    echo 'Process did not timeout :)'
+fi
