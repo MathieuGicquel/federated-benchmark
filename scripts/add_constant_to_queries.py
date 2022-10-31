@@ -185,6 +185,8 @@ def get_replacement_df(query: str, entrypoint: str, format: str):
 def add_fixed_cst_to_query(query: str, df: pd.DataFrame, seed) -> str:
     # We already decide what variable to replace by constant because of following WatDiv queries template (here ?c[0-9]+)
 
+    random_line = df.sample(n=1,random_state=seed).iloc[0]
+
     for m in re.finditer(r"(\?c[0-9]+)", str(query)):
         var = str(m.group(1))
         x_c = var.replace("?", "")
@@ -192,7 +194,7 @@ def add_fixed_cst_to_query(query: str, df: pd.DataFrame, seed) -> str:
         logger.debug(df[x_c])
 
         if len(df[x_c]) > 0:
-            column = str(df[x_c].sample(n=1, random_state=seed).iloc[0])
+            column = str(random_line[x_c])
 
             # Correct result :
             # [string_[0-9]+] -> "string_[0-9]+"
