@@ -16,6 +16,7 @@ endpoint: "http://localhost:8890/sparql"
 isql_virtuoso_path: '/Applications/Virtuoso_Open_Source_Edition_v7.2.app/Contents/virtuoso-opensource/bin/isql'
 site: 3
 queries: 10
+run: 3
 clean_after: True
 use_watdiv: False
 improve_data_coherency: True
