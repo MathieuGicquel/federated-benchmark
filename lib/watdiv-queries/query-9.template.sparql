@@ -1,2 +1,2 @@
-PREFIX : <http://example.org/>  SELECT ?x1 ?x2 ?x4 ?x3 WHERE {  ?c0 :parentCountry ?x1 .  ?x2 :like ?x4 .   ?x2 :nationality ?x1 .  OPTIONAL {  ?x4 owl:sameAs ?x3 .  } } 
+PREFIX : <http://example.org/>  SELECT ?x1 ?x2 ?c1 ?x3 WHERE {  ?c0 :parentCountry ?x1 .  ?x2 :like ?c1 .   ?x2 :nationality ?x1 .  OPTIONAL {  ?x4 owl:sameAs ?x3 .  } }
 # L2

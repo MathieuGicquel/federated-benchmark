@@ -1,2 +1,2 @@
-PREFIX : <http://example.org/>  SELECT ?x0 ?x1 ?x3 ?x4 WHERE {  ?x0 :location ?x1 .  ?x0 :nationality ?c2 .   ?x0 :gender ?x3 .  ?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type .  OPTIONAL {  ?x0 owl:sameAs ?x4 .  } }
+PREFIX : <http://example.org/>  SELECT ?x0 ?x1 ?x3 ?x4 WHERE {  ?x0 :location ?x1 .  ?x0 :nationality ?c2 .   ?x0 :gender ?x3 .  ?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?c1 .  OPTIONAL {  ?x0 owl:sameAs ?x4 .  } }
 # S2 

@@ -1,2 +1,2 @@
-PREFIX : <http://example.org/>  SELECT ?x0 ?x2 ?x3 ?x4 WHERE {  ?x0 :age ?c1 .   ?x0 :familyName ?x2 .  ?x3 :artist ?x0 .  ?x0 :nationality ?country .  OPTIONAL {  ?x3 owl:sameAs ?x4  } } 
+PREFIX : <http://example.org/>  SELECT ?x0 ?x2 ?x3 ?x4 WHERE {  ?x0 :age ?c1 .   ?x0 :familyName ?x2 .  ?x3 :artist ?x0 .  ?x0 :nationality ?c2 .  OPTIONAL {  ?x3 owl:sameAs ?x4  } }
 # S4
