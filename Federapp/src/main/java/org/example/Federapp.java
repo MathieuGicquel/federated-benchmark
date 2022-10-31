@@ -108,6 +108,7 @@ public class Federapp {
                 return Federapp.evaluate(finalConn,rawQuery);
             } catch (Exception e) {
                 log.error("An error occured inside Future", e);
+                future.cancel(true);
                 success.set(false);
                 return null;
             }
@@ -116,7 +117,7 @@ public class Federapp {
         List<BindingSet> results = null;
         if(enableTimeout) {
             try {
-                results =  future.get(5,TimeUnit.MINUTES);
+                results =  future.get(15,TimeUnit.MINUTES);
             }catch (TimeoutException e) {
                 log.error("Timeout", e);
                 success.set(false);
