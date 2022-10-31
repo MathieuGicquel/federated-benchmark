@@ -22,7 +22,7 @@ spark = SparkSession.builder \
     .master("local") \
     .appName("federated-benchmark") \
     .config("spark.ui.port", '4050') \
-    .setMaster("local['*']")
+    .master("local[*]")
 if os.environ["TMPDIR"] is not None:
     print(os.environ["TMPDIR"])
     spark = spark.config("spark.local.dir", os.environ["TMPDIR"])
