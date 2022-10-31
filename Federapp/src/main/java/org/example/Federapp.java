@@ -60,7 +60,7 @@ public class Federapp {
         String statPath = args[3];
         String sourceSelectionPath = args[4];
         String httpListFilePath = args[5];
-        boolean enableTimeout = true;
+        boolean enableTimeout = false;
 
         if(args.length > 6) {
             String ssPath= args[6];
@@ -108,7 +108,6 @@ public class Federapp {
                 return Federapp.evaluate(finalConn,rawQuery);
             } catch (Exception e) {
                 log.error("An error occured inside Future", e);
-                future.cancel(true);
                 success.set(false);
                 return null;
             }
@@ -120,6 +119,7 @@ public class Federapp {
                 results =  future.get(15,TimeUnit.MINUTES);
             }catch (TimeoutException e) {
                 log.error("Timeout", e);
+                future.cancel(true);
                 success.set(false);
             }
         } else {
