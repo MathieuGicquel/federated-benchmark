@@ -14,7 +14,7 @@ from lxml.etree import tostring
 import re
 
 
-MIN_NODES = 100000
+
 # Example of use :
 # python3 ./scripts/generate_use_cases.py ./use-case/shop.xml ./prepa/use-cases
 
@@ -25,11 +25,15 @@ logger = logging.getLogger(__name__)
 
 configuration = yaml.load(open("configuration.yaml"), Loader=yaml.FullLoader)
 
+MIN_NODES = configuration["data_distribution"]["nodes_threshold"]
+
 @click.command()
 @click.argument("shop_template")
 @click.argument("output")
 
 def generate_use_cases(shop_template,output):
+    sum_nodes = 0
+
     nb_shop = str(configuration.get("site"))
     with open(shop_template, 'r') as xmlfile:
         xmldata = xmlfile.read()
@@ -63,13 +67,16 @@ def generate_use_cases(shop_template,output):
         if(val < MIN_NODES):
             logger.debug("%s < %s" % (val,MIN_NODES))
             val = MIN_NODES
-            
+
         tag.string.replace_with(str(int(val)))
         logger.info(f'{output}/shop-{i}.xml has ' + str(tag.string) + " nodes")
+        sum_nodes = sum_nodes + val
         with open(f'{output}/shop-{i}.xml','w') as outfile:
             str_xml = str(bs_data.prettify())
             str_xml = re.sub(r"(\s*<.+>)\n\s*([A-Za-z0-9\.]+)\n\s*(</.+>)\n",r"\1\2\3\n",str_xml)
             outfile.write(str_xml)
+
+    logger.info("%s nodes in total" % sum_nodes)
 
 if __name__ == "__main__":
     generate_use_cases()

@@ -43,6 +43,7 @@ sameas_proba:
   OtherProduct: 0.5
 
 data_distribution:
+  nodes_threshold: 10000
   choosen_type: "uniform"
   types:
       "zipfian":
