@@ -526,7 +526,14 @@
 			<target type="21" symbol="11" multiplicity="?"/>
 			<target type="21" symbol="15" multiplicity="?"/>
 
-			<target type="1" symbol="53" multiplicity="+">
+			<target type="1" symbol="53"> <!-- Movie hasGenre Genre-->
+
+				<indistribution type="uniform">
+					<!-- uncapped -->
+					<min>100000</min>
+					<max>100000</max>
+				</indistribution>
+
 				<outdistribution type="gaussian">
 					<mu>3</mu>
 					<sigma>1</sigma>
@@ -917,38 +924,62 @@
 				<indistribution type="uniform">
 					<!-- uncapped -->
 					<min>1000</min><max>1000</max>
-			</indistribution>
+				</indistribution>
 				<outdistribution type="uniform">
 					<min>1</min>
 					<max>1</max>
 				</outdistribution>
 			</target>
-			<target type="9" symbol="79" multiplicity="1">
+			<target type="9" symbol="79"> <!-- Purchase purchaseFor ClassicalMusicConcert -->
+				<indistribution type="uniform">
+					<!-- uncapped -->
+					<min>100000</min><max>100000</max>
+				</indistribution>
 				<outdistribution type="zipfian">
 					<alpha>2.5</alpha>
 				</outdistribution>
 			</target>
-			<target type="10" symbol="79" multiplicity="1">
+			<target type="10" symbol="79"> <!-- Purchase purchaseFor MusicAlbum-->
+				<indistribution type="uniform">
+					<!-- uncapped -->
+					<min>100000</min><max>100000</max>
+				</indistribution>
 				<outdistribution type="zipfian">
 					<alpha>2.5</alpha>
 				</outdistribution>
 			</target>
-			<target type="11" symbol="79" multiplicity="1">
+			<target type="11" symbol="79"> <!-- Purchase purchaseFor Movie-->
+				<indistribution type="uniform">
+					<!-- uncapped -->
+					<min>100000</min><max>100000</max>
+				</indistribution>
 				<outdistribution type="zipfian">
 					<alpha>2.5</alpha>
 				</outdistribution>
 			</target>
-			<target type="12" symbol="79" multiplicity="1">
+			<target type="12" symbol="79"> <!-- Purchase purchaseFor Book-->
+				<indistribution type="uniform">
+					<!-- uncapped -->
+					<min>100000</min><max>100000</max>
+				</indistribution>
 				<outdistribution type="zipfian">
 					<alpha>2.5</alpha>
 				</outdistribution>
 			</target>
-			<target type="13" symbol="79" multiplicity="1">
+			<target type="13" symbol="79" multiplicity="1"> <!-- Purchase purchaseFor NewsArticle-->
+				<indistribution type="uniform">
+					<!-- uncapped -->
+					<min>100000</min><max>100000</max>
+				</indistribution>
 				<outdistribution type="zipfian">
 					<alpha>2.5</alpha>
 				</outdistribution>
 			</target>
-			<target type="14" symbol="79" multiplicity="1">
+			<target type="14" symbol="79" multiplicity="1"> <!-- Purchase purchaseFor OtherProduct-->
+				<indistribution type="uniform">
+					<!-- uncapped -->
+					<min>100000</min><max>100000</max>
+				</indistribution>
 				<outdistribution type="zipfian">
 					<alpha>2.5</alpha>
 				</outdistribution>
