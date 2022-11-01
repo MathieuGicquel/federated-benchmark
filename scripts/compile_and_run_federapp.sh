@@ -34,7 +34,7 @@ echo "EXIT_STATUS = $EXIT_STATUS"
 if [ $EXIT_STATUS -eq 137 ]
 then
     echo 'Process Timed Out!'
-    echo "query,exec_time,total_distinct_ss,nb_http_request,total_ss " > "$4"
+    echo "query,exec_time,total_distinct_ss,nb_http_request,total_ss" > "$4"
     echo "$2,failed,failed,failed,failed" >> "$4"
 else
     echo 'Process did not timeout :)'
