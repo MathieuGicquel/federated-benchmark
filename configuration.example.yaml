@@ -17,6 +17,7 @@ isql_virtuoso_path: '/Applications/Virtuoso_Open_Source_Edition_v7.2.app/Content
 site: 3
 queries: 10
 run: 3
+federapp_query_timeout: 3600
 clean_after: True
 use_watdiv: False
 improve_data_coherency: True

@@ -14,6 +14,7 @@ ISQL = CONFIGURATION["isql_virtuoso_path"]
 USE_CASE_INPUT_FILE = "use-case/shop.xml"
 RUN=range(0,int(CONFIGURATION["run"]))
 KEEP_QUERIES = CONFIGURATION["queries"]
+FEDERAPP_QUERY_TIMEOUT= CONFIGURATION["federapp_query_timeout"]
 clean_after = CONFIGURATION["clean_after"]
 use_watdiv = CONFIGURATION["use_watdiv"]
 improve_data_coherency = str(CONFIGURATION["improve_data_coherency"]).lower()
@@ -299,6 +300,7 @@ rule run__compile_and_run_federapp_default:
         httpreq=FEDERAPP_DEFAULT_HTTPREQ
     shell:
         "./scripts/compile_and_run_federapp.sh "
+        + ("%s " % FEDERAPP_QUERY_TIMEOUT)
         + os.getcwd() +"/{input.config} "
         + os.getcwd() +"/{input.query} "
         + os.getcwd() +"/{output.result}  "
@@ -323,6 +325,7 @@ rule run__compile_and_run_federapp_forcess:
         httpreq=FEDERAPP_VARIATION_FORCE_HTTPREQ
     shell:
         "./scripts/compile_and_run_federapp.sh "
+        + ("%s " % FEDERAPP_QUERY_TIMEOUT)
         + os.getcwd() +"/{input.config} "
         + os.getcwd() +"/{input.query} "
         + os.getcwd() +"/{output.result}  "
