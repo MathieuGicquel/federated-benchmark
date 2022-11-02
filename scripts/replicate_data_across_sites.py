@@ -1,5 +1,5 @@
 # Import part
-
+import glob
 import logging
 import warnings
 import click
@@ -55,7 +55,7 @@ class Quad:
         return re.sub(r"/s[0-9]+", "/s%s" % site, name)
 
     def toNq(self):
-        return ("%s %s %s %s .\n") % (self.s, self.p, self.o, self.g)
+        return ("%s %s %s %s .") % (self.s, self.p, self.o, self.g)
 
 
 @click.command()
@@ -136,17 +136,26 @@ def replicate_data_across_sites(input_file, output_file, number_of_site):
         new_quads.add(new_quad)
         return (key, new_quads)
 
-    #todo remove collect : concat newSameas together then concat all newSameAs and data
-    moves = flatten.map(moveToOtherSite).collect()  # moved : (key, set)
+    moves = flatten.map(moveToOtherSite)  # moved : (key, set)
+
+    moves = moves.flatMap(lambda x: [y.toNq() for y in x[1]])
+
+    workdir = os.path.dirname(output_file)
+    workdir_spark = workdir + "/spark"
 
     import shutil
-    shutil.copyfile(input_file, output_file)
-    with open(f"{output_file}", "a") as wfile:
-        for move in moves:
-            key = move[0]
-            quads = move[1]
-            for quad in quads:
-                wfile.write(quad.toNq())
+    shutil.rmtree(workdir_spark, ignore_errors=True)
+
+    moves.saveAsTextFile(workdir_spark)
+
+    # concatenate
+    import shutil
+    with open(output_file, 'wb') as wfd:
+        shutil.copyfile(input_file, output_file)
+        for f in glob.glob(f'{workdir_spark}/*'):
+            with open(f, 'rb') as fd:
+                shutil.copyfileobj(fd, wfd)
+
 
 
 if __name__ == "__main__":
