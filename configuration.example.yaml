@@ -57,4 +57,120 @@ data_distribution:
             min: 1000
             max: 2000
 
+replicate_distribution:
+  ClassicalMusicConcert:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  MusicConcert:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  HitMusicConcert:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  MusicAlbum:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  ClassicMusicAlbum:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  HitMusicAlbum:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  Movie:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  ClassicMovie:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  TopMovie:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  AnimatedMovie:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  ShortMovie:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  LongMovie:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  Book:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  NewsArticleBook:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  ArticleBook:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  NovelBook:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  ShortStoryBook:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  EncyclopediaBook:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+  OtherProduct:
+    choosen_type: "uniform"
+    types:
+      "uniform":
+        min: 1
+        max: 5
+
 shared_types: ['Genre', 'SubGenre', 'Topic', 'HotTopic', 'City', 'Country', 'Language', 'Role', 'AgeGroup', 'Gender']

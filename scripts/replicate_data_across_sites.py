@@ -1,6 +1,7 @@
 # Import part
 import glob
 import logging
+import sys
 import warnings
 import click
 import coloredlogs
@@ -116,24 +117,34 @@ def replicate_data_across_sites(input_file, output_file, number_of_site):
         return (x[0], quads)
 
     flatten = groupBy.map(flatten_triples)
+    replicate_min_max = configuration["replicate_distribution"]
 
     def moveToOtherSite(x):
         key = x[0]
         quads = x[1]
 
-        current_site = int(re.search(r"/s([0-9]+)/", key).group(1))
-        random_site = current_site
-        while random_site == current_site:
-            random_site = random.randrange(nsite)
-
         new_quads = set()
-        for quad in quads:
-            new_quad = quad.move_to_site(random_site)
-            new_quads.add(new_quad)
 
-        new_quad = Quad(Quad.move_entity_to_site(key, random_site), "<http://www.w3.org/2002/07/owl#sameAs>", key,
-                        "<http://example.org/s%s>" % random_site)
-        new_quads.add(new_quad)
+        replicate_typ = key.split('/')[-1].split('_')[0]
+        replicate_type = replicate_min_max.get(str(replicate_typ)).get("choosen_type")
+        if str(replicate_type) != "uniform":
+            sys.exit(1)
+        replicate_min = replicate_min_max.get(str(replicate_typ))["types"].get(str(replicate_type)).get("min")
+        replicate_max = replicate_min_max.get(str(replicate_typ))["types"].get(str(replicate_type)).get("max")
+
+        for i in range(random.randint(int(replicate_min),int(replicate_max))):
+            current_site = int(re.search(r"/s([0-9]+)/", key).group(1))
+            random_site = current_site
+            while random_site == current_site:
+                random_site = random.randrange(nsite)
+
+            for quad in quads:
+                new_quad = quad.move_to_site(random_site)
+                new_quads.add(new_quad)
+
+            new_quad = Quad(Quad.move_entity_to_site(key, random_site), "<http://www.w3.org/2002/07/owl#sameAs>", key,
+                            "<http://example.org/s%s>" % random_site)
+            new_quads.add(new_quad)
         return (key, new_quads)
 
     moves = flatten.map(moveToOtherSite)  # moved : (key, set)
@@ -150,8 +161,8 @@ def replicate_data_across_sites(input_file, output_file, number_of_site):
 
     # concatenate
     import shutil
+    shutil.copyfile(input_file, output_file)
     with open(output_file, 'wb') as wfd:
-        shutil.copyfile(input_file, output_file)
         for f in glob.glob(f'{workdir_spark}/*'):
             with open(f, 'rb') as fd:
                 shutil.copyfileobj(fd, wfd)
