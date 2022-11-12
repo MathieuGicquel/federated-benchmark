@@ -132,7 +132,7 @@ def replicate_data_across_sites(input_file, output_file, number_of_site):
         replicate_min = replicate_min_max.get(str(replicate_typ))["types"].get(str(replicate_type)).get("min")
         replicate_max = replicate_min_max.get(str(replicate_typ))["types"].get(str(replicate_type)).get("max")
 
-        for i in range(random.randint(int(replicate_min),int(replicate_max))):
+        for i in range(random.randint(int(replicate_min),int(replicate_max)+1)):
             current_site = int(re.search(r"/s([0-9]+)/", key).group(1))
             random_site = current_site
             while random_site == current_site:
