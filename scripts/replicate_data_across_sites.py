@@ -162,7 +162,7 @@ def replicate_data_across_sites(input_file, output_file, number_of_site):
     # concatenate
     import shutil
     shutil.copyfile(input_file, output_file)
-    with open(output_file, 'wb') as wfd:
+    with open(output_file, 'ab') as wfd:
         for f in glob.glob(f'{workdir_spark}/*'):
             with open(f, 'rb') as fd:
                 shutil.copyfileobj(fd, wfd)
